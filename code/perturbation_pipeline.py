@@ -269,10 +269,12 @@ def main():
 
     print(f"Using model: {model} (provider: {provider})")
 
-    # Paths
-    output_dir = '/Users/Federica_1/Documents/GitHub/m3-eval/output'
-    coarse_data_path = '/Users/Federica_1/Documents/GitHub/m3-eval/data/coarse_5pt_expert+llm_consolidated.jsonl'
-    fine_data_path = '/Users/Federica_1/Documents/GitHub/m3-eval/data/fine_5pt_expert+llm_consolidated.jsonl'
+    # Paths - Use relative paths from script location
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(script_dir)  # Go up one level from /code to project root
+    output_dir = os.path.join(project_root, 'output')
+    coarse_data_path = os.path.join(project_root, 'data', 'coarse_5pt_expert+llm_consolidated.jsonl')
+    fine_data_path = os.path.join(project_root, 'data', 'fine_5pt_expert+llm_consolidated.jsonl')
 
     # Create output directory if it doesn't exist
     os.makedirs(output_dir, exist_ok=True)
@@ -304,7 +306,7 @@ def main():
         qa_pairs = load_qa_data(data_path)
 
         # Select correct prompt path based on level
-        prompt_path = f"/Users/Federica_1/Documents/GitHub/m3-eval/code/prompts/{level}prompt_system.txt"
+        prompt_path = os.path.join(script_dir, 'prompts', f'{level}prompt_system.txt')
 
         # Determine ID key
         id_key = 'sentence_id' if 'sentence_id' in qa_pairs[0] else 'answer_id'

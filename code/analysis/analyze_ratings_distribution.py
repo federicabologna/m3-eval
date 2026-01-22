@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 from scipy.stats import mannwhitneyu
 import scipy.stats as stats
 
-output_dir = '/Users/Federica_1/Documents/GitHub/m3-eval/output'
+# Use relative path from script location
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(script_dir))  # Go up two levels from /code/analysis to project root
+output_dir = os.path.join(project_root, 'output')
 
 # Find all perturbation output files (only in subdirectories, skip original ratings in root)
 output_files = []
