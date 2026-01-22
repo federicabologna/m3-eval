@@ -2,13 +2,13 @@
 #SBATCH -J m3_typos_all_probs               # Job name
 #SBATCH -o m3_typos_all_probs.out           # Name of stdout output log file
 #SBATCH -e m3_typos_all_probs.err           # Name of stderr output log file
-#SBATCH --mail-type=ALL                      # Request status by email
-#SBATCH --mail-user=fb265@cornell.edu        # Email address to send results to
 #SBATCH -N 1                                 # Total number of nodes requested
 #SBATCH -n 2                                 # Total number of cores requested
+#SBATCH --mail-type=ALL                      # Request status by email
+#SBATCH --mail-user=fb265@cornell.edu        # Email address to send results to
 #SBATCH --mem=100000                         # Total amount of memory requested in MB (per node)
 #SBATCH -t 48:00:00                          # Time limit (48 hours)
-#SBATCH --gres=gpu:nvidia_rtx_a6000:1        # Specify GPU type and number
+#SBATCH --gres=gpu:1        # Specify GPU type and number
 #SBATCH --partition=luxlab                   # Request partition for resource allocation
 
 # Print job info
