@@ -1,15 +1,15 @@
 #!/bin/bash
 #SBATCH -J m3_eval_qwen3-8b                  # Job name
-#SBATCH -o m3_eval_qwen3-8b_%j.out          # output file (%j expands to jobID)
-#SBATCH -e m3_eval_qwen3-8b_%j.err          # error log file (%j expands to jobID)
+#SBATCH -o m3_eval_qwen3-8b.out              # Name of stdout output log file
+#SBATCH -e m3_eval_qwen3-8b.err              # Name of stderr output log file
+#SBATCH --mail-type=ALL                      # Request status by email
+#SBATCH --mail-user=fb265@cornell.edu        # Email address to send results to
 #SBATCH -N 1                                 # Total number of nodes requested
-#SBATCH -n 1                                 # Total number of cores requested
-#SBATCH --cpus-per-task=4                    # Total number of cores requested per task
-#SBATCH --get-user-env                       # retrieve the users login environment
-#SBATCH --mem=32000                          # server memory requested in MB (32GB for 8B model)
-#SBATCH -t 24:00:00                          # Time limit (24 hours for full pipeline)
-#SBATCH --partition=default_partition        # Request partition
-#SBATCH --gres=gpu:nvidia_rtx_6000_ada_generation:1   # Type:number of GPUs needed
+#SBATCH -n 2                                 # Total number of cores requested
+#SBATCH --mem=32000                          # server memory requested in MB (per node)
+#SBATCH -t 72:00:00                          # Time limit (72 hours for full pipeline)
+#SBATCH --gres=gpu:1                         # Specify generic consumable resources (1 GPU)
+#SBATCH --partition=luxlab                   # Request partition for resource allocation
 
 # Print job info
 echo "========================================"

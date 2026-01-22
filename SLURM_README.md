@@ -18,10 +18,11 @@ sbatch run_perturbation_pipeline.slurm
 ```
 
 **Resources**:
-- 1 GPU (RTX 6000 Ada)
-- 32GB RAM
-- 24 hours
-- 4 CPUs
+- 1 GPU (any available)
+- 100GB RAM
+- 72 hours
+- 2 cores
+- Partition: luxlab
 
 ---
 
@@ -39,10 +40,11 @@ sbatch run_add_typos_all_probs.slurm
 ```
 
 **Resources**:
-- 1 GPU (RTX 6000 Ada)
-- 32GB RAM
-- 12 hours
-- 4 CPUs
+- 1 GPU (any available)
+- 100GB RAM
+- 48 hours
+- 2 cores
+- Partition: luxlab
 
 ---
 
@@ -60,10 +62,11 @@ sbatch run_remove_must_have_all_nums.slurm
 ```
 
 **Resources**:
-- 1 GPU (RTX 6000 Ada)
-- 32GB RAM
-- 12 hours
-- 4 CPUs
+- 1 GPU (any available)
+- 100GB RAM
+- 48 hours
+- 2 cores
+- Partition: luxlab
 
 ---
 
@@ -112,11 +115,12 @@ output/
 
 To modify resource requirements, edit the `#SBATCH` directives:
 
-- **Memory**: `#SBATCH --mem=32000` (in MB)
-- **Time**: `#SBATCH -t 24:00:00` (hh:mm:ss)
-- **GPUs**: `#SBATCH --gres=gpu:nvidia_rtx_6000_ada_generation:1`
-- **CPUs**: `#SBATCH --cpus-per-task=4`
-- **Partition**: `#SBATCH --partition=default_partition`
+- **Memory**: `#SBATCH --mem=100GB` (can use GB/MB format)
+- **Time**: `#SBATCH -t 72:00:00` (hh:mm:ss format)
+- **GPUs**: `#SBATCH --gres=gpu:1` (1 GPU, any available type)
+- **Cores**: `#SBATCH -n 2` (number of cores)
+- **Partition**: `#SBATCH --partition=luxlab`
+- **Email**: `#SBATCH --mail-user=fb265@cornell.edu`
 
 ## Running Specific Perturbations
 
@@ -139,11 +143,21 @@ The pipeline has built-in resume functionality:
 
 This makes it safe to resubmit jobs if they time out or fail midway.
 
+## Email Notifications
+
+All scripts are configured to send email notifications to `fb265@cornell.edu` when:
+- Job begins
+- Job completes
+- Job fails
+
+You can modify the email address by editing the `#SBATCH --mail-user` line in each script.
+
 ## Troubleshooting
 
 **Job fails immediately**:
-- Check partition name matches your cluster: `sinfo`
-- Check GPU type is available: `sinfo -o "%P %G"`
+- Check if partition `luxlab` is available: `sinfo`
+- Check GPU availability: `sinfo -o "%P %G"`
+- Verify you have access to the luxlab partition
 
 **Out of memory**:
 - Increase `--mem` to 64000 (64GB)
