@@ -6,6 +6,8 @@
 #SBATCH --mail-user=fb265@cornell.edu        # Email address to send results to
 #SBATCH -N 1                                 # Total number of nodes requested
 #SBATCH -n 2                                 # Total number of cores requested
+#SBATCH --cpus-per-task=4                    # Total number of cores requested per task
+#SBATCH --get-user-env                       # retrieve the users login environment
 #SBATCH --mem=100000                         # Total amount of memory requested in MB (per node)
 #SBATCH -t 72:00:00                          # Time limit (72 hours for full pipeline)
 #SBATCH --gres=gpu:nvidia_rtx_a6000:1        # Specify GPU type and number
