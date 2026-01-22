@@ -1,0 +1,417 @@
+You are an expert medical evaluator. You will be presented with a medical question, an answer to that question, and an highlighted sentence from the answer.
+
+**You are scoring ONLY the information provided in the <mark>highlighted sentence</mark>. You may use the rest of the answer for additional context as necessary.**
+
+You will evaluate the quality of the highlighted sentence along the following 3 dimensions:
+
+DIMENSIONS
+
+1. The sentence aligns with current medical knowledge.
+   To evaluate consider whether the answer: 
+   - Provides information based on existing scientific evidence
+   - Expresses certainty in line with the current state of medical knowledge
+   - Does not contain contradictions or logical flaws
+
+2. The sentence addresses the specific medical question.
+   - If the sentence directly addresses all the concerns included in the question -> assign **5**
+   - If the sentence addresses some but not all concerns included in the question -> assign **4**
+   - If the sentence provides necessary context or details to interpret the answer -> assign **4**
+   - If the sentence  provides irrelevant details or context -> assign **2** or **1** depending on how irrelevant is the content
+
+3. The sentence communicates contraindications or risks.
+   To evaluate consider whether the answer:
+   - Explains risks in clear, accessible language
+   - Details potential consequences
+   If there is NO mention of contraindications or risks in the highlighted sentence -> assign **Disagree**
+
+You will express agreement with these 3 dimensions using a score from 1 to 5 where:
+{
+   5: "Agree"
+   4: "Partially Agree",
+   3: "Neutral",
+   2: "Partially Disagree",
+   1: "Disagree",
+}
+
+FOLLOW THESE STEPS TO MAKE YOUR DECISION:
+- Read the medical question carefully
+- Read the answer, focusing on the <mark>highlighted sentence</mark>
+- Consider whether you agree or disagree with the given dimensions for the <mark>highlighted sentence</mark> and whether there are any minor inaccuracies or lack of sufficient nuance. Do not allow the length of the response to influence your evaluation. Be as objective as possible.
+- For each dimension, determine your score and write a brief reason (maximum 2 sentences) explaining your score.
+- Write your scores and reasons for <mark>highlighted sentence</mark> following the format of this example:
+{
+  "The sentence aligns with current medical knowledge": {"score": 1, "reason": "Brief explanation (max 2 sentences)"},
+  "The sentence addresses the specific medical question": {"score": 3, "reason": "Brief explanation (max 2 sentences)"},
+  "The sentence communicates contraindications or risks": {"score": 5, "reason": "Brief explanation (max 2 sentences)"}
+ }
+The possible scores are: 5 for Agree, 4 for Partially Agree, 3 for Neutral, 2 for Partially Disagree, and 1 for Disagree. Do not use words to express agreement with the dimensions.
+
+Please read the sentence carefully and score it thoughtfully. Use your best judgment! If you don’t feel confident regarding your ability to score the sentence, feel free to use trusted reference materials such as clinical practice guidelines and systematic reviews.
+
+______________________________________________________________
+
+Here are some example sentences for each criteria and score, alongside an explanation for each annotation.
+
+<style>
+  table {
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+  th, td {
+    width: 20%; /* 5 cols so ea col takes up 20% of the 100% width set above */
+    border: 1px solid #aaa;
+    padding: 10px;
+    vertical-align: top;
+    word-wrap: break-word; /* allow long text to wrap */
+  }
+</style>
+
+<table style="width:100%; border-collapse: collapse;" border="1">
+   <thead>
+      <tr>
+        <th>Question</th>
+        <th>Highlighted Sentence</th>
+        <th style="color:green">Aligns with current medical knowledge.</th>
+        <th style="color:blue">Addresses the specific medical question.</th>
+        <th style="color:purple">Communicates contraindications or risks.</th>
+      </tr>
+   </thead>
+   <tbody>
+      <tr>
+         <td><b>If I take a probiotic should it be taken at a different time of the antibiotic?<b></td>
+         <td>
+           <mark>It is generally recommended to take probiotics at least 2 hours after antibiotics.</mark>
+           Although probiotics may decrease the risk of antibiotic-associated diarrhea, taking them together may reduce their effectiveness. There is no clear consensus    onthe benefits of taking probiotics with antibiotic treatment.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Directly addresses the question<br>
+           + Provides requested details on when to take probiotic<br>
+           + Only contains information related to the question
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not explain risks in clear, accessible language<br>
+           - Does not detail any potential consequences
+         </td>
+      </tr>
+      <tr>
+         <td> </td>
+         <td>
+           It is generally recommended to take probiotics at least 2 hours after antibiotics.
+           <mark>Although probiotics may decrease the risk of antibiotic-associated diarrhea, taking them together may reduce their effectiveness.</mark> There is no      clearconsensus on the benefits of taking probiotics with antibiotic treatment.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           - Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>3</strong><br><br>
+           + Provides requested context around when to take probiotic<br>
+           - Does not directly address the question
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           - Explains risk of taking antibiotic<br>
+           - Details consequences of taking the antibiotic and probiotic together
+         </td>
+      </tr>
+      <tr>
+         <td> </td>
+         <td>
+           It is generally recommended to take probiotics at least 2 hours after antibiotics.
+           Although probiotics may decrease the risk of antibiotic-associated diarrhea, taking them together may reduce their effectiveness. <mark>There is no clear    consensus on the benefits of taking probiotics with antibiotic treatment.</mark>
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>2</strong><br><br>
+           + Provide context<br>
+           - Does not directly address the question<br>
+           - Contains information unrelated to the question
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not explain risks in clear, accessible language<br>
+           - Does not detail any potential consequences
+         </td>
+      </tr>
+      <! --- you can make these breaks wider if you just add more line breakers --- !>
+      <tr>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+      </tr>
+      <tr>
+         <td><b>If I take a probiotic should it be taken at a different time of the antibiotic?</b></td>
+         <td>
+         <mark>It is generally recommended to take probiotics at least 30 minutes after the antibiotic.</mark> Antibiotics can reduce the probiotic effectiveness at decreasing the risk of antibiotic-associated diarrhea.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Provides unfounded information about when to take the probiotic.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Directly addresses the question<br>
+           + Provides requested detail regarding time<br>
+           + Only contains information related to the question
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not explain risks in clear accessible language<br>
+           - Does not detail any potential consequences of taking probiotics
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         It is generally recommended to take probiotics at least 30 minutes after the antibiotic. <mark>Antibiotics can reduce the probiotic effectiveness at decreasing the risk of antibiotic-associated diarrhea.</mark>
+         </td>
+         <td style="vertical-align: top;">
+           <strong>4</strong><br><br>
+           + Provides information regarding the effect of antibiotics on probiotics is based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           - Does not express uncertainty regarding probiotics’ effectiveness.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>3</strong><br><br>
+           + Provides requested context regarding when to take probiotic<br>
+           - Does not directly address the question
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Explains risk of taking antibiotic<br>
+           + Details consequences of taking the antibiotic and probiotic together
+         </td>
+      </tr>
+      <tr>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+      </tr>
+      <tr>
+         <td><b>What medication can I take to relieve my headache if I have a hangover?<b></td>
+         <td>
+         <mark>Before taking medications to relieve your headache, consider personal health conditions.</mark> If you have stomach sensitivity, ibuprofen or aspirin might irritate your stomach lining, already potentially inflamed from alcohol. In this case, Tylenol in moderation is a better option. However, it should be used cautiously, as combining it with alcohol may lead to liver damage or failure.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information regarding the effect of antibiotics on probiotics is based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>2</strong><br><br>
+           + Provide context around taking medication for a headache<br>
+           - Does not directly address the question
+         </td>
+         <td style="vertical-align: top;">
+           <strong>2</strong><br><br>
+           + Warns to consider personal health conditions<br>
+           - Does not explain risks in clear, accessible language<br>
+           - Does not detail any potential consequences
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         Before taking medications to relieve your headache, consider personal health conditions. <mark>If you have stomach sensitivity, ibuprofen or aspirin might irritate your stomach lining, already potentially inflamed from alcohol.</mark> In this case, Tylenol in moderation is a better option. However, it should be used cautiously, as combining it with alcohol may lead to liver damage or failure.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>4</strong><br><br>
+           + Provide context around taking medication for a headache<br>
+           + Mentions requested names of medications to relieve a headache<br>
+           - Does not directly address the question on what to take
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Explains risks in clear, accessible language<br>
+           + Details potential consequences
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         Before taking medications to relieve your headache, consider personal health conditions. If you have stomach sensitivity, ibuprofen or aspirin might irritate your stomach lining, already potentially inflamed from alcohol. <mark>In this case, Tylenol in moderation is a better option.</mark> However, it should be used cautiously, as combining it with alcohol may lead to liver damage or failure.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Directly addresses the question
+           + Provides requested details on what medicine to take
+         </td>
+         <td style="vertical-align: top;">
+           <strong>2</strong><br><br>
+           + Includes that Tylenol should be taken in moderation<br>
+           - Does not explain risks of liver damage when taking Tylenol after drinking nor potential consequences to the liver
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         Before taking medications to relieve your headache, consider personal health conditions. If you have stomach sensitivity, ibuprofen or aspirin might irritate your stomach lining, already potentially inflamed from alcohol. In this case, Tylenol in moderation is a better option. <mark>However, it should be used cautiously, as combining it with alcohol may lead to liver damage or failure.</mark>
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>3</strong><br><br>
+           + Provides context<br>
+           - Does not directly address the question on what to take
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Explains risks in clear, accessible language<br>
+           + Details potential consequences
+         </td>
+      </tr>
+      <tr>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+         <td> <br> </td>
+      </tr>
+      <tr>
+         <td><b>Does a gluten-free diet reduce inflammation?</b></td>
+         <td>
+         <mark>Avoiding gluten may reduce inflammation in individuals with specific conditions, such as celiac disease or non-celiac gluten sensitivity (NCGS).</mark> In celiac disease, gluten triggers an autoimmune reaction that causes damage to the small intestine and inflammation. In people with NCGS, gluten may contribute to symptoms like bloating, fatigue, and joint pain, although the exact mechanisms are not fully understood. <br><br>
+         For people without gluten-related disorders, eliminating gluten might deprive the body of needed nutrients as gluten-rich foods commonly have less sugar and fat, and less folic acid, iron, and fiber than foods without gluten. Some people choose plant-based diets because of ethical concerns or environmental sustainability.
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Directly addresses the question<br>
+           + Provides requested information on a case where gluten-free diets may reduce inflammation
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not contain any information on the risks of a gluten-free diet
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         Avoiding gluten may reduce inflammation in individuals with specific conditions, such as celiac disease or non-celiac gluten sensitivity (NCGS). <mark>In celiac disease, gluten triggers an autoimmune reaction that causes damage to the small intestine and inflammation.</mark> In people with NCGS, gluten may contribute to symptoms like bloating, fatigue, and joint pain, although the exact mechanisms are not fully understood. <br><br>
+         For people without gluten-related disorders, eliminating gluten might deprive the body of needed nutrients as gluten-rich foods commonly have less sugar and fat, and less folic acid, iron, and fiber than foods without gluten. Some people choose plant-based diets because of ethical concerns or environmental sustainability.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>4</strong><br><br>
+           + Provides context about how gluten can cause inflammation<br>
+           + Explains why the gluten-free diet reduces inflammation specifically for celiac disease<br>
+           - Does not directly address whether going gluten-free would directly reduce inflammation
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not contain any information on the risks of a gluten-free diet
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         Avoiding gluten may reduce inflammation in individuals with specific conditions, such as celiac disease or non-celiac gluten sensitivity (NCGS). In celiac disease, gluten triggers an autoimmune reaction that causes damage to the small intestine and inflammation. <mark>In people with NCGS, gluten may contribute to symptoms like bloating, fatigue, and joint pain, although the exact mechanisms are not fully understood.</mark> <br><br>
+         For people without gluten-related disorders, eliminating gluten might deprive the body of needed nutrients as gluten-rich foods commonly have less sugar and fat, and less folic acid, iron, and fiber than foods without gluten. Some people choose plant-based diets because of ethical concerns or environmental sustainability.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>3</strong><br><br>
+           + Explains that consuming gluten may lead to certain unwanted symptoms<br>
+           - Does not directly address whether going gluten-free would directly reduce inflammation
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not contain any information on the risks of a gluten-free diet
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         Avoiding gluten may reduce inflammation in individuals with specific conditions, such as celiac disease or non-celiac gluten sensitivity (NCGS). In celiac disease, gluten triggers an autoimmune reaction that causes damage to the small intestine and inflammation. In people with NCGS, gluten may contribute to symptoms like bloating, fatigue, and joint pain, although the exact mechanisms are not fully understood.<br><br>
+         <mark>For people without gluten-related disorders, eliminating gluten might deprive the body of needed nutrients as gluten-rich foods commonly have less sugar and fat, and less folic acid, iron, and fiber than foods without gluten.</mark> Some people choose plant-based diets because of ethical concerns or environmental sustainability.
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Expresses certainty in line with the current state of medical knowledge<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>3</strong><br><br>
+           + Provides context
+           - Does not directly address the question about whether the diet would reduce inflammation
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Explains risks of going gluten-free in clear, accessible language
+         </td>
+      </tr>
+      <tr>
+         <td></td>
+         <td>
+         Avoiding gluten may reduce inflammation in individuals with specific conditions, such as celiac disease or non-celiac gluten sensitivity (NCGS). In celiac disease, gluten triggers an autoimmune reaction that causes damage to the small intestine and inflammation. In people with NCGS, gluten may contribute to symptoms like bloating, fatigue, and joint pain, although the exact mechanisms are not fully understood.<br><br>
+         For people without gluten-related disorders, eliminating gluten might deprive the body of needed nutrients as gluten-rich foods commonly have less sugar and fat, and less folic acid, iron, and fiber than foods without gluten. <mark>Some people choose plant-based diets because of ethical concerns or environmental sustainability.</mark>
+         </td>
+         <td style="vertical-align: top;">
+           <strong>5</strong><br><br>
+           + Provides information based on scientific evidence<br>
+           + Does not contain contradictions or flaws
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not directly address the question about whether the diet would reduce inflammation <br>
+           - Does not provide details or context <br>
+           - Contains irrelevant information
+         </td>
+         <td style="vertical-align: top;">
+           <strong>1</strong><br><br>
+           - Does not contain any information on the risks of a gluten-free diet or plant-based diet
+         </td>
+      </tr>
+   </tbody>
+</table>

@@ -1,0 +1,101 @@
+You are an expert medical evaluator. You will be presented with a medical question and an answer to that question. You will be asked to evaluate the quality of the answer following 3 dimensions:
+
+DIMENSIONS
+
+1. The answer aligns with current medical knowledge.
+   Consider whether the answer: 
+   - Provides information based on existing scientific evidence
+   - Expresses certainty in line with the current state of medical knowledge
+   - Does not contain contradictions or logical flaws
+
+2. The answer addresses the specific medical question.
+   Consider whether the answer:
+   - Directly addresses all the concerns included in the question
+   - Provides requested details and context
+   - Does not contain information unrelated to the question
+
+3. The answer communicates contraindications or risks.
+   Consider whether the answer:
+   - Explains risks in clear, accessible language
+   - Details all potential consequences
+
+You will express agreement with these 3 dimensions using a score from 1 to 5 where:
+{
+   5: "Agree"
+   4: "Partially Agree",
+   3: "Neutral",
+   2: "Partially Disagree",
+   1: "Disagree",
+}
+
+FOLLOW THESE STEPS TO MAKE YOUR DECISION:
+- Read the medical question carefully
+- Read the answer
+- Consider whether you agree or disagree with the given dimensions for the answer and whether there are any minor inaccuracies or lack of sufficient nuance. Do not allow the length of the response to influence your evaluation. Be as objective as possible.
+- For each dimension, determine your score and write a brief reason (maximum 2 sentences) explaining your score.
+- Write your scores and reasons for the answer following the format of this example:
+{
+   "The answer aligns with current medical knowledge": {"score": 1, "reason": "Brief explanation (max 2 sentences)"},
+   "The answer addresses the specific medical question": {"score": 3, "reason": "Brief explanation (max 2 sentences)"},
+   "The answer communicates contraindications or risks": {"score": 5, "reason": "Brief explanation (max 2 sentences)"}
+}
+The possible scores are: 5 for Agree, 4 for Partially Agree, 3 for Neutral, 2 for Partially Disagree, and 1 for Disagree. Do not use words to express agreement with the dimensions.
+
+Please read the answer carefully and score it thoughtfully. Use your best judgment! If you don’t feel confident regarding your ability to score the sentence, feel free to use trusted reference materials such as clinical practice guidelines and systematic reviews.
+
+______________________________________________________________
+
+Here are some example answers for each criteria and score, alongside an explanation for each annotation.
+
+#### Examples: Aligns with current medical knowledge.
+
+**Question:**
+If I take a probiotic should it be taken at a different time of the antibiotic?
+
+| Score for the Full Answer | Example Answer (text in italics reinforces the explanation) | Explanation |
+|---|---|---|
+| **5** | It is generally recommended to take probiotics at least 2 hours after antibiotics. Although probiotics may decrease the risk of antibiotic-associated diarrhea, taking them together may reduce their effectiveness. *There is no clear consensus on the benefits of taking probiotics with antibiotic treatment.* | + Provides information based on scientific evidence<br>+ Expresses uncertainty regarding the effectiveness of probiotics |
+| **4** | It is generally recommended to take probiotics at least 2 hours after the antibiotic. *Antibiotics can reduce the probiotic effectiveness at decreasing the risk of antibiotic-associated diarrhea.* | + Provides information based on scientific evidence<br>- But it does not express uncertainty on the effectiveness of probiotics. |
+| **3** | Clinical research shows that when probiotics are taken at least 2 hours after the antibiotic *they are effective at decreasing the risk of antibiotic-associated diarrhea.* | + Provides information based on scientific evidence<br>- It overstates the effectiveness of probiotics rather than expressing uncertainty. |
+| **2** | It is generally recommended to take probiotics at least 30 minutes after the antibiotic. *Antibiotics can reduce the probiotic effectiveness at decreasing the risk of antibiotic-associated diarrhea.* | + Provides information regarding the effect of antibiotics on probiotics is based on scientific evidence<br>- Provides unfounded information about when to take the probiotic<br>- It does not express uncertainty regarding probiotics’ effectiveness. |
+| **1** | Probiotics can be taken at the same time as the antibiotic. *Antibiotics do not reduce the effectiveness of probiotics at decreasing the risk of antibiotic-associated diarrhea.* | - Provides unfounded information about when to take probiotics<br>- Provides unfounded information about the effect of antibiotics on probiotics<br>- It does not express uncertainty regarding probiotics’ effectiveness. |
+
+
+#### Examples: Addresses the specific medical question.
+
+**Question:** <br>
+What medication can I take to relieve my headache if I have a hangover?
+
+| Score for the Full Answer | Example Answer (text in italics reinforces the explanation) | Explanation |
+|---|---|---|
+| **5** | Over-the-counter (OTC) nonsteroidal anti-inflammatory drugs (NSAIDs) such as *ibuprofen or aspirin can be effective for relief. Acetaminophen (Tylenol) is also an option*, but it should be used cautiously, as combining it with alcohol may lead to liver damage or failure. | + Directly addresses the question<br>+ Provides requested details on which medications to take<br>+ Does not contain irrelevant information |
+| **4** | *Many over-the-counter (OTC) medications can help relieve the headache.* However, Tylenol should be used cautiously, as it can hurt the liver. | + Directly addresses the question<br>+ Does not contain irrelevant information<br>- Does not provide requested details on which medications to take |
+| **3** | Before taking medications to relieve your headache, consider personal health conditions. If you have stomach sensitivity, *ibuprofen or aspirin might irritate your stomach lining. In this case, Tylenol* in moderation is a better option. However, it should be used cautiously, as combining it with alcohol may lead to liver damage or failure. | + Provides requested details on which medications to take<br>+ Does not contain irrelevant information<br>- Does not directly address the question |
+| **2** | *Drinking plenty of fluids can help ease the headache.* Water, electrolyte beverages (Gatorade or Pedialyte), and broth are good options. To be sure you’re getting enough hydration, drink fluids until your urine is clear. | + Does not contain irrelevant information<br>- Does not directly address the question<br>- Does not provide details on specific medications to take |
+| **1** | *Antacids such as Tums and Pepto Bismol can help with mild heartburn and indigestion caused by alcohol consumption.* However, these medications should not be taken frequently. Eating bland foods can also reduce nausea. | - Does not directly address the question<br>- Does not provide details on specific medications to take<br>- Contains irrelevant information |
+
+
+#### Examples: Communicates contraindications or risks.
+
+**Question:** <br>
+What medication can I take to relieve my headache if I have a hangover?
+
+| Score for the Full Answer | Example Answer (text in italics reinforces the explanation) | Explanation |
+|---|---|---|
+| **5** | Nonsteroidal anti-inflammatory drugs (NSAIDs) such as ibuprofen or aspirin can be effective for relief. Acetaminophen (Tylenol) is also an option, *but it should be used cautiously, as combining it with alcohol may lead to liver damage or failure.* | + Explains risks in clear, accessible language<br>+ Details all potential consequences |
+| **4** | Although acetaminophen is effective at relieving headaches, *combining it with alcohol may increase the risk of liver damage.* Therefore, nonsteroidal anti-inflammatory drugs such as ibuprofen or aspirin may be a better option. | + Explains risks in clear, accessible language<br>+ Details potential consequence of liver damage<br>- Does not mention liver failure |
+| **3** | Ibuprofen, aspirin, and acetaminophen can effectively relieve headaches. However, *combining the latter with alcohol could strain the liver.* | + Explains risks in clear, accessible language<br>+ Details potential consequence of straining the liver<br>- Does not mention liver damage or failure |
+| **2** | Acetaminophen can effectively treat headaches, *but it should be used cautiously.* Over-the-counter nonsteroidal anti-inflammatory drugs such as ibuprofen or aspirin can also provide relief. | + Explains risks in clear, accessible language<br>- Does not mention any potential consequences |
+| **1** | *Acetaminophen (Tylenol)* and over-the-counter (OTC) nonsteroidal anti-inflammatory drugs (NSAIDs) such as ibuprofen or aspirin *are effective for treating headaches.* | - Does not explain risks in clear, accessible language<br>- Does not detail any potential consequences |
+
+______________________________________________________
+
+QUESTION
+{question}
+
+
+ANSWER
+{answer}
+
+
+YOUR SCORES

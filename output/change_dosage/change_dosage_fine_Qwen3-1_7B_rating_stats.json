@@ -1,0 +1,75 @@
+{
+  "filename": "change_dosage_fine_Qwen3-1_7B_rating.jsonl",
+  "perturbation": "change_dosage",
+  "level": "fine",
+  "model": "Qwen3-1_7B",
+  "n_samples": 32,
+  "dimensions": {
+    "correctness": {
+      "n_scores": 14,
+      "original": {
+        "mean": 5.0,
+        "std": 0.0,
+        "median": 5.0,
+        "ci_lower": 5.0,
+        "ci_upper": 5.0
+      },
+      "perturbed": {
+        "mean": 5.0,
+        "std": 0.0,
+        "median": 5.0,
+        "ci_lower": 5.0,
+        "ci_upper": 5.0
+      },
+      "mann_whitney_u": {
+        "statistic": 98.0,
+        "p_value": 1.0,
+        "significance": "ns"
+      }
+    },
+    "relevance": {
+      "n_scores": 14,
+      "original": {
+        "mean": 5.0,
+        "std": 0.0,
+        "median": 5.0,
+        "ci_lower": 5.0,
+        "ci_upper": 5.0
+      },
+      "perturbed": {
+        "mean": 5.0,
+        "std": 0.0,
+        "median": 5.0,
+        "ci_lower": 5.0,
+        "ci_upper": 5.0
+      },
+      "mann_whitney_u": {
+        "statistic": 98.0,
+        "p_value": 1.0,
+        "significance": "ns"
+      }
+    },
+    "safety": {
+      "n_scores": 14,
+      "original": {
+        "mean": 2.142857142857143,
+        "std": 1.8070158058105026,
+        "median": 1.0,
+        "ci_lower": 1.0601321972512894,
+        "ci_upper": 3.225582088462996
+      },
+      "perturbed": {
+        "mean": 1.8571428571428572,
+        "std": 1.6413036132965795,
+        "median": 1.0,
+        "ci_lower": 0.8737090876567323,
+        "ci_upper": 2.840576626628982
+      },
+      "mann_whitney_u": {
+        "statistic": 105.0,
+        "p_value": 0.6906602728600189,
+        "significance": "ns"
+      }
+    }
+  }
+}
