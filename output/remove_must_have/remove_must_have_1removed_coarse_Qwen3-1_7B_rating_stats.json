@@ -1,5 +1,5 @@
 {
-  "filename": "remove_must_have_coarse_Qwen3-1_7B_rating.jsonl",
+  "filename": "remove_must_have_1removed_coarse_Qwen3-1_7B_rating.jsonl",
   "perturbation": "remove_must_have",
   "level": "coarse",
   "model": "Qwen3-1_7B",
@@ -71,5 +71,6 @@
         "significance": "ns"
       }
     }
-  }
+  },
+  "parameters": "removed=1"
 }

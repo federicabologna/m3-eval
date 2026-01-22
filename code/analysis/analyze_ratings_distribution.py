@@ -7,15 +7,10 @@ import scipy.stats as stats
 
 output_dir = '/Users/Federica_1/Documents/GitHub/m3-eval/output'
 
-# Find all output files (both in root and subdirectories)
+# Find all perturbation output files (only in subdirectories, skip original ratings in root)
 output_files = []
 
-# Check root directory
-for f in os.listdir(output_dir):
-    if f.endswith('_rating.jsonl'):
-        output_files.append(('', f))  # Empty string for root
-
-# Check subdirectories
+# Check subdirectories only (perturbation-specific folders)
 for subdir in os.listdir(output_dir):
     subdir_path = os.path.join(output_dir, subdir)
     if os.path.isdir(subdir_path):
@@ -28,30 +23,36 @@ dimensions = ['correctness', 'relevance', 'safety']
 
 for subdir, filename in sorted(output_files):
     # Build full path
-    if subdir:
-        filepath = os.path.join(output_dir, subdir, filename)
-    else:
-        filepath = os.path.join(output_dir, filename)
+    filepath = os.path.join(output_dir, subdir, filename)
 
     # Parse filename
-    # Known perturbation types (can have underscores)
-    known_perturbations = ['change_dosage', 'remove_must_have', 'add_typos', 'add_confusion']
+    # The subdirectory name IS the perturbation type (more reliable)
+    perturbation = subdir
 
     filename_base = filename.replace('_rating.jsonl', '')
 
-    # Find which perturbation matches
-    perturbation = None
-    for pert in known_perturbations:
-        if filename_base.startswith(pert + '_'):
-            perturbation = pert
-            remainder = filename_base[len(pert) + 1:]  # Skip perturbation and underscore
-            break
+    # Remove perturbation prefix from filename
+    if filename_base.startswith(perturbation + '_'):
+        remainder = filename_base[len(perturbation) + 1:]  # Skip perturbation and underscore
+    else:
+        remainder = filename_base
 
-    if perturbation is None:
-        # Fallback: assume first part is perturbation
-        parts = filename_base.split('_')
-        perturbation = parts[0]
-        remainder = '_'.join(parts[1:])
+    # Extract parameter info for specific perturbations
+    params = None
+    if perturbation == 'add_typos':
+        # Format: {prob}prob_{level}_{model}
+        # Example: 03prob_coarse_Qwen3-1_7B
+        if 'prob_' in remainder:
+            prob_part = remainder.split('prob_')[0]
+            params = f"prob={float(prob_part)/10}"
+            remainder = remainder.split('prob_')[1]
+    elif perturbation == 'remove_must_have':
+        # Format: {num}removed_{level}_{model}
+        # Example: 1removed_coarse_Qwen3-1_7B
+        if 'removed_' in remainder:
+            num_part = remainder.split('removed_')[0]
+            params = f"removed={num_part}"
+            remainder = remainder.split('removed_')[1]
 
     # Parse remainder: {level}_{model}
     parts = remainder.split('_')
@@ -60,7 +61,10 @@ for subdir, filename in sorted(output_files):
 
     print("="*80)
     print(f"FILE: {filename}")
-    print(f"Perturbation: {perturbation} | Level: {level} | Model: {model}")
+    if params:
+        print(f"Perturbation: {perturbation} ({params}) | Level: {level} | Model: {model}")
+    else:
+        print(f"Perturbation: {perturbation} | Level: {level} | Model: {model}")
     print("="*80)
 
     # Load results
@@ -112,6 +116,10 @@ for subdir, filename in sorted(output_files):
         'n_samples': len(results),
         'dimensions': {}
     }
+
+    # Add parameter info if present
+    if params:
+        stats_results['parameters'] = params
 
     for dim in dimensions:
         original_scores = data[dim]['original']
@@ -207,8 +215,13 @@ for subdir, filename in sorted(output_files):
     # Formatting
     ax.set_xlabel('Evaluation Dimension', fontsize=12, fontweight='bold')
     ax.set_ylabel('Average Rating', fontsize=12, fontweight='bold')
-    ax.set_title(f'{perturbation.title()} Perturbation - {level.title()} Level - {model}',
-                 fontsize=13, fontweight='bold')
+
+    # Build title with parameters if present
+    if params:
+        title = f'{perturbation.title()} ({params}) - {level.title()} Level - {model}'
+    else:
+        title = f'{perturbation.title()} Perturbation - {level.title()} Level - {model}'
+    ax.set_title(title, fontsize=13, fontweight='bold')
     ax.set_xticks(x)
     ax.set_xticklabels([dim.title() for dim in dimensions], fontsize=11)
     ax.set_ylim(0, 5.5)
