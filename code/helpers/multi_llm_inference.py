@@ -33,13 +33,19 @@ def load_qwen_model(model_name):
 
     print(f"Loading Qwen model: {model_name}... This may take a few minutes on first run.")
 
-    # Check if MPS is available (Mac GPU)
-    if torch.backends.mps.is_available():
+    # Check for available device (prioritize CUDA > MPS > CPU)
+    if torch.cuda.is_available():
+        device = "cuda"
+        print(f"Using CUDA (GPU: {torch.cuda.get_device_name(0)})")
+        torch_dtype = torch.float16  # Use half precision for faster inference on GPU
+    elif torch.backends.mps.is_available():
         device = "mps"
         print("Using MPS (Apple Silicon GPU)")
+        torch_dtype = torch.float16
     else:
         device = "cpu"
-        print("Using CPU")
+        print("Using CPU (Warning: This will be very slow!)")
+        torch_dtype = torch.float32
 
     # Load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(f"Qwen/{model_name}")
@@ -47,8 +53,8 @@ def load_qwen_model(model_name):
     # Load model
     model = AutoModelForCausalLM.from_pretrained(
         f"Qwen/{model_name}",
-        torch_dtype=torch.float16 if device == "mps" else torch.float32,
-        device_map=device
+        torch_dtype=torch_dtype,
+        device_map="auto"  # Automatically map to available devices
     )
 
     _qwen_model = model
@@ -63,8 +69,10 @@ def get_qwen_response(messages, model_name):
     # Load model (will use cached version if already loaded)
     model, tokenizer = load_qwen_model(model_name)
 
-    # Determine device
-    if torch.backends.mps.is_available():
+    # Determine device (prioritize CUDA > MPS > CPU)
+    if torch.cuda.is_available():
+        device = "cuda"
+    elif torch.backends.mps.is_available():
         device = "mps"
     else:
         device = "cpu"
