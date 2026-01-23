@@ -5,9 +5,18 @@ from anthropic import Anthropic
 from google import genai
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
+# Try to import unsloth for faster inference
+try:
+    from unsloth import FastLanguageModel
+    UNSLOTH_AVAILABLE = True
+except ImportError:
+    UNSLOTH_AVAILABLE = False
+    print("Warning: unsloth not installed. Install with: pip install unsloth")
+
 # Global variables to cache the Qwen model and tokenizer
 _qwen_model = None
 _qwen_tokenizer = None
+_using_unsloth = False
 
 
 def get_provider_from_model(model):
@@ -26,7 +35,7 @@ def get_provider_from_model(model):
 
 def load_qwen_model(model_name):
     """Load the Qwen model once and cache it globally."""
-    global _qwen_model, _qwen_tokenizer
+    global _qwen_model, _qwen_tokenizer, _using_unsloth
 
     if _qwen_model is not None and _qwen_tokenizer is not None:
         return _qwen_model, _qwen_tokenizer
@@ -35,22 +44,39 @@ def load_qwen_model(model_name):
 
     # Check for available device (prioritize CUDA > MPS > CPU)
     if torch.cuda.is_available():
-        device = "cuda"
         print(f"Using CUDA (GPU: {torch.cuda.get_device_name(0)})")
         torch_dtype = torch.float16  # Use half precision for faster inference on GPU
+
+        # Use unsloth for faster inference on CUDA
+        if UNSLOTH_AVAILABLE:
+            print("Using unsloth for optimized inference with 4-bit quantization...")
+            model, tokenizer = FastLanguageModel.from_pretrained(
+                model_name=f"Qwen/{model_name}",
+                max_seq_length=4096,
+                dtype=torch_dtype,
+                load_in_4bit=True,  # Use 4-bit quantization for faster inference
+            )
+            # Enable native 2x faster inference
+            FastLanguageModel.for_inference(model)
+            _using_unsloth = True
+            _qwen_model = model
+            _qwen_tokenizer = tokenizer
+            print("Model loaded successfully with unsloth (4-bit)!\n")
+            return model, tokenizer
+        else:
+            print("Unsloth not available, using standard transformers...")
+
     elif torch.backends.mps.is_available():
-        device = "mps"
         print("Using MPS (Apple Silicon GPU)")
         torch_dtype = torch.float16
     else:
-        device = "cpu"
         print("Using CPU (Warning: This will be very slow!)")
         torch_dtype = torch.float32
 
-    # Load tokenizer
+    # Load tokenizer (standard transformers)
     tokenizer = AutoTokenizer.from_pretrained(f"Qwen/{model_name}")
 
-    # Load model
+    # Load model (standard transformers)
     model = AutoModelForCausalLM.from_pretrained(
         f"Qwen/{model_name}",
         torch_dtype=torch_dtype,
@@ -92,7 +118,7 @@ def get_qwen_response(messages, model_name):
     outputs = model.generate(
         **inputs,
         max_new_tokens=1000,
-        temperature=0.7,
+        temperature=1.0,
         do_sample=True,
         top_p=0.9
     )
@@ -101,7 +127,7 @@ def get_qwen_response(messages, model_name):
     generated_ids = outputs[0][inputs.input_ids.shape[1]:]
     response = tokenizer.decode(generated_ids, skip_special_tokens=True)
 
-    print(f"\nModel response:\n{response}\n")
+    # print(f"\nModel response:\n{response}\n")
 
     return response
 
@@ -136,7 +162,7 @@ def get_response(messages, model="Qwen3-1.7B"):
         response = client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=0.7,
+            temperature=1.0,
             max_tokens=1000
         )
 
@@ -165,7 +191,7 @@ def get_response(messages, model="Qwen3-1.7B"):
         response = client.messages.create(
             model=model,
             max_tokens=1000,
-            temperature=0.7,
+            temperature=1.0,
             system=system_message,
             messages=anthropic_messages
         )
@@ -193,7 +219,7 @@ def get_response(messages, model="Qwen3-1.7B"):
 
         # Build config
         config = {
-            'temperature': 0.7,
+            'temperature': 1.0,
             'max_output_tokens': 1000
         }
 

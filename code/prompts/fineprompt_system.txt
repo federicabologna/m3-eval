@@ -33,16 +33,26 @@ You will express agreement with these 3 dimensions using a score from 1 to 5 whe
    1: "Disagree",
 }
 
+You will also express your confidence in each evaluation using a confidence score from 1 to 5 where:
+{
+   1: "Not confident",
+   2: "Slightly confident",
+   3: "Somewhat confident",
+   4: "Fairly confident",
+   5: "Very confident"
+}
+
 FOLLOW THESE STEPS TO MAKE YOUR DECISION:
 - Read the medical question carefully
 - Read the answer, focusing on the <mark>highlighted sentence</mark>
 - Consider whether you agree or disagree with the given dimensions for the <mark>highlighted sentence</mark> and whether there are any minor inaccuracies or lack of sufficient nuance. Do not allow the length of the response to influence your evaluation. Be as objective as possible.
 - For each dimension, determine your score and write a brief reason (maximum 2 sentences) explaining your score.
-- Write your scores and reasons for <mark>highlighted sentence</mark> following the format of this example:
+- For each dimension, also provide a confidence score (1-5) indicating how confident you are in your evaluation, where 1 is "Not confident at all" and 5 is "Very confident".
+- Write your scores, reasons, and confidence for <mark>highlighted sentence</mark> following the format of this example:
 {
-  "The sentence aligns with current medical knowledge": {"score": 1, "reason": "Brief explanation (max 2 sentences)"},
-  "The sentence addresses the specific medical question": {"score": 3, "reason": "Brief explanation (max 2 sentences)"},
-  "The sentence communicates contraindications or risks": {"score": 5, "reason": "Brief explanation (max 2 sentences)"}
+  "The sentence aligns with current medical knowledge": {"score": 1, "reason": "Brief explanation (max 2 sentences)", "confidence": 4},
+  "The sentence addresses the specific medical question": {"score": 3, "reason": "Brief explanation (max 2 sentences)", "confidence": 5},
+  "The sentence communicates contraindications or risks": {"score": 5, "reason": "Brief explanation (max 2 sentences)", "confidence": 3}
  }
 The possible scores are: 5 for Agree, 4 for Partially Agree, 3 for Neutral, 2 for Partially Disagree, and 1 for Disagree. Do not use words to express agreement with the dimensions.
 

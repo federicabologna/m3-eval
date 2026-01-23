@@ -145,6 +145,78 @@ def get_rating(question, answer, system_prompt, user_template, model="Qwen3-1.7B
     return {"error": "Failed to get valid rating", "last_response": rating}
 
 
+def average_ratings(ratings_list):
+    """Average scores and confidence across multiple rating runs."""
+    if not ratings_list:
+        return {"error": "No valid ratings to average"}
+
+    # Filter out any ratings with errors
+    valid_ratings = [r for r in ratings_list if "error" not in r]
+
+    if not valid_ratings:
+        return {"error": "No valid ratings to average", "all_ratings": ratings_list}
+
+    # Initialize averaged rating
+    averaged = {}
+
+    # Average each dimension
+    for dimension in ['correctness', 'relevance', 'safety']:
+        if dimension not in valid_ratings[0]:
+            continue
+
+        # Check if ratings have confidence scores
+        has_confidence = isinstance(valid_ratings[0][dimension], dict) and 'confidence' in valid_ratings[0][dimension]
+
+        if has_confidence:
+            # Average both score and confidence
+            avg_score = sum(r[dimension]['score'] for r in valid_ratings) / len(valid_ratings)
+            avg_confidence = sum(r[dimension]['confidence'] for r in valid_ratings) / len(valid_ratings)
+
+            # Collect all reasons for reference
+            all_reasons = [r[dimension].get('reason', 'N/A') for r in valid_ratings]
+
+            averaged[dimension] = {
+                'score': round(avg_score, 2),
+                'confidence': round(avg_confidence, 2),
+                'reason': all_reasons[0],  # Use first reason as representative
+                'all_reasons': all_reasons  # Keep all reasons for reference
+            }
+        else:
+            # Old format - just average scores
+            avg_score = sum(r[dimension]['score'] for r in valid_ratings) / len(valid_ratings)
+            averaged[dimension] = {
+                'score': round(avg_score, 2),
+                'reason': valid_ratings[0][dimension].get('reason', 'N/A')
+            }
+
+    # Add metadata about the averaging
+    averaged['_meta'] = {
+        'num_runs': len(ratings_list),
+        'num_valid': len(valid_ratings)
+    }
+
+    return averaged
+
+
+def get_rating_with_averaging(question, answer, system_prompt, user_template, model="Qwen3-1.7B", num_runs=5):
+    """Get multiple ratings and return the average."""
+    print(f"Collecting {num_runs} ratings to average...")
+
+    all_ratings = []
+    for run in range(num_runs):
+        print(f"  Run {run + 1}/{num_runs}...")
+        rating = get_rating(question, answer, system_prompt, user_template, model)
+        all_ratings.append(rating)
+
+    # Average the ratings
+    averaged_rating = average_ratings(all_ratings)
+
+    # Store individual ratings for reference
+    averaged_rating['individual_ratings'] = all_ratings
+
+    return averaged_rating
+
+
 def load_original_ratings(original_ratings_path):
     """Load original ratings from file into a dictionary keyed by answer_id or sentence_id."""
     ratings_dict = {}
@@ -190,7 +262,7 @@ def compute_original_ratings(qa_pairs, level, prompt_path, model, original_ratin
 
         print(f"\nGetting rating for {qa_pair[id_key]}...")
         start_time = time.time()
-        original_rating = get_rating(question, original_answer, system_prompt, user_template, model)
+        original_rating = get_rating_with_averaging(question, original_answer, system_prompt, user_template, model, num_runs=5)
         elapsed_time = time.time() - start_time
         print(f'Time taken: {elapsed_time:.2f} seconds')
 
@@ -238,7 +310,7 @@ def get_perturbed_rating_only(question, perturbed_answer, prompt_path, model="Qw
     system_prompt, user_template = load_prompt(prompt_path)
 
     print("\nGetting rating for PERTURBED answer...")
-    perturbed_rating = get_rating(question, perturbed_answer, system_prompt, user_template, model)
+    perturbed_rating = get_rating_with_averaging(question, perturbed_answer, system_prompt, user_template, model, num_runs=5)
 
     return perturbed_rating
 
