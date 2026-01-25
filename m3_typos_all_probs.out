@@ -1,0 +1,36 @@
+========================================
+Job started at: Fri Jan 23 01:26:46 PM EST 2026
+Job ID: 347420
+========================================
+Running add_typos perturbation with all probability values...
+This will generate 3 files per level (coarse/fine) with prob=0.3, 0.5, 0.7
+========================================
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Using model: Qwen3-8B (provider: qwen)
+Running single perturbation: add_typos
+
+================================================================================
+PROCESSING LEVEL: COARSE
+================================================================================
+Using data: /home/fb265/m3-eval/data/coarse_5pt_expert+llm_consolidated.jsonl
+
+================================================================================
+STEP 1: ORIGINAL RATINGS
+================================================================================
+
+Computing original ratings for 300 QA pairs...
+Computing 300 new original ratings (out of 300 total)
+
+Getting rating for gpt4_6...
+Collecting 5 ratings to average...
+  Run 1/5...
+Loading Qwen model: Qwen3-8B... This may take a few minutes on first run.
+Using CUDA (GPU: NVIDIA RTX A6000)
+Using unsloth for optimized inference with 4-bit quantization...
+==((====))==  Unsloth 2026.1.4: Fast Qwen3 patching. Transformers: 4.57.6.
+   \\   /|    NVIDIA RTX A6000. Num GPUs = 1. Max memory: 47.413 GB. Platform: Linux.
+O^O/ \_/ \    Torch: 2.10.0+cu128. CUDA: 8.6. CUDA Toolkit: 12.8. Triton: 3.6.0
+\        /    Bfloat16 = TRUE. FA [Xformers = 0.0.34. FA2 = False]
+ "-____-"     Free license: http://github.com/unslothai/unsloth
+Unsloth: Fast downloading is enabled - ignore downloading bars which are red colored!
