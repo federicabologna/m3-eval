@@ -1,6 +1,6 @@
 ========================================
-Job started at: Fri Jan 23 01:26:46 PM EST 2026
-Job ID: 347420
+Job started at: Sun Jan 25 07:20:05 PM EST 2026
+Job ID: 385366
 ========================================
 Running add_typos perturbation with all probability values...
 This will generate 3 files per level (coarse/fine) with prob=0.3, 0.5, 0.7
@@ -18,11 +18,26 @@ Using data: /home/fb265/m3-eval/data/coarse_5pt_expert+llm_consolidated.jsonl
 ================================================================================
 STEP 1: ORIGINAL RATINGS
 ================================================================================
+Loaded 300 original ratings from file
+All 300 original ratings already computed!
 
-Computing original ratings for 300 QA pairs...
-Computing 300 new original ratings (out of 300 total)
+================================================================================
+STEP 2: PERTURBATIONS
+================================================================================
 
-Getting rating for gpt4_6...
+================================================================================
+Processing perturbation: ADD_TYPOS
+================================================================================
+Running all typo_prob values: [0.3, 0.5, 0.7]
+
+--------------------------------------------------------------------------------
+TYPO_PROB = 0.3
+--------------------------------------------------------------------------------
+Found 269 already processed entries in output file
+Processing 31 remaining QA pairs (out of 300 total)
+Saving results to: add_typos/add_typos_3prob_coarse_Qwen3-8B_rating.jsonl
+
+Getting rating for PERTURBED answer...
 Collecting 5 ratings to average...
   Run 1/5...
 Loading Qwen model: Qwen3-8B... This may take a few minutes on first run.

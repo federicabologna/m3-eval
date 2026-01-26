@@ -4,6 +4,4 @@ Please restructure your imports with 'import unsloth' at the top of your file.
   from unsloth import FastLanguageModel
 /home/fb265/m3-eval/.venv/lib/python3.12/site-packages/spacy/language.py:2195: FutureWarning: Possible set union at position 6328
   deserializers["tokenizer"] = lambda p: self.tokenizer.from_disk(  # type: ignore[union-attr]
-Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:53<00:53, 53.76s/it]Fetching 2 files: 100%|██████████| 2/2 [00:53<00:00, 26.88s/it]
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [03:50<03:50, 230.14s/it]Loading checkpoint shards: 100%|██████████| 2/2 [04:15<00:00, 109.86s/it]Loading checkpoint shards: 100%|██████████| 2/2 [04:15<00:00, 127.90s/it]
-[2026-01-25T13:28:57.691] error: *** JOB 347420 ON luxlab-compute-01 CANCELLED AT 2026-01-25T13:28:57 DUE TO TIME LIMIT ***
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.71s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.20s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.27s/it]
