@@ -1,5 +1,7 @@
 .env
 
+unsloth_compiled_cache/
+
 # Python cache files
 __pycache__/
 *.py[cod]

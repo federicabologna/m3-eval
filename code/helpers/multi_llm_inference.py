@@ -1,17 +1,18 @@
 import os
 import torch
-from openai import OpenAI
-from anthropic import Anthropic
-from google import genai
-from transformers import AutoTokenizer, AutoModelForCausalLM
 
-# Try to import unsloth for faster inference
+# Try to import unsloth BEFORE transformers (required for optimizations)
 try:
     from unsloth import FastLanguageModel
     UNSLOTH_AVAILABLE = True
 except ImportError:
     UNSLOTH_AVAILABLE = False
     print("Warning: unsloth not installed. Install with: pip install unsloth")
+
+from openai import OpenAI
+from anthropic import Anthropic
+from google import genai
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # Global variables to cache the Qwen model and tokenizer
 _qwen_model = None
@@ -42,13 +43,25 @@ def load_qwen_model(model_name):
 
     print(f"Loading Qwen model: {model_name}... This may take a few minutes on first run.")
 
+    # Check if GPU supports unsloth (requires CUDA capability >= 7.0)
+    use_unsloth = UNSLOTH_AVAILABLE
+    if torch.cuda.is_available() and UNSLOTH_AVAILABLE:
+        try:
+            capability = torch.cuda.get_device_capability(0)
+            if capability[0] < 7:
+                print(f"WARNING: GPU has CUDA capability {capability[0]}.{capability[1]} (sm_{capability[0]}{capability[1]})")
+                print("Unsloth requires CUDA capability >= 7.0. Disabling unsloth...")
+                use_unsloth = False
+        except:
+            pass
+
     # Check for available device (prioritize CUDA > MPS > CPU)
     if torch.cuda.is_available():
         print(f"Using CUDA (GPU: {torch.cuda.get_device_name(0)})")
         torch_dtype = torch.float16  # Use half precision for faster inference on GPU
 
-        # Use unsloth for faster inference on CUDA
-        if UNSLOTH_AVAILABLE:
+        # Use unsloth for faster inference on CUDA (only if GPU is compatible)
+        if use_unsloth:
             print("Using unsloth for optimized inference with 4-bit quantization...")
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=f"Qwen/{model_name}",
@@ -64,7 +77,7 @@ def load_qwen_model(model_name):
             print("Model loaded successfully with unsloth (4-bit)!\n")
             return model, tokenizer
         else:
-            print("Unsloth not available, using standard transformers...")
+            print("Using standard transformers with CUDA...")
 
     elif torch.backends.mps.is_available():
         print("Using MPS (Apple Silicon GPU)")
