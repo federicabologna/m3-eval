@@ -1,8 +1,31 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+# Print diagnostic info BEFORE any torch imports
+print("=" * 80, file=sys.stderr)
+print("CUDA/PyTorch Diagnostics (before import):", file=sys.stderr)
+print(f"Python: {sys.version}", file=sys.stderr)
+print(f"LD_LIBRARY_PATH: {os.environ.get('LD_LIBRARY_PATH', 'Not set')}", file=sys.stderr)
+print("=" * 80, file=sys.stderr)
+
+# Try to check nvidia-smi
+try:
+    import subprocess
+    result = subprocess.run(['nvidia-smi'], capture_output=True, text=True)
+    print("nvidia-smi output:", file=sys.stderr)
+    for line in result.stdout.split('\n'):
+        if 'CUDA Version' in line:
+            print(line, file=sys.stderr)
+except Exception as e:
+    print(f"Could not run nvidia-smi: {e}", file=sys.stderr)
+
+print("=" * 80, file=sys.stderr)
+print("Attempting to import torch...", file=sys.stderr)
+
 import json
 import random
 import re
-import os
-import sys
 import time
 from datetime import datetime
 from dotenv import load_dotenv

@@ -25,9 +25,6 @@ cd $HOME/m3-eval || { echo "Failed to cd to m3-eval"; exit 1; }
 # Activate virtual environment
 source .venv/bin/activate || { echo "Failed to activate venv"; exit 1; }
 
-# Fix NCCL compatibility issue - use PyTorch's bundled NCCL
-export LD_LIBRARY_PATH=$HOME/m3-eval/.venv/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH
-
 # Run remove_sentences with all percentage values (0.3, 0.5, 0.7)
 echo "Running remove_sentences perturbation with all percentage values..."
 echo "This will generate 3 files per level (coarse/fine) with 30%, 50%, 70% removed"

@@ -1,5 +1,21 @@
 import os
+import sys
+
+# Print diagnostic info before importing torch
+print("=" * 80, file=sys.stderr)
+print("CUDA/PyTorch Diagnostics:", file=sys.stderr)
+print(f"LD_LIBRARY_PATH: {os.environ.get('LD_LIBRARY_PATH', 'Not set')}", file=sys.stderr)
+print("=" * 80, file=sys.stderr)
+
 import torch
+
+# Print PyTorch info after successful import
+print(f"PyTorch version: {torch.__version__}", file=sys.stderr)
+print(f"PyTorch CUDA compiled version: {torch.version.cuda}", file=sys.stderr)
+print(f"CUDA available: {torch.cuda.is_available()}", file=sys.stderr)
+if torch.cuda.is_available():
+    print(f"CUDA device: {torch.cuda.get_device_name(0)}", file=sys.stderr)
+print("=" * 80, file=sys.stderr)
 
 # Try to import unsloth BEFORE transformers (required for optimizations)
 try:
