@@ -32,6 +32,9 @@ cd $HOME/m3-eval || { echo "Failed to cd to m3-eval"; exit 1; }
 echo "Activating virtual environment..."
 source .venv/bin/activate || { echo "Failed to activate venv"; exit 1; }
 
+# Fix NCCL compatibility issue - use PyTorch's bundled NCCL
+export LD_LIBRARY_PATH=$HOME/m3-eval/.venv/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH
+
 # Print Python and package info
 echo "Python version:"
 python --version
@@ -42,7 +45,7 @@ echo "========================================"
 
 # Run the perturbation pipeline
 echo "Starting perturbation pipeline with Qwen3-8B..."
-echo "Running all perturbations: add_typos, change_dosage, remove_must_have, add_confusion"
+echo "Running all perturbations: add_typos, change_dosage, remove_sentences, add_confusion"
 echo "========================================"
 
 python code/perturbation_pipeline.py --model Qwen3-8B

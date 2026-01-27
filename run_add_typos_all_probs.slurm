@@ -25,6 +25,9 @@ cd $HOME/m3-eval || { echo "Failed to cd to m3-eval"; exit 1; }
 # Activate virtual environment
 source .venv/bin/activate || { echo "Failed to activate venv"; exit 1; }
 
+# Fix NCCL compatibility issue - use PyTorch's bundled NCCL
+export LD_LIBRARY_PATH=$HOME/m3-eval/.venv/lib/python3.12/site-packages/torch/lib:$LD_LIBRARY_PATH
+
 # Run add_typos with all probability values (0.3, 0.5, 0.7)
 echo "Running add_typos perturbation with all probability values..."
 echo "This will generate 3 files per level (coarse/fine) with prob=0.3, 0.5, 0.7"
