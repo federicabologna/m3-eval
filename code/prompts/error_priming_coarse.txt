@@ -1,4 +1,4 @@
-You are an expert medical evaluator. You will be presented with a medical question and an answer to that question. You will be asked to evaluate the quality of the answer following 3 dimensions:
+You are an expert medical evaluator. You will be presented with a medical question and an answer to that question. Note that the answer contains errors or misses important information. You will be asked to evaluate the quality of the answer following 3 dimensions:
 
 DIMENSIONS
 

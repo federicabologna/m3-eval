@@ -13,6 +13,13 @@ from helpers.perturbation_functions import (
     change_dosage,
     remove_must_have
 )
+from helpers.experiment_utils import (
+    load_qa_data,
+    get_processed_ids,
+    get_or_create_original_ratings,
+    clean_model_name,
+    get_id_key
+)
 
 # Load environment variables from .env file
 load_dotenv()
@@ -34,32 +41,6 @@ ANSWER
 YOUR SCORES'''
 
     return system_prompt, user_template
-
-
-def load_qa_data(data_path):
-    """Load QA pairs from JSONL file."""
-    qa_pairs = []
-    with open(data_path, 'r') as f:
-        for line in f:
-            qa_pairs.append(json.loads(line))
-    return qa_pairs
-
-
-def get_processed_ids(output_path):
-    """Get set of already processed answer IDs from output file."""
-    processed_ids = set()
-    if os.path.exists(output_path):
-        try:
-            with open(output_path, 'r') as f:
-                for line in f:
-                    entry = json.loads(line)
-                    # Use answer_id for coarse/fine, or sentence_id if present
-                    id_key = 'sentence_id' if 'sentence_id' in entry else 'answer_id'
-                    processed_ids.add(entry[id_key])
-            print(f"Found {len(processed_ids)} already processed entries in output file")
-        except Exception as e:
-            print(f"Warning: Could not read existing output file: {e}")
-    return processed_ids
 
 
 def normalize_rating_keys(rating_dict):
@@ -217,93 +198,6 @@ def get_rating_with_averaging(question, answer, system_prompt, user_template, mo
     return averaged_rating
 
 
-def load_original_ratings(original_ratings_path):
-    """Load original ratings from file into a dictionary keyed by answer_id or sentence_id."""
-    ratings_dict = {}
-    if os.path.exists(original_ratings_path):
-        try:
-            with open(original_ratings_path, 'r') as f:
-                for line in f:
-                    entry = json.loads(line)
-                    # Use sentence_id if present, otherwise answer_id
-                    id_key = 'sentence_id' if 'sentence_id' in entry else 'answer_id'
-                    ratings_dict[entry[id_key]] = entry['original_rating']
-            print(f"Loaded {len(ratings_dict)} original ratings from file")
-        except Exception as e:
-            print(f"Warning: Could not read original ratings file: {e}")
-    return ratings_dict
-
-
-def compute_original_ratings(qa_pairs, level, prompt_path, model, original_ratings_path):
-    """Compute original ratings for all QA pairs and save to file."""
-    print(f"\nComputing original ratings for {len(qa_pairs)} QA pairs...")
-
-    # Load prompt
-    system_prompt, user_template = load_prompt(prompt_path)
-
-    # Determine ID key
-    id_key = 'sentence_id' if 'sentence_id' in qa_pairs[0] else 'answer_id'
-
-    # Load any existing ratings
-    existing_ratings = load_original_ratings(original_ratings_path)
-
-    # Filter to only compute missing ratings
-    qa_pairs_to_compute = [qa for qa in qa_pairs if qa[id_key] not in existing_ratings]
-
-    if len(qa_pairs_to_compute) == 0:
-        print("All original ratings already computed!")
-        return existing_ratings
-
-    print(f"Computing {len(qa_pairs_to_compute)} new original ratings (out of {len(qa_pairs)} total)")
-
-    for qa_pair in qa_pairs_to_compute:
-        question = qa_pair['question']
-        original_answer = qa_pair['answer']
-
-        print(f"\nGetting rating for {qa_pair[id_key]}...")
-        start_time = time.time()
-        original_rating = get_rating_with_averaging(question, original_answer, system_prompt, user_template, model, num_runs=5)
-        elapsed_time = time.time() - start_time
-        print(f'Time taken: {elapsed_time:.2f} seconds')
-
-        # Save immediately to file
-        result = qa_pair.copy()
-        result['original_rating'] = original_rating
-
-        with open(original_ratings_path, 'a') as f:
-            json.dump(result, f)
-            f.write('\n')
-
-        # Add to existing_ratings dict
-        existing_ratings[qa_pair[id_key]] = original_rating
-
-    print(f"\nOriginal ratings saved to: {original_ratings_path}")
-    return existing_ratings
-
-
-def run_experiment(prompt_name, prompt_path, qa_pair, perturbation_name, perturbed_answer, model="Qwen3-1.7B"):
-    """Run experiment with a specific prompt."""
-
-    # Load prompt
-    system_prompt, user_template = load_prompt(prompt_path)
-
-    question = qa_pair['question']
-    original_answer = qa_pair['answer']
-
-    # Get rating for original answer (now includes retry logic)
-    print("\nGetting rating for ORIGINAL answer...")
-    original_rating = get_rating(question, original_answer, system_prompt, user_template, model)
-
-    # Get rating for perturbed answer (now includes retry logic)
-    print("\nGetting rating for PERTURBED answer...")
-    perturbed_rating = get_rating(question, perturbed_answer, system_prompt, user_template, model)
-
-    return {
-        "original": original_rating,
-        "perturbed": perturbed_rating
-    }
-
-
 def get_perturbed_rating_only(question, perturbed_answer, prompt_path, model="Qwen3-1.7B"):
     """Get rating for perturbed answer only (original rating already computed)."""
     # Load prompt
@@ -331,7 +225,13 @@ def main():
                        help='For add_typos perturbation: probability of applying typo to each medical term (0.0-1.0). Default: 0.5')
     parser.add_argument('--all_typo_prob', action='store_true',
                        help='For add_typos: run all probability values (0.3, 0.5, 0.7) sequentially')
+    parser.add_argument('--seed', type=int, default=42,
+                       help='Random seed for reproducibility (default: 42)')
     args = parser.parse_args()
+
+    # Set random seed for reproducibility of perturbations
+    random.seed(args.seed)
+    print(f"Random seed set to: {args.seed}")
 
     model = args.model
 
@@ -344,7 +244,7 @@ def main():
     # Paths - Use relative paths from script location
     script_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(script_dir)  # Go up one level from /code to project root
-    output_dir = os.path.join(project_root, 'output')
+    output_dir = os.path.join(project_root, 'output', 'cqa_eval')
     coarse_data_path = os.path.join(project_root, 'data', 'coarse_5pt_expert+llm_consolidated.jsonl')
     fine_data_path = os.path.join(project_root, 'data', 'fine_5pt_expert+llm_consolidated.jsonl')
 
@@ -381,28 +281,25 @@ def main():
         prompt_path = os.path.join(script_dir, 'prompts', f'{level}prompt_system.txt')
 
         # Determine ID key
-        id_key = 'sentence_id' if 'sentence_id' in qa_pairs[0] else 'answer_id'
+        id_key = get_id_key(qa_pairs)
 
         # Include model name in output filename (clean up slashes and dots)
-        model_name_clean = model.replace('/', '-').replace('.', '_')
+        model_name_clean = clean_model_name(model)
 
-        # Step 1: Compute/load original ratings
+        # Step 1: Get/compute original ratings
         print(f"\n{'='*80}")
         print("STEP 1: ORIGINAL RATINGS")
         print(f"{'='*80}")
 
-        original_ratings_filename = f"original_{level}_{model_name_clean}_rating.jsonl"
-        original_ratings_path = os.path.join(output_dir, original_ratings_filename)
-
-        original_ratings_dict = load_original_ratings(original_ratings_path)
-
-        # Compute any missing original ratings
-        if len(original_ratings_dict) < len(qa_pairs):
-            original_ratings_dict = compute_original_ratings(
-                qa_pairs, level, prompt_path, model, original_ratings_path
-            )
-        else:
-            print(f"All {len(qa_pairs)} original ratings already computed!")
+        original_ratings_dict = get_or_create_original_ratings(
+            qa_pairs=qa_pairs,
+            level=level,
+            prompt_path=prompt_path,
+            model=model,
+            output_dir=output_dir,
+            model_name_clean=model_name_clean,
+            num_runs=5
+        )
 
         # Step 2: Process each perturbation
         print(f"\n{'='*80}")
@@ -519,6 +416,7 @@ def main():
                         results['perturbed_answer'] = perturbed_answer
                         results['original_rating'] = original_rating
                         results['perturbed_rating'] = perturbed_rating
+                        results['random_seed'] = args.seed
 
                         # Add change counts if available (for change_dosage perturbation)
                         if change_counts is not None:

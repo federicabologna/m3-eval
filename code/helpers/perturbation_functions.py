@@ -329,62 +329,64 @@ def find_best_matching_sentence(text_sentences, target_sentence):
     return best_match, best_distance, best_index
 
 
-def remove_must_have(text, must_have, num_to_remove=1):
-    """Remove the best matching must-have sentences from the text.
+def find_all_matching_sentences(text_sentences, target_sentence, threshold):
+    """Find all sentences that match target_sentence within threshold, sorted by distance."""
+    target_lower = target_sentence.lower().strip()
+    matches = []
+
+    for idx, sent in enumerate(text_sentences):
+        sent_lower = sent.text.lower().strip()
+        distance = Levenshtein.distance(sent_lower, target_lower)
+
+        if distance < threshold:
+            matches.append({
+                'sentence': sent,
+                'distance': distance,
+                'index': idx
+            })
+
+    # Sort by distance (best matches first)
+    matches.sort(key=lambda x: x['distance'])
+    return matches
+
+
+def remove_sentences_by_percentage(text, percentage=0.3):
+    """Remove a percentage of sentences from the text.
 
     Args:
         text: The text to modify
-        must_have: List of must-have sentences to try to remove
-        num_to_remove: Number of sentences to remove (1-3), default 1
+        percentage: Percentage of sentences to remove (0.0-1.0), default 0.3 (30%)
 
     Returns:
-        Modified text with sentences removed
+        Modified text with sentences removed, or original text if too few sentences
     """
-    if not must_have:
-        return text
-
-    # Limit to max 3 removals
-    num_to_remove = min(num_to_remove, 3)
-
     # Process text into sentences
     doc = nlp(text)
     text_sentences = list(doc.sents)
 
-    # Find all matching must-have sentences with their distances
-    matches = []
+    total_sentences = len(text_sentences)
 
-    for target_must_have in must_have:
-        # Find the best matching sentence in the text for this must-have
-        best_match, best_distance, best_index = find_best_matching_sentence(text_sentences, target_must_have)
-
-        threshold = len(target_must_have) * 0.8
-
-        # Check if this is a valid match (within threshold)
-        if best_match and best_distance < threshold:
-            matches.append({
-                'sentence': best_match,
-                'distance': best_distance,
-                'index': best_index,
-                'threshold': threshold
-            })
-
-    # If no matches found, return original text
-    if not matches:
+    # Need at least 2 sentences to remove anything
+    if total_sentences < 2:
         return text
 
-    # Sort matches by distance (best matches first)
-    matches.sort(key=lambda x: x['distance'])
+    # Calculate number of sentences to remove
+    num_to_remove = max(1, int(total_sentences * percentage))
 
-    # Take top N matches (up to num_to_remove)
-    matches_to_remove = matches[:num_to_remove]
+    # Don't remove all sentences - keep at least 1
+    num_to_remove = min(num_to_remove, total_sentences - 1)
 
-    # Sort by index in descending order to maintain correct indices when removing
-    matches_to_remove.sort(key=lambda x: x['index'], reverse=True)
+    # Randomly select indices to remove
+    import random
+    indices_to_remove = random.sample(range(total_sentences), num_to_remove)
 
-    # Remove the matched sentences
-    for match in matches_to_remove:
-        text_sentences.pop(match['index'])
+    # Sort in descending order to maintain correct indices when removing
+    indices_to_remove.sort(reverse=True)
 
-    # Reconstruct the text without the removed sentences
+    # Remove the selected sentences
+    for idx in indices_to_remove:
+        text_sentences.pop(idx)
+
+    # Reconstruct the text
     modified_text = ' '.join([sent.text.strip() for sent in text_sentences])
     return modified_text 
