@@ -1,0 +1,51 @@
+========================================
+Job started at: Mon Jan 26 08:18:58 PM EST 2026
+Job ID: 415367
+========================================
+Running remove_must_have perturbation with all num_remove values...
+This will generate 3 files per level (coarse/fine) with removed=1, 2, 3
+========================================
+🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
+🦥 Unsloth Zoo will now patch everything to make training faster!
+Using model: Qwen3-8B (provider: qwen)
+Running single perturbation: remove_must_have
+
+================================================================================
+PROCESSING LEVEL: COARSE
+================================================================================
+Using data: /home/fb265/m3-eval/data/coarse_5pt_expert+llm_consolidated.jsonl
+
+================================================================================
+STEP 1: ORIGINAL RATINGS
+================================================================================
+Loaded 300 original ratings from file
+All 300 original ratings already computed!
+
+================================================================================
+STEP 2: PERTURBATIONS
+================================================================================
+
+================================================================================
+Processing perturbation: REMOVE_MUST_HAVE
+================================================================================
+Running all num_remove values: [1, 2, 3]
+
+--------------------------------------------------------------------------------
+NUM_REMOVE = 1
+--------------------------------------------------------------------------------
+Processing 300 remaining QA pairs (out of 300 total)
+Saving results to: remove_must_have/remove_must_have_1removed_coarse_Qwen3-8B_rating.jsonl
+Skipping remove_must_have for gpt4_6 - no Must_have field
+Skipping remove_must_have for llama_6 - no Must_have field
+Skipping physician_6 - no perturbation applied (text unchanged)
+Skipping remove_must_have for gpt4_99 - no Must_have field
+Skipping remove_must_have for llama_99 - no Must_have field
+
+Getting rating for PERTURBED answer...
+Collecting 5 ratings to average...
+  Run 1/5...
+Loading Qwen model: Qwen3-8B... This may take a few minutes on first run.
+WARNING: GPU has CUDA capability 6.1 (sm_61)
+Unsloth requires CUDA capability >= 7.0. Disabling unsloth...
+Using CUDA (GPU: NVIDIA TITAN Xp)
+Using standard transformers with CUDA...

@@ -1,17 +1,17 @@
 #!/bin/bash
-#SBATCH -J m3_typos_all_probs               # Job name
-#SBATCH -o m3_typos_all_probs.out           # Name of stdout output log file
-#SBATCH -e m3_typos_all_probs.err           # Name of stderr output log file
+#SBATCH -J m3_remove_must_have_all_probs               # Job name
+#SBATCH -o m3_remove_must_have_all_probs.out           # Name of stdout output log file
+#SBATCH -e m3_remove_must_have_all_probs.err           # Name of stderr output log file
 #SBATCH -N 1                                 # Total number of nodes requested
 #SBATCH -n 1                                 # Total number of cores requested
 #SBATCH --cpus-per-task=8                    # Total number of cores requested per task
 #SBATCH --get-user-env                       # retrieve the users login environment
 #SBATCH --mail-type=ALL                      # Request status by email
 #SBATCH --mail-user=fb265@cornell.edu        # Email address to send results to
-#SBATCH --mem=52000                          # Total amount of memory requested in MB (per node)
+#SBATCH --mem=100000                          # Total amount of memory requested in MB (per node)
 #SBATCH -t 72:00:00                          # Time limit (48 hours)
-#SBATCH --gres=gpu:1                         # Specify GPU type and number
-#SBATCH --partition=luxlab                   # Request partition for resource allocation
+#SBATCH --gres=gpu:2                         # Specify GPU type and number
+#SBATCH --partition=gpu                   # Request partition for resource allocation
 
 # Print job info
 echo "========================================"
