@@ -11,7 +11,7 @@ from helpers.perturbation_functions import (
     add_confusion,
     add_typos,
     change_dosage,
-    remove_must_have
+    remove_sentences_by_percentage
 )
 from helpers.experiment_utils import (
     load_qa_data,
@@ -216,11 +216,11 @@ def main():
     parser.add_argument('--model', type=str, default='Qwen3-8B',
                        help='Model name (default: Qwen3-8B). Examples: gpt-4o, claude-opus-4-20250514, gemini-2.0-flash-exp')
     parser.add_argument('--perturbation', type=str, default=None,
-                       help='Specific perturbation to run. Options: add_typos, change_dosage, remove_must_have, add_confusion. If not specified, runs all in order.')
-    parser.add_argument('--num_remove', type=int, default=1,
-                       help='For remove_must_have perturbation: number of must_have sentences to remove (1-3). Default: 1')
-    parser.add_argument('--all_num_remove', action='store_true',
-                       help='For remove_must_have: run all values (1, 2, 3) sequentially')
+                       help='Specific perturbation to run. Options: add_typos, change_dosage, remove_sentences, add_confusion. If not specified, runs all in order.')
+    parser.add_argument('--remove-pct', type=float, default=0.3,
+                       help='For remove_sentences perturbation: percentage of sentences to remove (0.0-1.0). Default: 0.3 (30%%)')
+    parser.add_argument('--all-remove-pct', action='store_true',
+                       help='For remove_sentences: run all percentage values (0.3, 0.5, 0.7) sequentially')
     parser.add_argument('--typo_prob', type=float, default=0.5,
                        help='For add_typos perturbation: probability of applying typo to each medical term (0.0-1.0). Default: 0.5')
     parser.add_argument('--all_typo_prob', action='store_true',
@@ -252,7 +252,7 @@ def main():
     os.makedirs(output_dir, exist_ok=True)
 
     # Define perturbation types in order
-    all_perturbations = ['add_typos', 'change_dosage', 'remove_must_have', 'add_confusion']
+    all_perturbations = ['add_typos', 'change_dosage', 'remove_sentences', 'add_confusion']
 
     # Determine which perturbations to run
     if args.perturbation:
@@ -315,11 +315,11 @@ def main():
             perturbation_dir = os.path.join(output_dir, perturbation_name)
             os.makedirs(perturbation_dir, exist_ok=True)
 
-            # Determine which num_remove values to run for remove_must_have
-            num_remove_values = [args.num_remove]
-            if perturbation_name == 'remove_must_have' and args.all_num_remove:
-                num_remove_values = [1, 2, 3]
-                print(f"Running all num_remove values: {num_remove_values}")
+            # Determine which remove_pct values to run for remove_sentences
+            remove_pct_values = [args.remove_pct]
+            if perturbation_name == 'remove_sentences' and args.all_remove_pct:
+                remove_pct_values = [0.3, 0.5, 0.7]
+                print(f"Running all remove_pct values: {remove_pct_values}")
 
             # Determine which typo_prob values to run for add_typos
             typo_prob_values = [args.typo_prob]
@@ -328,12 +328,12 @@ def main():
                 print(f"Running all typo_prob values: {typo_prob_values}")
 
             # Iterate over parameter combinations
-            for num_remove in num_remove_values:
+            for remove_pct in remove_pct_values:
                 for typo_prob in typo_prob_values:
                     # Print parameter being used
-                    if perturbation_name == 'remove_must_have' and len(num_remove_values) > 1:
+                    if perturbation_name == 'remove_sentences' and len(remove_pct_values) > 1:
                         print(f"\n{'-'*80}")
-                        print(f"NUM_REMOVE = {num_remove}")
+                        print(f"REMOVE_PCT = {remove_pct}")
                         print(f"{'-'*80}")
 
                     if perturbation_name == 'add_typos' and len(typo_prob_values) > 1:
@@ -342,11 +342,11 @@ def main():
                         print(f"{'-'*80}")
 
                     # Determine output filename
-                    if perturbation_name == 'remove_must_have':
-                        output_filename = f"{perturbation_name}_{num_remove}removed_{level}_{model_name_clean}_rating.jsonl"
+                    if perturbation_name == 'remove_sentences':
+                        pct_str = str(int(remove_pct * 100))
+                        output_filename = f"{perturbation_name}_{pct_str}pct_{level}_{model_name_clean}_rating.jsonl"
                     elif perturbation_name == 'add_typos':
-                        # Format probability as string without decimal point (e.g., 0.3 -> 03, 0.5 -> 05)
-                        prob_str = str(int(typo_prob * 10))
+                        prob_str = str(typo_prob).replace('.', '')
                         output_filename = f"{perturbation_name}_{prob_str}prob_{level}_{model_name_clean}_rating.jsonl"
                     else:
                         output_filename = f"{perturbation_name}_{level}_{model_name_clean}_rating.jsonl"
@@ -378,14 +378,8 @@ def main():
                             perturbed_answer = add_typos(original_answer, typo_probability=typo_prob)
                         elif perturbation_name == 'change_dosage':
                             perturbed_answer, change_counts = change_dosage(original_answer)
-                        elif perturbation_name == 'remove_must_have':
-                            # Only apply if Must_have exists in qa_pair
-                            if 'Must_have' in qa_pair:
-                                must_have = qa_pair['Must_have']
-                                perturbed_answer = remove_must_have(original_answer, must_have, num_to_remove=num_remove)
-                            else:
-                                print(f"Skipping remove_must_have for {qa_pair[id_key]} - no Must_have field")
-                                continue
+                        elif perturbation_name == 'remove_sentences':
+                            perturbed_answer = remove_sentences_by_percentage(original_answer, percentage=remove_pct)
 
                         if perturbed_answer is None:
                             perturbed_answer = original_answer
@@ -422,9 +416,9 @@ def main():
                         if change_counts is not None:
                             results['change_counts'] = change_counts
 
-                        # Add num_remove if this is remove_must_have perturbation
-                        if perturbation_name == 'remove_must_have':
-                            results['num_removed'] = num_remove
+                        # Add removal_percentage if this is remove_sentences perturbation
+                        if perturbation_name == 'remove_sentences':
+                            results['removal_percentage'] = remove_pct
 
                         # Add typo_probability if this is add_typos perturbation
                         if perturbation_name == 'add_typos':
