@@ -1,3 +1,4 @@
 /home/fb265/m3-eval/.venv/lib/python3.12/site-packages/spacy/language.py:2195: FutureWarning: Possible set union at position 6328
   deserializers["tokenizer"] = lambda p: self.tokenizer.from_disk(  # type: ignore[union-attr]
 Loading checkpoint shards:   0%|          | 0/5 [00:00<?, ?it/s]Loading checkpoint shards:  20%|██        | 1/5 [00:02<00:09,  2.46s/it]Loading checkpoint shards:  40%|████      | 2/5 [00:04<00:07,  2.39s/it]Loading checkpoint shards:  60%|██████    | 3/5 [00:07<00:04,  2.36s/it]Loading checkpoint shards:  80%|████████  | 4/5 [00:09<00:02,  2.17s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:09<00:00,  1.65s/it]Loading checkpoint shards: 100%|██████████| 5/5 [00:09<00:00,  1.95s/it]
+[2026-01-27T12:37:24.381] error: *** JOB 415367 ON hariharan-compute-02 CANCELLED AT 2026-01-27T12:37:24 DUE to SIGNAL Terminated ***
