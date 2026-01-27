@@ -130,7 +130,7 @@ def get_qwen_response(messages, model_name):
     # Generate
     outputs = model.generate(
         **inputs,
-        max_new_tokens=1000,
+        max_new_tokens=2048,
         temperature=1.0,
         do_sample=True,
         top_p=0.9
@@ -176,7 +176,7 @@ def get_response(messages, model="Qwen3-1.7B"):
             model=model,
             messages=messages,
             temperature=1.0,
-            max_tokens=1000
+            max_tokens=2048
         )
 
         return response.choices[0].message.content
@@ -203,7 +203,7 @@ def get_response(messages, model="Qwen3-1.7B"):
 
         response = client.messages.create(
             model=model,
-            max_tokens=1000,
+            max_tokens=2048,
             temperature=1.0,
             system=system_message,
             messages=anthropic_messages
@@ -233,7 +233,7 @@ def get_response(messages, model="Qwen3-1.7B"):
         # Build config
         config = {
             'temperature': 1.0,
-            'max_output_tokens': 1000
+            'max_output_tokens': 2048
         }
 
         if system_instruction:
