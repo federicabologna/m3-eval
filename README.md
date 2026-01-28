@@ -1,6 +1,6 @@
 # M3-Eval: Medical Misinformation Model Evaluation
 
-A comprehensive evaluation framework for testing how language models handle medical misinformation through controlled perturbations.
+A comprehensive evaluation framework for testing how language models handle medical misinformation and radiology report generation through controlled perturbations.
 
 **Research collaboration with Microsoft Research**
 
@@ -8,25 +8,27 @@ A comprehensive evaluation framework for testing how language models handle medi
 
 ## 🎯 Overview
 
-M3-Eval evaluates how robust language models are to common types of medical errors:
+M3-Eval provides two evaluation pipelines:
+
+### 1. CQA Eval: Clinical Question-Answer Evaluation
+Evaluates how robust language models are to common types of medical errors in Q&A responses:
 - **Typos** in medical terms
 - **Dosage errors** (wrong amounts, timing, instructions)
-- **Missing critical information** (omitted warnings, contraindications)
+- **Missing information** (removed sentences)
 - **Confusion** (scrambled sentence order)
 
-The framework supports three types of experiments:
-1. **Baseline**: Compare ratings of original vs perturbed answers
-2. **Error Detection**: Can models detect errors when asked?
-3. **Error Priming**: Does knowing about errors change ratings?
+**Evaluation Levels**:
+- **Coarse**: Full answer evaluation (300 Q&A pairs)
+- **Fine**: Sentence-level evaluation (250 sentences with 3+ annotations)
 
----
+### 2. RadEval: Radiology Report Evaluation
+Evaluates radiology report generation using the GREEN metric:
+- **Typos** in medical terminology
+- **Missing sentences** from reports
+- **Swapped qualifiers** (mild↔severe, left↔right)
+- **Swapped organs** (lung↔heart, liver↔kidney)
 
-## 📋 Requirements
-
-- Python 3.11 or 3.12
-- CUDA-compatible GPU (optional, for local models)
-- 16GB+ RAM (for local model inference)
-- API keys (optional, for GPT/Claude/Gemini)
+**Evaluation Metric**: GREEN (Generation, Ranking, and Evaluation using Expert Notes)
 
 ---
 
@@ -39,8 +41,11 @@ The framework supports three types of experiments:
 git clone https://github.com/your-org/m3-eval.git
 cd m3-eval
 
-# Run automated setup
-bash setup.sh
+# Run automated setup for CQA eval
+bash setup_env.sh
+
+# OR setup RadEval pipeline
+bash setup_radeval.sh
 
 # Activate virtual environment
 source .venv/bin/activate
@@ -57,23 +62,113 @@ cp .env.example .env
 
 ### 3. Run Your First Experiment
 
+**CQA Eval:**
 ```bash
-# Test with local model (Qwen3-8B)
 python code/experiment_runner.py \
   --experiment baseline \
   --model Qwen3-8B \
   --level coarse \
   --perturbation change_dosage
+```
 
-# Check results
-ls output/change_dosage/
+**RadEval:**
+```bash
+python code/run_radeval_experiments.py \
+  --perturbation swap_qualifiers
 ```
 
 ---
 
-## 🧪 Experiments
+## 🔧 Common Commands
 
-### Baseline: Rating Perturbations
+### CQA Eval
+
+#### Run Specific Perturbation
+```bash
+# Test typos with high probability
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --level coarse \
+  --perturbation add_typos \
+  --typo-prob 0.7
+
+# Test sentence removal
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --level fine \
+  --perturbation remove_sentences \
+  --remove-pct 0.5
+```
+
+#### Run All Perturbations
+```bash
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --level both  # Run both coarse and fine
+```
+
+#### Run Multiple Parameter Values
+```bash
+# Test all typo probabilities (0.3, 0.5, 0.7)
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --perturbation add_typos \
+  --all-typo-prob
+
+# Test all removal percentages (30%, 50%, 70%)
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --perturbation remove_sentences \
+  --all-remove-pct
+```
+
+### RadEval
+
+```bash
+# Run all perturbations
+python code/run_radeval_experiments.py
+
+# Run specific perturbation
+python code/run_radeval_experiments.py \
+  --perturbation swap_organs
+
+# Custom field names
+python code/run_radeval_experiments.py \
+  --text-field generated_report \
+  --reference-field ground_truth
+```
+
+### Generate Perturbations Only
+
+```bash
+# Generate CQA perturbations without ratings
+python code/generate_perturbations.py \
+  --perturbation add_typos \
+  --level coarse \
+  --all-typo-prob
+```
+
+### SLURM Cluster Jobs
+
+```bash
+# Run on HPC cluster
+sbatch run_add_typos_all_probs.slurm
+sbatch run_remove_sentences_all_pcts.slurm
+sbatch run_perturbation_pipeline.slurm
+```
+
+---
+
+## 🧪 CQA Eval Experiments
+
+The framework supports three types of experiments:
+
+### 1. Baseline: Rating Perturbations
 
 Compare how models rate original vs perturbed answers.
 
@@ -81,14 +176,16 @@ Compare how models rate original vs perturbed answers.
 python code/experiment_runner.py \
   --experiment baseline \
   --model Qwen3-8B \
+  --level coarse \
   --seed 42
 ```
 
 **Output**: Ratings for both original and perturbed answers
+- `output/cqa_eval/experiment_results/baseline/`
 - Shows rating drops across correctness, relevance, safety
 - Tests model robustness to errors
 
-### Error Detection: Can Models Spot Errors?
+### 2. Error Detection: Can Models Spot Errors?
 
 Ask models to detect errors without being told to look for them.
 
@@ -96,14 +193,16 @@ Ask models to detect errors without being told to look for them.
 python code/experiment_runner.py \
   --experiment error_detection \
   --model gpt-4o \
+  --level coarse \
   --perturbation change_dosage
 ```
 
 **Output**: Detection results (yes/no + explanation + location)
+- `output/cqa_eval/experiment_results/error_detection/`
 - Tests error awareness
 - Compares detection rates across models
 
-### Error Priming: Does Awareness Change Ratings?
+### 3. Error Priming: Does Awareness Change Ratings?
 
 Compare ratings with and without error warnings.
 
@@ -111,138 +210,61 @@ Compare ratings with and without error warnings.
 python code/experiment_runner.py \
   --experiment error_priming \
   --model claude-opus-4-5-20251101 \
+  --level fine \
   --perturbation add_typos
 ```
 
 **Output**: Both control and primed ratings
+- `output/cqa_eval/experiment_results/error_priming/`
 - Tests if knowledge affects judgment
 - Measures priming effect strength
 
 ---
 
+## 🏥 RadEval Experiments
+
+### Baseline: GREEN Score Comparison
+
+Compare GREEN scores for original vs perturbed radiology reports.
+
+```bash
+# Run all perturbations
+python code/run_radeval_experiments.py
+
+# Run specific perturbation
+python code/run_radeval_experiments.py --perturbation swap_organs
+```
+
+**Output**: GREEN scores and entity matching results
+- `output/radeval/experiment_results/baseline/`
+- Precision, Recall, F1 scores
+- Entity-level analysis
+
+---
+
 ## 📊 Supported Models
 
-### Local Models
-- **Qwen3-1.7B** - Fast, lightweight
+### Local Models (CQA Eval)
 - **Qwen3-8B** - Balanced performance (default)
+- Uses Unsloth for 4-bit quantization and 2x faster inference
 
-### API Models
+### API Models (CQA Eval)
 - **gpt-4o** - OpenAI's latest
 - **claude-opus-4-5-20251101** - Anthropic Claude
 - **gemini-2.0-flash-exp** - Google Gemini
 
----
-
-## 🔧 Common Commands
-
-### Run Specific Perturbation
-
-```bash
-# Test typos only
-python code/experiment_runner.py \
-  --experiment baseline \
-  --model Qwen3-8B \
-  --perturbation add_typos \
-  --typo-prob 0.7
-
-# Test dosage errors only
-python code/experiment_runner.py \
-  --experiment baseline \
-  --model Qwen3-8B \
-  --perturbation change_dosage
-```
-
-### Run All Perturbations
-
-```bash
-# Run all perturbations (default)
-python code/experiment_runner.py \
-  --experiment baseline \
-  --model Qwen3-8B
-```
-
-### Compare Multiple Models
-
-```bash
-# Test all models on error detection
-for model in "Qwen3-8B" "gpt-4o" "claude-opus-4-5-20251101"
-do
-  python code/experiment_runner.py \
-    --experiment error_detection \
-    --model "$model" \
-    --perturbation change_dosage \
-    --seed 42
-done
-```
-
-### Adjust Parameters
-
-```bash
-# More averaging runs for stability
-python code/experiment_runner.py \
-  --experiment baseline \
-  --model gpt-4o \
-  --num-runs 10
-
-# Higher typo probability
-python code/experiment_runner.py \
-  --experiment baseline \
-  --model Qwen3-8B \
-  --perturbation add_typos \
-  --typo-prob 0.9
-
-# Remove more must-have sentences
-python code/experiment_runner.py \
-  --experiment baseline \
-  --model Qwen3-8B \
-  --perturbation remove_must_have \
-  --num-remove 3
-```
-
----
-
-## 📁 Project Structure
-
-```
-m3-eval/
-├── README.md                       # This file
-├── setup.sh                        # Automated setup script
-├── requirements.txt                # Python dependencies
-├── .env.example                    # API key template
-├── data/                          # Dataset files
-│   ├── coarse_5pt_expert+llm_consolidated.jsonl
-│   └── fine_5pt_expert+llm_consolidated.jsonl
-├── code/
-│   ├── experiment_runner.py       # Central controller
-│   ├── perturbation_pipeline.py   # Original pipeline (backward compat)
-│   ├── EXPERIMENTS_README.md      # Detailed experiment docs
-│   ├── experiments/               # Experiment modules
-│   │   ├── baseline.py
-│   │   ├── error_detection.py
-│   │   └── error_priming.py
-│   ├── helpers/
-│   │   ├── experiment_utils.py    # Shared utilities
-│   │   ├── multi_llm_inference.py # Model API calls
-│   │   └── perturbation_functions.py # Perturbation logic
-│   └── prompts/
-│       ├── coarseprompt_system.txt
-│       └── fineprompt_system.txt
-└── output/                        # Experiment results
-    ├── original_*.jsonl           # Original ratings
-    ├── add_typos/
-    ├── change_dosage/
-    ├── remove_must_have/
-    ├── add_confusion/
-    ├── error_detection/
-    └── error_priming/
-```
+### Evaluation Metrics
+- **CQA Eval**: LLM-based rating (correctness, relevance, safety)
+- **RadEval**: GREEN metric (entity-based matching)
 
 ---
 
 ## 🔬 Perturbation Types
 
-### 1. Add Typos
-Introduces typos to medical terms (drugs, conditions).
+### CQA Eval Perturbations
+
+#### 1. Add Typos
+Introduces typos to medical terms by swapping adjacent characters.
 
 **Parameters**:
 - `--typo-prob`: Probability per term (0.0-1.0)
@@ -250,7 +272,7 @@ Introduces typos to medical terms (drugs, conditions).
 
 **Example**: "acetaminophen" → "acetamnophen"
 
-### 2. Change Dosage
+#### 2. Change Dosage
 Modifies dosages, timing, and administration instructions.
 
 **Modifications**:
@@ -259,70 +281,304 @@ Modifies dosages, timing, and administration instructions.
 - Instructions: Flip (swallow ↔ chew)
 - Anatomy: Change (both → one eye)
 
-**Example**: "500mg twice daily" → "5000mg every 12 hours"
+**Example**: "500mg twice daily" → "5000mg once daily"
 
-### 3. Remove Must-Have
-Removes critical sentences identified by medical experts.
+#### 3. Remove Sentences
+Randomly removes a percentage of sentences from answers.
 
 **Parameters**:
-- `--num-remove`: Number of sentences (1-3)
-- `--all-num-remove`: Test all values
+- `--remove-pct`: Percentage to remove (0.0-1.0)
+- `--all-remove-pct`: Test multiple values (0.3, 0.5, 0.7)
 
-**Example**: Removes contraindication warnings
+**Example**: Removes 30%, 50%, or 70% of sentences
 
-### 4. Add Confusion
+#### 4. Add Confusion
 Randomly shuffles sentence order.
 
 **Example**: "A. B. C." → "C. A. B."
 
+### RadEval Perturbations
+
+#### 1. Add Typos
+Same as CQA eval - swaps adjacent characters.
+
+#### 2. Remove Sentences
+Removes 30%, 50%, or 70% of sentences from radiology reports.
+
+#### 3. Swap Qualifiers
+Swaps medical qualifiers to their opposites:
+- Left ↔ Right
+- Mild ↔ Severe
+- Low ↔ High
+- Small ↔ Large
+- Absent ↔ Present
+- Minimal ↔ Extensive
+- Decreased ↔ Increased
+- Normal ↔ Abnormal
+
+**Example**: "mild left lung opacity" → "severe right lung opacity"
+
+#### 4. Swap Organs
+Swaps anatomical locations/organs:
+- Lung ↔ Heart
+- Liver ↔ Kidney
+- Chest ↔ Abdomen
+- Brain ↔ Spinal Cord
+- Stomach ↔ Intestine
+
+**Example**: "lung consolidation" → "heart consolidation"
+
 ---
 
-## 📖 Documentation
+## 📊 Output Formats
 
-- **Detailed Experiment Guide**: `code/EXPERIMENTS_README.md`
-- **Output Formats**: See experiment guide
-- **API Reference**: See individual experiment modules
+### CQA Eval Results
+
+```json
+{
+  "question_id": "12",
+  "answer_id": "gpt4_12",
+  "question": "Can I take ibuprofen with...",
+  "answer": "Yes, you can take...",
+  "perturbation": "add_typos",
+  "perturbed_answer": "Yes, you can tkae...",
+  "typo_probability": 0.5,
+  "original_rating": {
+    "correctness": {"score": 4.2, "confidence": 4.5},
+    "relevance": {"score": 4.8, "confidence": 4.7},
+    "safety": {"score": 3.9, "confidence": 4.1}
+  },
+  "perturbed_rating": {
+    "correctness": {"score": 3.8, "confidence": 4.2},
+    "relevance": {"score": 4.6, "confidence": 4.5},
+    "safety": {"score": 3.7, "confidence": 3.9}
+  },
+  "random_seed": 42
+}
+```
+
+### RadEval Results
+
+```json
+{
+  "id": "radeval_42",
+  "prediction": "No acute cardiopulmonary...",
+  "reference": "No acute findings...",
+  "perturbation": "swap_qualifiers",
+  "perturbed_prediction": "Acute abnormal cardiopulmonary...",
+  "qualifier_changes": {
+    "changes": ["no -> multiple", "normal -> abnormal"],
+    "num_changes": 2
+  },
+  "original_rating": {
+    "green_score": 0.85,
+    "precision": 0.87,
+    "recall": 0.83,
+    "f1": 0.85
+  },
+  "perturbed_rating": {
+    "green_score": 0.42,
+    "precision": 0.45,
+    "recall": 0.39,
+    "f1": 0.42
+  },
+  "random_seed": 42
+}
+```
+
+---
+
+## 🔍 Key Features
+
+### Resumable Processing
+- All experiments cache results and can resume from interruption
+- Perturbations are generated once and reused across experiments
+- Original ratings are computed once and reused
+
+### Reproducible
+- Random seed control ensures identical results
+- Deterministic perturbation generation
+- Version-controlled prompts
+
+### Scalable
+- Parallel processing support
+- SLURM cluster integration
+- Batch processing for large datasets
+
+### Flexible
+- Support for multiple models (local + API)
+- Configurable perturbation parameters
+- Extensible experiment framework
+
+---
+
+## 📁 Project & Code Structure
+
+### Full Directory Tree
+
+```
+m3-eval/
+├── README.md                      # This file
+├── RADEVAL_README.md              # RadEval detailed guide
+├── SETUP_GUIDE.md                 # Setup instructions
+├── setup_env.sh                   # CQA eval setup
+├── setup_radeval.sh               # RadEval setup
+├── requirements_clean.txt         # Python dependencies
+├── .env.example                   # API key template
+│
+├── data/                          # Dataset files
+│   ├── coarse_5pt_expert+llm_consolidated.jsonl     # Answer-level (300)
+│   ├── fine_5pt_expert+llm_consolidated.jsonl       # Sentence-level (250)
+│   ├── radeval_expert_dataset.jsonl                 # RadEval dataset
+│   └── old/                       # Original unconsolidated data
+│       ├── consolidate_fine_data.py
+│       ├── consolidate_coarse_data.py
+│       └── *.json                # Original annotations
+│
+├── code/                          # Source code
+│   ├── experiment_runner.py      # CQA eval central controller
+│   ├── run_radeval_experiments.py    # RadEval experiment runner
+│   ├── download_radeval_data.py  # Download RadEval dataset
+│   ├── perturbation_pipeline.py  # Legacy CQA pipeline (backward compat)
+│   ├── generate_perturbations.py # Standalone perturbation generator
+│   │
+│   ├── experiments/              # Experiment modules
+│   │   ├── baseline.py           # Baseline rating experiments
+│   │   ├── error_detection.py    # Error detection experiments
+│   │   └── error_priming.py      # Error priming experiments
+│   │
+│   ├── helpers/                  # Helper modules
+│   │   ├── experiment_utils.py           # CQA eval utilities
+│   │   ├── radeval_experiment_utils.py   # RadEval utilities
+│   │   ├── perturbation_functions.py     # CQA perturbations
+│   │   ├── radeval_perturbations.py      # RadEval perturbations
+│   │   ├── multi_llm_inference.py        # LLM API wrapper
+│   │   └── green_eval.py                 # GREEN metric wrapper
+│   │
+│   └── prompts/                  # Evaluation prompts
+│       ├── coarseprompt_system.txt       # Answer-level evaluation
+│       ├── fineprompt_system.txt         # Sentence-level evaluation
+│       ├── error_priming_coarse.txt      # Priming prompt (coarse)
+│       └── error_priming_fine.txt        # Priming prompt (fine)
+│
+├── notebooks/                     # Jupyter notebooks
+│   └── baseline_experiments.ipynb
+│
+├── output/
+│   ├── cqa_eval/                  # CQA eval results
+│   │   ├── original_ratings/
+│   │   ├── perturbations/
+│   │   └── experiment_results/
+│   │       └── baseline/
+│   │           ├── add_typos/
+│   │           ├── change_dosage/
+│   │           ├── remove_sentences/
+│   │           └── add_confusion/
+│   │
+│   └── radeval/                   # RadEval results
+│       ├── original_ratings/
+│       ├── perturbations/
+│       └── experiment_results/
+│           └── baseline/
+│               ├── add_typos/
+│               ├── remove_sentences/
+│               ├── swap_qualifiers/
+│               └── swap_organs/
+│
+└── external/                      # External repositories
+    └── RadEval/                   # GREEN evaluation code
+```
+
+### Key Code Files
+
+**Main Scripts:**
+- `experiment_runner.py` - CQA eval central controller
+- `run_radeval_experiments.py` - RadEval experiment runner
+- `download_radeval_data.py` - Download RadEval dataset
+- `perturbation_pipeline.py` - Legacy CQA pipeline (backward compatibility)
+- `generate_perturbations.py` - Standalone perturbation generator
+
+**Experiment Modules:**
+- `baseline.py` - Baseline rating experiments
+- `error_detection.py` - Error detection experiments
+- `error_priming.py` - Error priming experiments
+
+**Helper Modules:**
+- `experiment_utils.py` - CQA eval utilities
+- `radeval_experiment_utils.py` - RadEval utilities
+- `perturbation_functions.py` - CQA perturbations
+- `radeval_perturbations.py` - RadEval perturbations
+- `multi_llm_inference.py` - LLM API wrapper
+- `green_eval.py` - GREEN metric wrapper
+
+**Prompts:**
+- `coarseprompt_system.txt` - Answer-level evaluation
+- `fineprompt_system.txt` - Sentence-level evaluation
+- `error_priming_coarse.txt` - Priming prompt (coarse)
+- `error_priming_fine.txt` - Priming prompt (fine)
+
+**Data Consolidation Scripts:**
+- `consolidate_fine_data.py` - Consolidate sentence annotations (3+ annotations)
+- `consolidate_coarse_data.py` - Consolidate answer annotations
 
 ---
 
 ## 🔍 Troubleshooting
 
-### GPU Issues
+### GPU/CUDA Issues
 
-**Problem**: `CUDA error: no kernel image is available for execution`
+**Problem**: `CUDA error` or `NCCL` errors
 
-**Solution**: Your GPU is too old for PyTorch 2.7+. The setup script installs PyTorch with CUDA 11.8 which supports older GPUs (sm_61+).
-
-If still failing:
+**Solution**: Use matching CUDA versions
 ```bash
-# Force CPU usage
-CUDA_VISIBLE_DEVICES="" python code/experiment_runner.py ...
+# Check CUDA version
+nvidia-smi
+
+# Reinstall PyTorch with correct CUDA version
+uv pip uninstall torch torchvision torchaudio
+uv pip install torch==2.5.1 torchvision==0.20.1 torchaudio==2.5.1 \
+  --index-url https://download.pytorch.org/whl/cu121
 ```
 
 ### Import Errors
 
-**Problem**: `ModuleNotFoundError: No module named 'unsloth'`
+**Problem**: `ModuleNotFoundError` or `ImportError`
 
 **Solution**:
 ```bash
 source .venv/bin/activate
-pip install -r requirements.txt
+uv pip install -r requirements_clean.txt
+python -m spacy download en_core_web_sm
 ```
+
+### Model Loading Issues
+
+**Problem**: `max_seq_length` warnings or truncation
+
+**Solution**: Already fixed in code - `max_seq_length=8192` for long prompts
 
 ### API Rate Limits
 
 **Problem**: `RateLimitError` when using GPT/Claude/Gemini
 
 **Solution**:
+- Use local models (Qwen3-8B)
 - Reduce `--num-runs` (default: 5)
 - Add delays between requests
-- Use local models (Qwen3)
 
-### Missing Data Files
+### Data Filtering
 
-**Problem**: `FileNotFoundError: data/coarse_5pt_expert+llm_consolidated.jsonl`
+**Problem**: Mismatched sentence counts between datasets
 
-**Solution**: Ensure dataset files are in the `data/` directory
+**Solution**: Use consolidation scripts in `data/old/` to filter for sentences with 3+ annotations
+
+---
+
+## 📖 Documentation
+
+- **RadEval Guide**: `RADEVAL_README.md`
+- **Setup Guide**: `SETUP_GUIDE.md`
+- **Detailed Scripts**: See docstrings in each Python file
 
 ---
 
@@ -345,19 +601,3 @@ If you use this framework in your research, please cite:
   url={https://github.com/your-org/m3-eval}
 }
 ```
-
----
-
-## 📧 Contact
-
-For questions or issues:
-- Open a GitHub issue
-- Contact: your.email@domain.com
-
----
-
-## 🙏 Acknowledgments
-
-- Microsoft Research for collaboration and support
-- Scispacy for medical NER models
-- Hugging Face for model infrastructure

@@ -30,7 +30,12 @@ echo "Running add_typos perturbation with all probability values..."
 echo "This will generate 3 files per level (coarse/fine) with prob=0.3, 0.5, 0.7"
 echo "========================================"
 
-python code/perturbation_pipeline.py --model Qwen3-8B --perturbation add_typos --all_typo_prob
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --level both \
+  --perturbation add_typos \
+  --all-typo-prob
 
 # Check exit status
 if [ $? -eq 0 ]; then

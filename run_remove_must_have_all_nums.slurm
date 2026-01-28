@@ -30,7 +30,12 @@ echo "Running remove_sentences perturbation with all percentage values..."
 echo "This will generate 3 files per level (coarse/fine) with 30%, 50%, 70% removed"
 echo "========================================"
 
-python code/perturbation_pipeline.py --model Qwen3-8B --perturbation remove_sentences --all-remove-pct
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --level both \
+  --perturbation remove_sentences \
+  --all-remove-pct
 
 # Check exit status
 if [ $? -eq 0 ]; then

@@ -1,0 +1,295 @@
+"""
+Experiment utilities for RadEval dataset.
+Similar structure to experiment_utils.py for CQA eval.
+"""
+
+import json
+import os
+import random
+from typing import Dict, List, Set, Tuple
+
+
+def setup_radeval_paths(output_dir=None):
+    """Setup RadEval project paths."""
+    script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    project_root = os.path.dirname(script_dir)
+
+    if output_dir is None:
+        output_dir = os.path.join(project_root, 'output', 'radeval')
+
+    data_path = os.path.join(project_root, 'data', 'radeval_expert_dataset.jsonl')
+
+    os.makedirs(output_dir, exist_ok=True)
+
+    return {
+        'project_root': project_root,
+        'output_dir': output_dir,
+        'data_path': data_path,
+    }
+
+
+def load_radeval_data(data_path: str) -> List[Dict]:
+    """Load RadEval data from JSONL file."""
+    data = []
+    with open(data_path, 'r') as f:
+        for line in f:
+            data.append(json.loads(line))
+    return data
+
+
+def get_processed_ids(output_path: str) -> Set[str]:
+    """Get set of already processed IDs from output file."""
+    processed_ids = set()
+    if os.path.exists(output_path):
+        try:
+            with open(output_path, 'r') as f:
+                for line in f:
+                    entry = json.loads(line)
+                    processed_ids.add(entry['id'])
+            print(f"Found {len(processed_ids)} already processed entries in output file")
+        except Exception as e:
+            print(f"Warning: Could not read existing output file: {e}")
+    return processed_ids
+
+
+def clean_model_name(model: str) -> str:
+    """Clean model name for use in filenames."""
+    return model.replace('/', '-').replace('.', '_')
+
+
+def apply_radeval_perturbation(
+    perturbation_name: str,
+    original_text: str,
+    typo_prob: float = 0.5,
+    remove_pct: float = 0.3
+) -> Tuple[str, Dict]:
+    """
+    Apply perturbation to a radiology report.
+
+    Args:
+        perturbation_name: Name of perturbation to apply
+        original_text: Original report text
+        typo_prob: Probability for typo perturbation
+        remove_pct: Percentage for sentence removal
+
+    Returns:
+        (perturbed_text, metadata) where metadata contains perturbation-specific info
+    """
+    from helpers.radeval_perturbations import (
+        add_typos,
+        remove_sentences_by_percentage,
+        swap_qualifiers,
+        swap_organs
+    )
+
+    perturbed_text = None
+    metadata = {}
+
+    if perturbation_name == 'add_typos':
+        perturbed_text = add_typos(original_text, typo_probability=typo_prob)
+        metadata['typo_probability'] = typo_prob
+
+    elif perturbation_name == 'remove_sentences':
+        perturbed_text = remove_sentences_by_percentage(original_text, percentage=remove_pct)
+        metadata['removal_percentage'] = remove_pct
+
+    elif perturbation_name == 'swap_qualifiers':
+        perturbed_text, change_info = swap_qualifiers(original_text)
+        metadata['qualifier_changes'] = change_info
+
+    elif perturbation_name == 'swap_organs':
+        perturbed_text, change_info = swap_organs(original_text)
+        metadata['organ_changes'] = change_info
+
+    if perturbed_text is None:
+        perturbed_text = original_text
+
+    return perturbed_text, metadata
+
+
+def save_result(output_path: str, result: Dict):
+    """Save a single result to JSONL file."""
+    try:
+        with open(output_path, 'a') as f:
+            json.dump(result, f)
+            f.write('\n')
+    except IOError as e:
+        print(f"ERROR: Failed to save result: {e}")
+        raise
+
+
+def get_or_create_radeval_perturbations(
+    perturbation_name: str,
+    data: List[Dict],
+    text_field: str,
+    typo_prob: float = 0.5,
+    remove_pct: float = 0.3,
+    seed: int = 42,
+    output_dir: str = None
+) -> Dict[str, Dict]:
+    """
+    Get perturbations - load from file if exists, generate missing ones if partial.
+
+    Args:
+        perturbation_name: Name of perturbation
+        data: List of data entries
+        text_field: Field name containing text to perturb (e.g., 'prediction', 'report')
+        typo_prob: Typo probability
+        remove_pct: Removal percentage
+        seed: Random seed
+        output_dir: Output directory
+
+    Returns:
+        Dictionary mapping ID to perturbation data
+    """
+    if output_dir is None:
+        paths = setup_radeval_paths()
+        output_dir = paths['output_dir']
+
+    perturbations_dir = os.path.join(output_dir, 'perturbations')
+    os.makedirs(perturbations_dir, exist_ok=True)
+
+    # Determine filename based on perturbation type
+    if perturbation_name == 'remove_sentences':
+        pct_str = str(int(remove_pct * 100))
+        filename = f"{perturbation_name}_{pct_str}pct.jsonl"
+    elif perturbation_name == 'add_typos':
+        prob_str = str(typo_prob).replace('.', '')
+        filename = f"{perturbation_name}_{prob_str}prob.jsonl"
+    else:
+        filename = f"{perturbation_name}.jsonl"
+
+    filepath = os.path.join(perturbations_dir, filename)
+
+    # Load existing perturbations if file exists
+    perturbations = {}
+    if os.path.exists(filepath):
+        with open(filepath, 'r') as f:
+            for line in f:
+                entry = json.loads(line)
+                perturbations[entry['id']] = entry
+        print(f"✓ Loaded {len(perturbations)} existing perturbations from {filename}")
+
+    # Check which entries are missing
+    missing_data = [item for item in data if item['id'] not in perturbations]
+
+    if len(missing_data) == 0:
+        print(f"✓ All {len(data)} perturbations complete!")
+        return perturbations
+
+    # Generate missing perturbations
+    print(f"⚠ {len(missing_data)} perturbations missing (out of {len(data)} total)")
+    print(f"  Generating missing perturbations...")
+
+    # Set random seed for reproducibility
+    random.seed(seed)
+
+    with open(filepath, 'a') as f:
+        for item in missing_data:
+            original_text = item[text_field]
+
+            # Apply perturbation
+            perturbed_text, metadata = apply_radeval_perturbation(
+                perturbation_name,
+                original_text,
+                typo_prob=typo_prob,
+                remove_pct=remove_pct
+            )
+
+            # Skip if no perturbation applied
+            if perturbed_text == original_text and perturbation_name in ['swap_qualifiers', 'swap_organs']:
+                metadata['skip_reason'] = 'No applicable terms found to swap'
+                # Still save it with skip reason
+
+            # Build entry
+            entry = item.copy()
+            entry['perturbation'] = perturbation_name
+            entry[f'perturbed_{text_field}'] = perturbed_text
+            entry['random_seed'] = seed
+            entry.update(metadata)
+
+            # Save to file
+            json.dump(entry, f)
+            f.write('\n')
+
+            # Add to dictionary
+            perturbations[item['id']] = entry
+
+    print(f"✓ Generated {len(missing_data)} missing perturbations. Total: {len(perturbations)}")
+    return perturbations
+
+
+def get_or_create_radeval_original_ratings(
+    data: List[Dict],
+    text_field: str,
+    reference_field: str,
+    output_dir: str,
+    num_runs: int = 1
+) -> Dict[str, Dict]:
+    """
+    Get original GREEN ratings - load from file if complete, otherwise generate missing ones.
+
+    Args:
+        data: List of data entries
+        text_field: Field containing text to evaluate (e.g., 'prediction')
+        reference_field: Field containing reference text
+        output_dir: Output directory
+        num_runs: Number of evaluation runs (GREEN is deterministic)
+
+    Returns:
+        Dictionary mapping ID to original rating
+    """
+    from helpers.green_eval import get_green_rating
+    import time
+
+    # Setup paths
+    original_ratings_dir = os.path.join(output_dir, 'original_ratings')
+    os.makedirs(original_ratings_dir, exist_ok=True)
+
+    original_ratings_filename = f"original_green_rating.jsonl"
+    original_ratings_path = os.path.join(original_ratings_dir, original_ratings_filename)
+
+    # Load existing ratings if file exists
+    ratings_dict = {}
+    if os.path.exists(original_ratings_path):
+        with open(original_ratings_path, 'r') as f:
+            for line in f:
+                entry = json.loads(line)
+                ratings_dict[entry['id']] = entry['original_rating']
+        print(f"✓ Loaded {len(ratings_dict)} existing original ratings from {original_ratings_filename}")
+
+    # Check which entries are missing
+    missing_data = [item for item in data if item['id'] not in ratings_dict]
+
+    if len(missing_data) == 0:
+        print(f"✓ All {len(data)} original ratings complete!")
+        return ratings_dict
+
+    # Generate missing ratings
+    print(f"⚠ {len(missing_data)} original ratings missing (out of {len(data)} total)")
+    print(f"  Computing missing ratings...")
+
+    with open(original_ratings_path, 'a') as f:
+        for item in missing_data:
+            prediction = item[text_field]
+            reference = item[reference_field]
+
+            print(f"\nGetting GREEN rating for {item['id']}...")
+            start_time = time.time()
+            original_rating = get_green_rating(prediction, reference, num_runs=num_runs)
+            elapsed_time = time.time() - start_time
+            print(f'Time taken: {elapsed_time:.2f} seconds')
+
+            # Build entry
+            result = item.copy()
+            result['original_rating'] = original_rating
+
+            # Save to file
+            json.dump(result, f)
+            f.write('\n')
+
+            # Add to dictionary
+            ratings_dict[item['id']] = original_rating
+
+    print(f"✓ Generated {len(missing_data)} missing ratings. Total: {len(ratings_dict)}")
+    return ratings_dict

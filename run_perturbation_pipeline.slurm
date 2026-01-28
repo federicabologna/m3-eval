@@ -40,12 +40,15 @@ python -c "import torch; print(torch.__version__)"
 echo "CUDA available: $(python -c 'import torch; print(torch.cuda.is_available())')"
 echo "========================================"
 
-# Run the perturbation pipeline
-echo "Starting perturbation pipeline with Qwen3-8B..."
+# Run the baseline experiment with all perturbations
+echo "Starting baseline experiment with Qwen3-8B..."
 echo "Running all perturbations: add_typos, change_dosage, remove_sentences, add_confusion"
 echo "========================================"
 
-python code/perturbation_pipeline.py --model Qwen3-8B
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --level both
 
 # Check exit status
 if [ $? -eq 0 ]; then
