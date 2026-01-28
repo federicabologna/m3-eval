@@ -1,12 +1,13 @@
 ========================================
-Job started at: Sun Jan 25 07:20:05 PM EST 2026
-Job ID: 385366
+Job started at: Tue Jan 27 07:23:06 PM EST 2026
+Job ID: 449465
 ========================================
 Running add_typos perturbation with all probability values...
 This will generate 3 files per level (coarse/fine) with prob=0.3, 0.5, 0.7
 ========================================
 🦥 Unsloth: Will patch your computer to enable 2x faster free finetuning.
 🦥 Unsloth Zoo will now patch everything to make training faster!
+Random seed set to: 42
 Using model: Qwen3-8B (provider: qwen)
 Running single perturbation: add_typos
 
@@ -18,8 +19,8 @@ Using data: /home/fb265/m3-eval/data/coarse_5pt_expert+llm_consolidated.jsonl
 ================================================================================
 STEP 1: ORIGINAL RATINGS
 ================================================================================
-Loaded 300 original ratings from file
-All 300 original ratings already computed!
+✓ Loaded 300 existing original ratings from original_coarse_Qwen3-8B_rating.jsonl
+✓ All 300 original ratings complete!
 
 ================================================================================
 STEP 2: PERTURBATIONS
@@ -33,9 +34,9 @@ Running all typo_prob values: [0.3, 0.5, 0.7]
 --------------------------------------------------------------------------------
 TYPO_PROB = 0.3
 --------------------------------------------------------------------------------
-Found 269 already processed entries in output file
-Processing 31 remaining QA pairs (out of 300 total)
-Saving results to: add_typos/add_typos_3prob_coarse_Qwen3-8B_rating.jsonl
+Found 287 already processed entries in output file
+Processing 13 remaining QA pairs (out of 300 total)
+Saving results to: experiment_results/baseline/add_typos/add_typos_03prob_coarse_Qwen3-8B_rating.jsonl
 
 Getting rating for PERTURBED answer...
 Collecting 5 ratings to average...
