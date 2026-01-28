@@ -81,7 +81,7 @@ def load_qwen_model(model_name):
             print("Using unsloth for optimized inference with 4-bit quantization...")
             model, tokenizer = FastLanguageModel.from_pretrained(
                 model_name=f"Qwen/{model_name}",
-                max_seq_length=4096,
+                max_seq_length=8192,  # Increased to handle long prompts with examples
                 dtype=torch_dtype,
                 load_in_4bit=True,  # Use 4-bit quantization for faster inference
             )
