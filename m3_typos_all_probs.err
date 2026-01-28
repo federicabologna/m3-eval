@@ -368,3 +368,6 @@ Unsloth: Input IDs of shape torch.Size([1, 5455]) with length 5455 > the model's
 We shall truncate it ourselves. It's imperative if you correct this issue first.
 Unsloth: Input IDs of shape torch.Size([1, 5277]) with length 5277 > the model's max sequence length of 4096.
 We shall truncate it ourselves. It's imperative if you correct this issue first.
+Unsloth: Input IDs of shape torch.Size([1, 5370]) with length 5370 > the model's max sequence length of 4096.
+We shall truncate it ourselves. It's imperative if you correct this issue first.
+[2026-01-28T12:30:35.704] error: *** JOB 449465 ON luxlab-compute-01 CANCELLED AT 2026-01-28T12:30:35 DUE to SIGNAL Terminated ***
