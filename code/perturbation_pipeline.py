@@ -27,7 +27,6 @@ import json
 import random
 import re
 import time
-from datetime import datetime
 from dotenv import load_dotenv
 from helpers.multi_llm_inference import get_response
 from helpers.perturbation_functions import (
@@ -334,8 +333,9 @@ def main():
             print(f"Processing perturbation: {perturbation_name.upper()}")
             print(f"{'='*80}")
 
-            # Create perturbation-specific subdirectory
-            perturbation_dir = os.path.join(output_dir, perturbation_name)
+            # Create perturbation-specific subdirectory under baseline experiment
+            baseline_dir = os.path.join(output_dir, 'experiment_results', 'baseline')
+            perturbation_dir = os.path.join(baseline_dir, perturbation_name)
             os.makedirs(perturbation_dir, exist_ok=True)
 
             # Determine which remove_pct values to run for remove_sentences
@@ -385,7 +385,7 @@ def main():
                         continue
 
                     print(f"Processing {len(remaining_qa_pairs)} remaining QA pairs (out of {len(qa_pairs)} total)")
-                    print(f"Saving results to: {perturbation_name}/{output_filename}")
+                    print(f"Saving results to: experiment_results/baseline/{perturbation_name}/{output_filename}")
 
                     for qa_pair in remaining_qa_pairs:
                         question = qa_pair['question']
