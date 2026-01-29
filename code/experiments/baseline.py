@@ -122,6 +122,9 @@ def run_baseline_experiment(args):
         print("STEP 1: ORIGINAL RATINGS")
         print(f"{'='*80}")
 
+        # For fine level, skip computing missing ratings (use only existing ones)
+        skip_missing = (level == 'fine')
+
         original_ratings_dict = get_or_create_original_ratings(
             qa_pairs=qa_pairs,
             level=level,
@@ -129,8 +132,14 @@ def run_baseline_experiment(args):
             model=args.model,
             output_dir=output_dir,
             model_name_clean=model_name_clean,
-            num_runs=args.num_runs
+            num_runs=args.num_runs,
+            skip_missing=skip_missing
         )
+
+        # Filter qa_pairs to only include IDs that have original ratings
+        # This is especially important for fine level where we skip computing missing ratings
+        qa_pairs = [qa for qa in qa_pairs if qa[id_key] in original_ratings_dict]
+        print(f"✓ Processing {len(qa_pairs)} examples with original ratings")
 
         # Step 2: Process each perturbation
         print(f"\n{'='*80}")

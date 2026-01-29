@@ -221,10 +221,14 @@ def get_or_create_original_ratings(
     model: str,
     output_dir: str,
     model_name_clean: str,
-    num_runs: int = 5
+    num_runs: int = 5,
+    skip_missing: bool = False
 ) -> Dict[str, Dict]:
     """
     Get original ratings - load from file if complete, otherwise generate missing ones.
+
+    Args:
+        skip_missing: If True, skip computing missing ratings and only return existing ones
 
     Returns:
         Dictionary mapping answer_id/sentence_id to original rating
@@ -255,6 +259,12 @@ def get_or_create_original_ratings(
 
     if len(missing_qa_pairs) == 0:
         print(f"✓ All {len(qa_pairs)} original ratings complete!")
+        return ratings_dict
+
+    # If skip_missing is True, return only existing ratings without computing missing ones
+    if skip_missing:
+        print(f"⚠ {len(missing_qa_pairs)} original ratings missing (out of {len(qa_pairs)} total)")
+        print(f"✓ Skipping missing ratings (using only {len(ratings_dict)} existing ratings)")
         return ratings_dict
 
     # Generate missing ratings
