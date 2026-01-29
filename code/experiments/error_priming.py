@@ -185,7 +185,7 @@ def run_error_priming_experiment(args):
                         start_time = time.time()
                         control_rating = get_rating_with_averaging(
                             question, perturbed_answer, system_prompt_control, user_template,
-                            args.model, num_runs=args.num_runs
+                            args.model, num_runs=args.num_runs, flush_output=True
                         )
                         control_time = time.time() - start_time
 
@@ -194,7 +194,7 @@ def run_error_priming_experiment(args):
                         start_time = time.time()
                         primed_rating = get_rating_with_averaging(
                             question, perturbed_answer, system_prompt_primed, user_template,
-                            args.model, num_runs=args.num_runs
+                            args.model, num_runs=args.num_runs, flush_output=True
                         )
                         primed_time = time.time() - start_time
 

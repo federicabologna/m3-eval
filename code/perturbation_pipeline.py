@@ -117,7 +117,7 @@ def extract_json_from_response(response):
         return {"raw_response": response, "error": "No JSON found"}
 
 
-def get_rating(question, answer, system_prompt, user_template, model="Qwen3-1.7B", max_retries=3):
+def get_rating(question, answer, system_prompt, user_template, model="Qwen3-1.7B", max_retries=3, flush_output=False):
     """Get rating for an answer using the LLM with retry logic."""
     # Format the user prompt with question and answer
     user_prompt = user_template.replace('{question}', question).replace('{answer}', answer)
@@ -130,7 +130,9 @@ def get_rating(question, answer, system_prompt, user_template, model="Qwen3-1.7B
 
     for attempt in range(max_retries):
         # Get response
+        print(f"    Generating response (attempt {attempt + 1}/{max_retries})...", flush=flush_output)
         response = get_response(messages, model=model)
+        print(f"    Response received, validating...", flush=flush_output)
 
         # Extract and validate JSON
         rating = extract_json_from_response(response)
@@ -201,14 +203,14 @@ def average_ratings(ratings_list):
     return averaged
 
 
-def get_rating_with_averaging(question, answer, system_prompt, user_template, model="Qwen3-1.7B", num_runs=5):
+def get_rating_with_averaging(question, answer, system_prompt, user_template, model="Qwen3-1.7B", num_runs=5, flush_output=False):
     """Get multiple ratings and return the average."""
     print(f"Collecting {num_runs} ratings to average...")
 
     all_ratings = []
     for run in range(num_runs):
         print(f"  Run {run + 1}/{num_runs}...")
-        rating = get_rating(question, answer, system_prompt, user_template, model)
+        rating = get_rating(question, answer, system_prompt, user_template, model, flush_output=flush_output)
         all_ratings.append(rating)
 
     # Average the ratings

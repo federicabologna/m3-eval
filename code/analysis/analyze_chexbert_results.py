@@ -202,6 +202,109 @@ def plot_comparison(perturbation_results, metric, output_path):
     print(f"  Saved plot: {os.path.basename(output_path)}")
 
 
+def plot_severity_effect(perturbation_results, metric, output_dir):
+    """
+    Create plots showing how perturbation severity affects score degradation.
+
+    Creates two separate plots:
+    1. Add Typos: degradation vs probability (0.3, 0.5, 0.7)
+    2. Remove Sentences: degradation vs percentage (30%, 50%, 70%)
+    """
+    # Collect data for add_typos
+    typos_data = []
+    for prob in ['03', '05', '07']:
+        for key, data in perturbation_results.items():
+            if data['perturbation'] == 'add_typos' and f'{prob}prob' in data['filename']:
+                orig_scores = data['original'][metric]
+                pert_scores = data['perturbed'][metric]
+                degradation = orig_scores - pert_scores
+                mean_deg = np.mean(degradation)
+                ci_deg = 1.96 * np.std(degradation) / np.sqrt(len(degradation))
+                typos_data.append({
+                    'prob': float(prob) / 10,
+                    'mean': mean_deg,
+                    'ci': ci_deg
+                })
+                break
+
+    # Collect data for remove_sentences
+    remove_data = []
+    for pct in ['30', '50', '70']:
+        for key, data in perturbation_results.items():
+            if data['perturbation'] == 'remove_sentences' and f'{pct}pct' in data['filename']:
+                orig_scores = data['original'][metric]
+                pert_scores = data['perturbed'][metric]
+                degradation = orig_scores - pert_scores
+                mean_deg = np.mean(degradation)
+                ci_deg = 1.96 * np.std(degradation) / np.sqrt(len(degradation))
+                remove_data.append({
+                    'pct': int(pct),
+                    'mean': mean_deg,
+                    'ci': ci_deg
+                })
+                break
+
+    # Plot 1: Add Typos
+    if len(typos_data) > 0:
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        probs = [d['prob'] for d in typos_data]
+        means = [d['mean'] for d in typos_data]
+        cis = [d['ci'] for d in typos_data]
+
+        ax.plot(probs, means, marker='o', linewidth=2, markersize=8, color='#ff7f0e')
+        ax.fill_between(probs,
+                        [m - c for m, c in zip(means, cis)],
+                        [m + c for m, c in zip(means, cis)],
+                        alpha=0.3, color='#ff7f0e')
+
+        ax.axhline(y=0, color='gray', linestyle='--', linewidth=1)
+        ax.set_xlabel('Typo Probability', fontsize=12)
+        ax.set_ylabel('Score Degradation (Original - Perturbed)', fontsize=12)
+        ax.set_title(f'{METRIC_LABELS[metric]} Degradation vs Typo Probability',
+                    fontsize=14, fontweight='bold')
+        ax.grid(True, alpha=0.3)
+        ax.set_xticks(probs)
+        ax.set_xticklabels([f'{p:.1f}' for p in probs])
+        ax.set_ylim(0, 0.25)
+
+        plt.tight_layout()
+        output_path = os.path.join(output_dir, f'chexbert_{metric}_typo_severity.png')
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"  Saved plot: {os.path.basename(output_path)}")
+
+    # Plot 2: Remove Sentences
+    if len(remove_data) > 0:
+        fig, ax = plt.subplots(figsize=(8, 6))
+
+        pcts = [d['pct'] for d in remove_data]
+        means = [d['mean'] for d in remove_data]
+        cis = [d['ci'] for d in remove_data]
+
+        ax.plot(pcts, means, marker='o', linewidth=2, markersize=8, color='#ff7f0e')
+        ax.fill_between(pcts,
+                        [m - c for m, c in zip(means, cis)],
+                        [m + c for m, c in zip(means, cis)],
+                        alpha=0.3, color='#ff7f0e')
+
+        ax.axhline(y=0, color='gray', linestyle='--', linewidth=1)
+        ax.set_xlabel('Percentage of Sentences Removed (%)', fontsize=12)
+        ax.set_ylabel('Score Degradation (Original - Perturbed)', fontsize=12)
+        ax.set_title(f'{METRIC_LABELS[metric]} Degradation vs Sentences Removed',
+                    fontsize=14, fontweight='bold')
+        ax.grid(True, alpha=0.3)
+        ax.set_xticks(pcts)
+        ax.set_xticklabels([f'{p}%' for p in pcts])
+        ax.set_ylim(0, 0.25)
+
+        plt.tight_layout()
+        output_path = os.path.join(output_dir, f'chexbert_{metric}_remove_severity.png')
+        plt.savefig(output_path, dpi=300, bbox_inches='tight')
+        plt.close()
+        print(f"  Saved plot: {os.path.basename(output_path)}")
+
+
 def plot_degradation_distribution(perturbation_results, metric, output_path):
     """Plot distribution of score degradations for a specific metric."""
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
@@ -362,6 +465,11 @@ def main():
     for metric in PLOT_METRICS:
         output_path = os.path.join(analysis_output_dir, f'chexbert_{metric}_barplot.png')
         plot_comparison(perturbation_results, metric, output_path)
+
+    # Generate severity effect plots (only weighted F1 for all 14 conditions)
+    print("\nGenerating severity effect plots (weighted F1 only)...")
+    for metric in PLOT_METRICS:
+        plot_severity_effect(perturbation_results, metric, analysis_output_dir)
 
     # Generate summary report
     print("\nGenerating summary report...")

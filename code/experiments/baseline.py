@@ -77,6 +77,32 @@ def run_baseline_experiment(args):
         all_qa_pairs = load_qa_data(data_path)
         print(f"Loaded {len(all_qa_pairs)} examples")
 
+        # For fine level, filter to only IDs that exist in original ratings
+        if level == 'fine':
+            original_ratings_filename = f"original_{level}_{model_name_clean}_rating.jsonl"
+            original_ratings_path = os.path.join(output_dir, 'original_ratings', original_ratings_filename)
+
+            if os.path.exists(original_ratings_path):
+                # Load IDs from original ratings file
+                rated_ids = set()
+                with open(original_ratings_path, 'r') as f:
+                    for line in f:
+                        entry = json.loads(line)
+                        # Get ID using the appropriate key
+                        id_key_temp = get_id_key([entry])
+                        rated_ids.add(entry[id_key_temp])
+
+                print(f"Found {len(rated_ids)} entries in original fine ratings file")
+                print(f"Filtering fine data to only process these {len(rated_ids)} entries")
+
+                # Filter qa_pairs to only include rated IDs
+                id_key = get_id_key(all_qa_pairs)
+                all_qa_pairs = [qa for qa in all_qa_pairs if qa[id_key] in rated_ids]
+                print(f"After filtering: {len(all_qa_pairs)} examples to process")
+            else:
+                print(f"Warning: Original ratings file not found at {original_ratings_path}")
+                print(f"Processing all {len(all_qa_pairs)} fine examples")
+
         # Apply start/end index filtering if specified
         if args.start_idx is not None or args.end_idx is not None:
             start = args.start_idx if args.start_idx is not None else 0
@@ -187,7 +213,7 @@ def run_baseline_experiment(args):
                         start_time = time.time()
                         perturbed_rating = get_rating_with_averaging(
                             question, perturbed_answer, *load_prompt(prompt_path),
-                            args.model, num_runs=args.num_runs
+                            args.model, num_runs=args.num_runs, flush_output=True
                         )
                         elapsed_time = time.time() - start_time
                         print(f'Time taken for {qa_pair[id_key]}: {elapsed_time:.2f} seconds')

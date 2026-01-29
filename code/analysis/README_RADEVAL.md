@@ -20,6 +20,10 @@ Analyzes CheXbert evaluation results comparing original vs perturbed reports.
   - Error bars: 95% confidence intervals
   - One bar for all original scores combined
   - Separate bars for each perturbation (ordered: swap organs, swap qualifiers, remove sentences 30%/50%/70%, add typos p=0.3/0.5/0.7)
+- Severity effect plots:
+  - Add Typos: Score degradation vs typo probability (0.3, 0.5, 0.7)
+  - Remove Sentences: Score degradation vs percentage removed (30%, 50%, 70%)
+  - Shows how increasing perturbation severity affects score degradation
 - Summary report with statistics for ALL metrics and significance tests
 
 **Usage:**
@@ -45,6 +49,10 @@ Analyzes GREEN evaluation results comparing original vs perturbed reports.
   - Error bars: 95% confidence intervals
   - One bar for all original scores combined
   - Separate bars for each perturbation (ordered: swap organs, swap qualifiers, remove sentences 30%/50%/70%, add typos p=0.3/0.5/0.7)
+- Severity effect plots:
+  - Add Typos: Score degradation vs typo probability (0.3, 0.5, 0.7)
+  - Remove Sentences: Score degradation vs percentage removed (30%, 50%, 70%)
+  - Shows how increasing perturbation severity affects score degradation
 - Summary report with statistics and significance tests
 
 **Usage:**
@@ -67,10 +75,14 @@ output/radeval/analysis/
 
 **CheXbert outputs:**
 - `chexbert_all_weighted_f1_barplot.png` (all 14 conditions, mean ± 95% CI)
+- `chexbert_all_weighted_f1_typo_severity.png` (degradation vs typo probability)
+- `chexbert_all_weighted_f1_remove_severity.png` (degradation vs sentences removed)
 - `chexbert_summary_report.txt` (includes ALL 7 metrics)
 
 **GREEN outputs:**
 - `green_barplot_{model_name}.png` (mean ± 95% CI)
+- `green_typo_severity_{model_name}.png` (degradation vs typo probability)
+- `green_remove_severity_{model_name}.png` (degradation vs sentences removed)
 - `green_summary_report_{model_name}.txt`
 
 ---

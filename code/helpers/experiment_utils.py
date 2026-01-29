@@ -272,7 +272,7 @@ def get_or_create_original_ratings(
             print(f"\nGetting rating for {qa_pair[id_key]}...")
             start_time = time.time()
             original_rating = get_rating_with_averaging(
-                question, original_answer, system_prompt, user_template, model, num_runs=num_runs
+                question, original_answer, system_prompt, user_template, model, num_runs=num_runs, flush_output=True
             )
             elapsed_time = time.time() - start_time
             print(f'Time taken: {elapsed_time:.2f} seconds')
