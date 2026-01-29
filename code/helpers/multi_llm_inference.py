@@ -1,5 +1,6 @@
 import os
 import sys
+import time
 
 # Print diagnostic info before importing torch
 print("=" * 80, file=sys.stderr)
@@ -195,6 +196,7 @@ def get_response(messages, model="Qwen3-1.7B"):
             max_tokens=2048
         )
 
+        time.sleep(0.2)  # Rate limit delay
         return response.choices[0].message.content
 
     elif provider == "anthropic":
@@ -225,6 +227,7 @@ def get_response(messages, model="Qwen3-1.7B"):
             messages=anthropic_messages
         )
 
+        time.sleep(0.2)  # Rate limit delay
         return response.content[0].text
 
     elif provider == "google":
@@ -261,6 +264,7 @@ def get_response(messages, model="Qwen3-1.7B"):
             config=config
         )
 
+        time.sleep(0.2)  # Rate limit delay
         return response.text
 
     else:

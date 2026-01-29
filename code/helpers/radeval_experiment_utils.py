@@ -224,6 +224,8 @@ def get_or_create_radeval_original_ratings(
     text_field: str,
     reference_field: str,
     output_dir: str,
+    model: str = None,
+    cpu: bool = False,
     num_runs: int = 1
 ) -> Dict[str, Dict]:
     """
@@ -234,6 +236,8 @@ def get_or_create_radeval_original_ratings(
         text_field: Field containing text to evaluate (e.g., 'prediction')
         reference_field: Field containing reference text
         output_dir: Output directory
+        model: Model to use for GREEN evaluation
+        cpu: If True, run on CPU (for GREEN model only)
         num_runs: Number of evaluation runs (GREEN is deterministic)
 
     Returns:
@@ -246,7 +250,9 @@ def get_or_create_radeval_original_ratings(
     original_ratings_dir = os.path.join(output_dir, 'original_ratings')
     os.makedirs(original_ratings_dir, exist_ok=True)
 
-    original_ratings_filename = f"original_green_rating.jsonl"
+    # Include model name in filename for clarity
+    model_name_clean = clean_model_name(model) if model else "GREEN-radllama2-7b"
+    original_ratings_filename = f"original_{model_name_clean}_green_rating.jsonl"
     original_ratings_path = os.path.join(original_ratings_dir, original_ratings_filename)
 
     # Load existing ratings if file exists
@@ -276,13 +282,98 @@ def get_or_create_radeval_original_ratings(
 
             print(f"\nGetting GREEN rating for {item['id']}...")
             start_time = time.time()
-            original_rating = get_green_rating(prediction, reference, num_runs=num_runs)
+            original_rating = get_green_rating(
+                prediction, reference,
+                model_name=model,
+                cpu=cpu,
+                num_runs=num_runs
+            )
             elapsed_time = time.time() - start_time
             print(f'Time taken: {elapsed_time:.2f} seconds')
 
             # Build entry
             result = item.copy()
             result['original_rating'] = original_rating
+
+            # Save to file
+            json.dump(result, f)
+            f.write('\n')
+
+            # Add to dictionary
+            ratings_dict[item['id']] = original_rating
+
+    print(f"✓ Generated {len(missing_data)} missing ratings. Total: {len(ratings_dict)}")
+    return ratings_dict
+
+
+def get_or_create_radeval_chexbert_ratings(
+    data: List[Dict],
+    text_field: str,
+    reference_field: str,
+    output_dir: str,
+    device: str = 'mps'
+) -> Dict[str, Dict]:
+    """
+    Get original CheXbert ratings - load from file if complete, otherwise generate missing ones.
+
+    Args:
+        data: List of data entries
+        text_field: Field containing text to evaluate (e.g., 'prediction')
+        reference_field: Field containing reference text
+        output_dir: Output directory
+        device: Device to use ('mps', 'cuda', or 'cpu')
+
+    Returns:
+        Dictionary mapping ID to original CheXbert rating
+    """
+    from helpers.chexbert_eval import get_chexbert_rating
+    import time
+
+    # Setup paths
+    original_ratings_dir = os.path.join(output_dir, 'original_ratings')
+    os.makedirs(original_ratings_dir, exist_ok=True)
+
+    # CheXbert doesn't need model name (uses fixed BERT model)
+    original_ratings_filename = f"original_chexbert_rating.jsonl"
+    original_ratings_path = os.path.join(original_ratings_dir, original_ratings_filename)
+
+    # Load existing ratings if file exists
+    ratings_dict = {}
+    if os.path.exists(original_ratings_path):
+        with open(original_ratings_path, 'r') as f:
+            for line in f:
+                entry = json.loads(line)
+                ratings_dict[entry['id']] = entry['original_chexbert_rating']
+        print(f"✓ Loaded {len(ratings_dict)} existing original CheXbert ratings from {original_ratings_filename}")
+
+    # Check which entries are missing
+    missing_data = [item for item in data if item['id'] not in ratings_dict]
+
+    if len(missing_data) == 0:
+        print(f"✓ All {len(data)} original CheXbert ratings complete!")
+        return ratings_dict
+
+    # Generate missing ratings
+    print(f"⚠ {len(missing_data)} original CheXbert ratings missing (out of {len(data)} total)")
+    print(f"  Computing missing ratings...")
+
+    with open(original_ratings_path, 'a') as f:
+        for item in missing_data:
+            prediction = item[text_field]
+            reference = item[reference_field]
+
+            print(f"\nGetting CheXbert rating for {item['id']}...")
+            start_time = time.time()
+            original_rating = get_chexbert_rating(
+                prediction, reference,
+                device=device
+            )
+            elapsed_time = time.time() - start_time
+            print(f'Time taken: {elapsed_time:.2f} seconds')
+
+            # Build entry
+            result = item.copy()
+            result['original_chexbert_rating'] = original_rating
 
             # Save to file
             json.dump(result, f)

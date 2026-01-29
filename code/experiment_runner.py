@@ -45,8 +45,8 @@ def generate_data_only(args):
     output_dir = paths['output_dir']
     model_name_clean = clean_model_name(args.model)
 
-    # Define perturbations to generate
-    all_perturbations = ['add_typos', 'change_dosage', 'remove_sentences', 'add_confusion']
+    # Define perturbations to generate (starting with change_dosage and remove_sentences)
+    all_perturbations = ['change_dosage', 'remove_sentences', 'add_typos', 'add_confusion']
     if args.perturbation:
         if args.perturbation not in all_perturbations:
             raise ValueError(f"Invalid perturbation: {args.perturbation}")
@@ -75,7 +75,17 @@ def generate_data_only(args):
         print(f"Using data: {data_path}")
 
         # Load data
-        qa_pairs = load_qa_data(data_path)
+        all_qa_pairs = load_qa_data(data_path)
+        print(f"Loaded {len(all_qa_pairs)} examples")
+
+        # Apply start/end index filtering if specified
+        if args.start_idx is not None or args.end_idx is not None:
+            start = args.start_idx if args.start_idx is not None else 0
+            end = args.end_idx if args.end_idx is not None else len(all_qa_pairs)
+            qa_pairs = all_qa_pairs[start:end]
+            print(f"Using subset: indices {start} to {end} ({len(qa_pairs)} examples)")
+        else:
+            qa_pairs = all_qa_pairs
 
         # Step 1: Generate/check original ratings
         print(f"\n{'-'*80}")
@@ -245,6 +255,20 @@ Examples:
         type=int,
         default=42,
         help='Random seed for reproducibility (default: 42)'
+    )
+
+    # Data subsetting
+    parser.add_argument(
+        '--start-idx',
+        type=int,
+        default=None,
+        help='Start index for data subset (default: 0)'
+    )
+    parser.add_argument(
+        '--end-idx',
+        type=int,
+        default=None,
+        help='End index for data subset (default: all data)'
     )
 
     # Output configuration

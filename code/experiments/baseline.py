@@ -47,8 +47,8 @@ def run_baseline_experiment(args):
     output_dir = paths['output_dir']
     model_name_clean = clean_model_name(args.model)
 
-    # Define perturbation types
-    all_perturbations = ['add_typos', 'change_dosage', 'remove_sentences', 'add_confusion']
+    # Define perturbation types (starting with change_dosage and remove_sentences)
+    all_perturbations = ['change_dosage', 'remove_sentences', 'add_typos', 'add_confusion']
 
     # Determine which perturbations to run
     if args.perturbation:
@@ -74,7 +74,18 @@ def run_baseline_experiment(args):
         print(f"Using data: {data_path}")
 
         # Load data
-        qa_pairs = load_qa_data(data_path)
+        all_qa_pairs = load_qa_data(data_path)
+        print(f"Loaded {len(all_qa_pairs)} examples")
+
+        # Apply start/end index filtering if specified
+        if args.start_idx is not None or args.end_idx is not None:
+            start = args.start_idx if args.start_idx is not None else 0
+            end = args.end_idx if args.end_idx is not None else len(all_qa_pairs)
+            qa_pairs = all_qa_pairs[start:end]
+            print(f"Using subset: indices {start} to {end} ({len(qa_pairs)} examples)")
+        else:
+            qa_pairs = all_qa_pairs
+
         id_key = get_id_key(qa_pairs)
 
         # Select prompt path

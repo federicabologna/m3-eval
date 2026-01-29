@@ -130,12 +130,24 @@ python code/experiment_runner.py \
 ### RadEval
 
 ```bash
-# Run all perturbations
+# Run all perturbations with default GREEN model
 python code/run_radeval_experiments.py
 
 # Run specific perturbation
 python code/run_radeval_experiments.py \
   --perturbation swap_organs
+
+# Use GPT-4.1 for evaluation
+python code/run_radeval_experiments.py \
+  --model gpt-4.1-2025-04-14
+
+# Use GPT-4o for evaluation
+python code/run_radeval_experiments.py \
+  --model gpt-4o
+
+# Run on CPU (for GREEN model only)
+python code/run_radeval_experiments.py \
+  --cpu
 
 # Custom field names
 python code/run_radeval_experiments.py \
@@ -244,18 +256,33 @@ python code/run_radeval_experiments.py --perturbation swap_organs
 
 ## 📊 Supported Models
 
-### Local Models (CQA Eval)
+### CQA Eval Models
+
+**Local Models:**
 - **Qwen3-8B** - Balanced performance (default)
 - Uses Unsloth for 4-bit quantization and 2x faster inference
 
-### API Models (CQA Eval)
-- **gpt-4o** - OpenAI's latest
+**API Models:**
+- **gpt-4.1-2025-04-14** - OpenAI's GPT-4.1
+- **gpt-4o** - OpenAI's GPT-4o
 - **claude-opus-4-5-20251101** - Anthropic Claude
 - **gemini-2.0-flash-exp** - Google Gemini
 
+### RadEval Models
+
+**GREEN Model (default):**
+- **StanfordAIMI/GREEN-radllama2-7b** - Fine-tuned LLaMA 2 7B for radiology report evaluation
+- Runs locally on GPU or CPU
+- LLM-based metric using structured error categorization
+
+**API Models:**
+- **gpt-4.1-2025-04-14** - OpenAI's GPT-4.1 via MammoGREEN
+- **gpt-4o** - OpenAI's GPT-4o via MammoGREEN
+- **gpt-4o-mini** - OpenAI's smaller GPT-4o model
+
 ### Evaluation Metrics
 - **CQA Eval**: LLM-based rating (correctness, relevance, safety)
-- **RadEval**: GREEN metric (entity-based matching)
+- **RadEval**: GREEN metric (LLM-based radiology report evaluation)
 
 ---
 
