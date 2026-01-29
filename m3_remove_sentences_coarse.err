@@ -1,0 +1,21 @@
+================================================================================
+CUDA/PyTorch Diagnostics:
+LD_LIBRARY_PATH: /usr/local/cuda-12.1/lib64:/usr/local/cuda-12.1/extras/CUPTI/lib64:
+================================================================================
+PyTorch version: 2.10.0+cu128
+PyTorch CUDA compiled version: 12.8
+CUDA available: True
+CUDA device: NVIDIA RTX A6000
+================================================================================
+================================================================================
+CUDA/PyTorch Diagnostics (before import):
+Python: 3.12.3 (main, Jun 18 2025, 17:59:45) [GCC 13.3.0]
+LD_LIBRARY_PATH: /usr/local/cuda-12.1/lib64:/usr/local/cuda-12.1/extras/CUPTI/lib64:
+================================================================================
+nvidia-smi output:
+| NVIDIA-SMI 570.124.06             Driver Version: 570.124.06     CUDA Version: 12.8     |
+================================================================================
+Attempting to import torch...
+/home/fb265/m3-eval/.venv/lib/python3.12/site-packages/spacy/language.py:2195: FutureWarning: Possible set union at position 6328
+  deserializers["tokenizer"] = lambda p: self.tokenizer.from_disk(  # type: ignore[union-attr]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.67s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.17s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.25s/it]
