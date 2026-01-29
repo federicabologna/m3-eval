@@ -30,12 +30,36 @@ def setup_paths(output_dir=None):
     }
 
 
-def load_qa_data(data_path: str) -> List[Dict]:
-    """Load QA pairs from JSONL file."""
+def load_qa_data(data_path: str, sentence_ids_subset_file: str = None) -> List[Dict]:
+    """
+    Load QA pairs from JSONL file.
+
+    Args:
+        data_path: Path to the JSONL data file
+        sentence_ids_subset_file: Optional path to JSON file containing list of sentence_ids to filter by
+
+    Returns:
+        List of QA pair dictionaries
+    """
     qa_pairs = []
     with open(data_path, 'r') as f:
         for line in f:
             qa_pairs.append(json.loads(line))
+
+    # Filter by sentence_ids if subset file is provided
+    if sentence_ids_subset_file and os.path.exists(sentence_ids_subset_file):
+        with open(sentence_ids_subset_file, 'r') as f:
+            allowed_ids = set(json.load(f))
+
+        # Determine ID key
+        id_key = 'sentence_id' if 'sentence_id' in qa_pairs[0] else 'answer_id'
+
+        original_count = len(qa_pairs)
+        qa_pairs = [qa for qa in qa_pairs if qa[id_key] in allowed_ids]
+        filtered_count = len(qa_pairs)
+
+        print(f"Filtered data using {os.path.basename(sentence_ids_subset_file)}: {original_count} -> {filtered_count} examples")
+
     return qa_pairs
 
 

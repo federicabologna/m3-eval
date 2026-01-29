@@ -8,9 +8,9 @@ Perturbation: add_typos (Models)
 ================================================================================
 Model: Qwen3-8B (p=0.3)
 ================================================================================
-Number of samples: 12
+Number of samples: 48
 
-Correctness: W=0.00, p=1.0000e+00 ns
-Relevance: W=17.00, p=3.1250e-01 ns
-Safety: W=24.50, p=6.2891e-01 ns
+Correctness: W=8.00, p=4.4613e-01 ns
+Relevance: W=534.00, p=2.8317e-03 **
+Safety: W=504.00, p=1.0272e-01 ns
 

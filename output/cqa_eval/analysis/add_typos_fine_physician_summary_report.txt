@@ -8,9 +8,9 @@ Perturbation: add_typos (Physician)
 ================================================================================
 Model: Qwen3-8B (p=0.3)
 ================================================================================
-Number of samples: 6
+Number of samples: 28
 
-Correctness: W=0.00, p=1.0000e+00 ns
-Relevance: W=3.00, p=6.2500e-01 ns
-Safety: W=12.00, p=1.5625e-01 ns
+Correctness: W=21.00, p=3.3510e-01 ns
+Relevance: W=122.50, p=2.5606e-01 ns
+Safety: W=234.50, p=7.7503e-03 **
 

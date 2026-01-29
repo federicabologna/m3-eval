@@ -138,6 +138,8 @@ def plot_comparison(perturbation_results, metric, output_path):
     means = [orig_mean]
     cis = [orig_ci]
     labels = ['Original']
+    degradations = [None]  # No degradation for original
+    p_values = [None]  # No p-value for original
 
     # Collect perturbed scores for each perturbation (in order)
     for pert_key, pert_label in perturbation_order:
@@ -161,12 +163,22 @@ def plot_comparison(perturbation_results, metric, output_path):
                     matched = True
 
             if matched:
-                scores = data['perturbed'][metric]
-                mean = np.mean(scores)
-                ci = 1.96 * np.std(scores) / np.sqrt(len(scores))  # 95% CI
+                orig_scores = data['original'][metric]
+                pert_scores = data['perturbed'][metric]
+                mean = np.mean(pert_scores)
+                ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores))  # 95% CI
+
+                # Calculate degradation
+                degradation = np.mean(orig_scores) - mean
+
+                # Perform Wilcoxon signed-rank test
+                _, p_value = stats.wilcoxon(orig_scores, pert_scores, alternative='greater')
+
                 means.append(mean)
                 cis.append(ci)
                 labels.append(pert_label)
+                degradations.append(degradation)
+                p_values.append(p_value)
                 break
 
     # Create bar plot
@@ -178,6 +190,23 @@ def plot_comparison(perturbation_results, metric, output_path):
     bars = ax.bar(x, means, yerr=cis, color=colors, alpha=0.7,
                   capsize=5, error_kw={'linewidth': 2})
 
+    # Add degradation values and significance stars above bars
+    for i in range(1, len(means)):  # Skip original (index 0)
+        # Determine significance stars
+        if p_values[i] < 0.001:
+            stars = '***'
+        elif p_values[i] < 0.01:
+            stars = '**'
+        elif p_values[i] < 0.05:
+            stars = '*'
+        else:
+            stars = ''
+
+        # Add text annotation
+        y_pos = means[i] + cis[i] + 0.02
+        text = f'-{degradations[i]:.3f}{stars}'
+        ax.text(x[i], y_pos, text, ha='center', va='bottom', fontsize=9, fontweight='bold')
+
     # Customize plot
     ax.set_ylabel(METRIC_LABELS[metric], fontsize=12)
     ax.set_title(f'{METRIC_LABELS[metric]} - Original vs Perturbed (Mean ± 95% CI)',
@@ -185,7 +214,7 @@ def plot_comparison(perturbation_results, metric, output_path):
     ax.set_xticks(x)
     ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.grid(axis='y', alpha=0.3)
-    ax.set_ylim(bottom=0, top=1.05)  # F1 scores range [0, 1]
+    ax.set_ylim(bottom=0, top=1.15)  # Increased top to accommodate annotations
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')

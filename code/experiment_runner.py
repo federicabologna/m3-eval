@@ -74,8 +74,16 @@ def generate_data_only(args):
         prompt_path = os.path.join(paths['prompts_dir'], f'{level}prompt_system.txt')
         print(f"Using data: {data_path}")
 
+        # Determine if we should use sentence_ids subset for fine level
+        sentence_ids_subset_file = None
+        if level == 'fine':
+            subset_file = os.path.join(paths['project_root'], 'data', 'fine_sentence_ids_subset.json')
+            if os.path.exists(subset_file):
+                sentence_ids_subset_file = subset_file
+                print(f"Using sentence_ids subset: {os.path.basename(subset_file)}")
+
         # Load data
-        all_qa_pairs = load_qa_data(data_path)
+        all_qa_pairs = load_qa_data(data_path, sentence_ids_subset_file=sentence_ids_subset_file)
         print(f"Loaded {len(all_qa_pairs)} examples")
 
         # Apply start/end index filtering if specified
