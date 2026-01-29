@@ -96,11 +96,12 @@ def compute_statistics(original_scores, perturbed_scores):
 
 
 def plot_comparison(results_by_model, results_by_model_physician, level, perturbation, output_path, is_add_typos=False):
-    """Create combined figure with all three metrics as subplots, showing physician vs model answers."""
+    """Create 2x3 grid: top row for physician answers, bottom row for model answers."""
     if len(results_by_model) == 0 and len(results_by_model_physician) == 0:
         return
 
-    fig, axes = plt.subplots(1, 3, figsize=(20, 6))
+    # Create 2x3 subplot grid (2 rows, 3 columns)
+    fig, axes = plt.subplots(2, 3, figsize=(20, 10))
 
     # Get unique evaluation models (extract from 'eval_model' field)
     eval_models = set()
@@ -117,26 +118,26 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
         offsets = [-1.5*width, -0.5*width, 0.5*width, 1.5*width]  # Original, p=0.3, p=0.5, p=0.7
     else:
         width = 0.25
-        offsets = [-width, 0, width]  # Original, Perturbed (models), Perturbed (physician)
+        offsets = [-width, 0, width]  # Original, Perturbed
 
+    # Plot physician answers (top row)
     for idx, metric in enumerate(METRICS):
-        ax = axes[idx]
+        ax = axes[0, idx]  # Top row
 
-        # Original scores (same for both physician and model answers)
+        if len(results_by_model_physician) == 0:
+            ax.text(0.5, 0.5, 'No physician data', ha='center', va='center', transform=ax.transAxes)
+            ax.set_title(f'{METRIC_LABELS[metric]} (Physician)', fontsize=12, fontweight='bold')
+            continue
+
+        # Original scores
         orig_means = []
         orig_cis = []
         for eval_model in eval_models:
-            # Find any entry for this eval model to get original scores
             data = None
-            for key, d in results_by_model.items():
+            for key, d in results_by_model_physician.items():
                 if d['eval_model'] == eval_model:
                     data = d
                     break
-            if data is None:
-                for key, d in results_by_model_physician.items():
-                    if d['eval_model'] == eval_model:
-                        data = d
-                        break
 
             if data is None:
                 orig_means.append(0)
@@ -151,19 +152,113 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
 
         # Plot original scores
         ax.bar(x + offsets[0], orig_means, width, yerr=orig_cis,
-               label='Original' if idx == 0 else '', capsize=3, alpha=0.8, color='#1f77b4')
+               label='Original', capsize=3, alpha=0.8, color='#1f77b4')
 
         if is_add_typos:
             # For add_typos, plot separate bars for each probability
             probs = ['03', '05', '07']
-            colors_model = ['#ff7f0e', '#ff9f4a', '#ffbf7f']  # Orange shades for models
+            colors = ['#2ca02c', '#60c060', '#90d090']  # Green shades for physician
 
             for prob_idx, prob in enumerate(probs):
-                # Model answers
-                pert_means_model = []
-                pert_cis_model = []
+                pert_means = []
+                pert_cis = []
                 for eval_model in eval_models:
-                    # Find entry for this eval_model + prob combo
+                    data = None
+                    for key, d in results_by_model_physician.items():
+                        if d['eval_model'] == eval_model and d.get('prob') == prob:
+                            data = d
+                            break
+
+                    if data:
+                        pert_scores = data['perturbed'][metric]
+                        mean = np.mean(pert_scores) if len(pert_scores) > 0 else 0
+                        ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores)) if len(pert_scores) > 0 else 0
+                        pert_means.append(mean)
+                        pert_cis.append(ci)
+                    else:
+                        pert_means.append(0)
+                        pert_cis.append(0)
+
+                ax.bar(x + offsets[1 + prob_idx], pert_means, width, yerr=pert_cis,
+                       label=f'Pert. p={float(prob)/10}',
+                       capsize=3, alpha=0.8, color=colors[prob_idx])
+        else:
+            # Regular perturbation
+            pert_means = []
+            pert_cis = []
+            for eval_model in eval_models:
+                data = None
+                for key, d in results_by_model_physician.items():
+                    if d['eval_model'] == eval_model:
+                        data = d
+                        break
+
+                if data:
+                    pert_scores = data['perturbed'][metric]
+                    mean = np.mean(pert_scores) if len(pert_scores) > 0 else 0
+                    ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores)) if len(pert_scores) > 0 else 0
+                    pert_means.append(mean)
+                    pert_cis.append(ci)
+                else:
+                    pert_means.append(0)
+                    pert_cis.append(0)
+
+            ax.bar(x + offsets[1], pert_means, width, yerr=pert_cis,
+                   label='Perturbed', capsize=3, alpha=0.8, color='#2ca02c')
+
+        # Customize subplot
+        ax.set_ylabel(f'{METRIC_LABELS[metric]} Score', fontsize=11)
+        ax.set_title(f'{METRIC_LABELS[metric]} (Physician)', fontsize=12, fontweight='bold')
+        ax.set_xticks(x)
+        ax.set_xticklabels(eval_models, rotation=15, ha='right')
+        if idx == 0:  # Only show legend on first subplot
+            ax.legend(fontsize=8, loc='upper right')
+        ax.grid(axis='y', alpha=0.3)
+        ax.set_ylim(bottom=0, top=5.5)  # Scores are 1-5 scale
+
+    # Plot model answers (bottom row)
+    for idx, metric in enumerate(METRICS):
+        ax = axes[1, idx]  # Bottom row
+
+        if len(results_by_model) == 0:
+            ax.text(0.5, 0.5, 'No model data', ha='center', va='center', transform=ax.transAxes)
+            ax.set_title(f'{METRIC_LABELS[metric]} (Models)', fontsize=12, fontweight='bold')
+            continue
+
+        # Original scores
+        orig_means = []
+        orig_cis = []
+        for eval_model in eval_models:
+            data = None
+            for key, d in results_by_model.items():
+                if d['eval_model'] == eval_model:
+                    data = d
+                    break
+
+            if data is None:
+                orig_means.append(0)
+                orig_cis.append(0)
+                continue
+
+            orig_scores = data['original'][metric]
+            mean = np.mean(orig_scores) if len(orig_scores) > 0 else 0
+            ci = 1.96 * np.std(orig_scores) / np.sqrt(len(orig_scores)) if len(orig_scores) > 0 else 0
+            orig_means.append(mean)
+            orig_cis.append(ci)
+
+        # Plot original scores
+        ax.bar(x + offsets[0], orig_means, width, yerr=orig_cis,
+               label='Original', capsize=3, alpha=0.8, color='#1f77b4')
+
+        if is_add_typos:
+            # For add_typos, plot separate bars for each probability
+            probs = ['03', '05', '07']
+            colors = ['#ff7f0e', '#ff9f4a', '#ffbf7f']  # Orange shades for models
+
+            for prob_idx, prob in enumerate(probs):
+                pert_means = []
+                pert_cis = []
+                for eval_model in eval_models:
                     data = None
                     for key, d in results_by_model.items():
                         if d['eval_model'] == eval_model and d.get('prob') == prob:
@@ -174,28 +269,20 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                         pert_scores = data['perturbed'][metric]
                         mean = np.mean(pert_scores) if len(pert_scores) > 0 else 0
                         ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores)) if len(pert_scores) > 0 else 0
-                        pert_means_model.append(mean)
-                        pert_cis_model.append(ci)
+                        pert_means.append(mean)
+                        pert_cis.append(ci)
                     else:
-                        pert_means_model.append(0)
-                        pert_cis_model.append(0)
+                        pert_means.append(0)
+                        pert_cis.append(0)
 
-                ax.bar(x + offsets[1 + prob_idx], pert_means_model, width, yerr=pert_cis_model,
-                       label=f'Pert. p={float(prob)/10} (Models)' if idx == 0 else '',
-                       capsize=3, alpha=0.8, color=colors_model[prob_idx])
-
-            # For physician answers in add_typos, use same approach but different colors
-            if len(results_by_model_physician) > 0:
-                # Adjust offsets to accommodate physician bars
-                # This is getting too crowded, let's skip physician for add_typos for now
-                pass
+                ax.bar(x + offsets[1 + prob_idx], pert_means, width, yerr=pert_cis,
+                       label=f'Pert. p={float(prob)/10}',
+                       capsize=3, alpha=0.8, color=colors[prob_idx])
         else:
-            # Regular perturbation - show model and physician perturbed scores
-            # Model answers
-            pert_means_model = []
-            pert_cis_model = []
+            # Regular perturbation
+            pert_means = []
+            pert_cis = []
             for eval_model in eval_models:
-                # Find entry for this eval_model
                 data = None
                 for key, d in results_by_model.items():
                     if d['eval_model'] == eval_model:
@@ -206,43 +293,18 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                     pert_scores = data['perturbed'][metric]
                     mean = np.mean(pert_scores) if len(pert_scores) > 0 else 0
                     ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores)) if len(pert_scores) > 0 else 0
-                    pert_means_model.append(mean)
-                    pert_cis_model.append(ci)
+                    pert_means.append(mean)
+                    pert_cis.append(ci)
                 else:
-                    pert_means_model.append(0)
-                    pert_cis_model.append(0)
+                    pert_means.append(0)
+                    pert_cis.append(0)
 
-            ax.bar(x + offsets[1], pert_means_model, width, yerr=pert_cis_model,
-                   label='Perturbed (Models)' if idx == 0 else '', capsize=3, alpha=0.8, color='#ff7f0e')
-
-            # Physician answers
-            if len(results_by_model_physician) > 0:
-                pert_means_physician = []
-                pert_cis_physician = []
-                for eval_model in eval_models:
-                    # Find entry for this eval_model
-                    data = None
-                    for key, d in results_by_model_physician.items():
-                        if d['eval_model'] == eval_model:
-                            data = d
-                            break
-
-                    if data:
-                        pert_scores = data['perturbed'][metric]
-                        mean = np.mean(pert_scores) if len(pert_scores) > 0 else 0
-                        ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores)) if len(pert_scores) > 0 else 0
-                        pert_means_physician.append(mean)
-                        pert_cis_physician.append(ci)
-                    else:
-                        pert_means_physician.append(0)
-                        pert_cis_physician.append(0)
-
-                ax.bar(x + offsets[2], pert_means_physician, width, yerr=pert_cis_physician,
-                       label='Perturbed (Physician)' if idx == 0 else '', capsize=3, alpha=0.8, color='#2ca02c')
+            ax.bar(x + offsets[1], pert_means, width, yerr=pert_cis,
+                   label='Perturbed', capsize=3, alpha=0.8, color='#ff7f0e')
 
         # Customize subplot
         ax.set_ylabel(f'{METRIC_LABELS[metric]} Score', fontsize=11)
-        ax.set_title(f'{METRIC_LABELS[metric]}', fontsize=12, fontweight='bold')
+        ax.set_title(f'{METRIC_LABELS[metric]} (Models)', fontsize=12, fontweight='bold')
         ax.set_xticks(x)
         ax.set_xticklabels(eval_models, rotation=15, ha='right')
         if idx == 0:  # Only show legend on first subplot
@@ -252,7 +314,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
 
     # Overall title
     fig.suptitle(f'{perturbation.replace("_", " ").title()} - Original vs Perturbed ({level.title()} Level)',
-                 fontsize=14, fontweight='bold', y=1.00)
+                 fontsize=14, fontweight='bold', y=0.995)
 
     plt.tight_layout()
     plt.savefig(output_path, dpi=300, bbox_inches='tight')
