@@ -1,6 +1,6 @@
 ========================================
-Job started at: Wed Jan 28 01:32:05 PM EST 2026
-Job ID: 462195
+Job started at: Wed Jan 28 02:59:58 PM EST 2026
+Job ID: 466435
 ========================================
 Running add_typos perturbation with all probability values...
 This will generate 3 files per level (coarse/fine) with prob=0.3, 0.5, 0.7
@@ -29,16 +29,14 @@ STEP 2: PERTURBATIONS
 ================================================================================
 Processing perturbation: ADD_TYPOS
 ================================================================================
-Running all typo_prob values: [0.3, 0.5, 0.7]
-
---------------------------------------------------------------------------------
-TYPO_PROB = 0.3
---------------------------------------------------------------------------------
-Found 293 already processed entries in output file
-Processing 7 remaining QA pairs (out of 300 total)
-Saving results to: experiment_results/baseline/add_typos/add_typos_03prob_coarse_Qwen3-8B_rating.jsonl
-
-Getting rating for PERTURBED answer...
+Found 296 already processed entries in output file
+Processing 4 remaining QA pairs (out of 300 total)
+Saving results to: add_typos/add_typos_03prob_coarse_Qwen3-8B_rating.jsonl
+✓ Loaded 297 existing perturbations from add_typos_03prob_coarse.jsonl
+⚠ 3 perturbations missing (out of 300 total)
+  Generating missing perturbations...
+✓ Generated 3 missing perturbations. Total: 297
+Skipping llama_92 - no perturbation found
 Collecting 5 ratings to average...
   Run 1/5...
 Loading Qwen model: Qwen3-8B... This may take a few minutes on first run.
