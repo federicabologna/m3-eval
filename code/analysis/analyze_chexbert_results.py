@@ -23,14 +23,10 @@ output_base = os.path.join(project_root, 'output', 'radeval', 'experiment_result
 analysis_output_dir = os.path.join(project_root, 'output', 'radeval', 'analysis')
 os.makedirs(analysis_output_dir, exist_ok=True)
 
-# CheXbert metrics to analyze (all metrics for statistics, subset for plots)
+# CheXbert metrics to analyze (only "all 14 conditions" metrics)
 ALL_METRICS = [
-    'accuracy',
-    'chexbert_5_micro_f1',
     'chexbert_all_micro_f1',
-    'chexbert_5_macro_f1',
     'chexbert_all_macro_f1',
-    'chexbert_5_weighted_f1',
     'chexbert_all_weighted_f1'
 ]
 
@@ -40,12 +36,8 @@ PLOT_METRICS = [
 ]
 
 METRIC_LABELS = {
-    'accuracy': 'Accuracy (TOP5)',
-    'chexbert_5_micro_f1': 'Micro F1 (TOP5)',
     'chexbert_all_micro_f1': 'Micro F1 (All 14)',
-    'chexbert_5_macro_f1': 'Macro F1 (TOP5)',
     'chexbert_all_macro_f1': 'Macro F1 (All 14)',
-    'chexbert_5_weighted_f1': 'Weighted F1 (TOP5)',
     'chexbert_all_weighted_f1': 'Weighted F1 (All 14)'
 }
 
@@ -269,7 +261,7 @@ def plot_severity_effect(perturbation_results, metric, output_dir):
         ax.set_ylim(0, 0.25)
 
         plt.tight_layout()
-        output_path = os.path.join(output_dir, f'chexbert_{metric}_typo_severity.png')
+        output_path = os.path.join(output_dir, f'{metric}_typo_severity.png')
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
         plt.close()
         print(f"  Saved plot: {os.path.basename(output_path)}")
@@ -299,7 +291,7 @@ def plot_severity_effect(perturbation_results, metric, output_dir):
         ax.set_ylim(0, 0.25)
 
         plt.tight_layout()
-        output_path = os.path.join(output_dir, f'chexbert_{metric}_remove_severity.png')
+        output_path = os.path.join(output_dir, f'{metric}_remove_severity.png')
         plt.savefig(output_path, dpi=300, bbox_inches='tight')
         plt.close()
         print(f"  Saved plot: {os.path.basename(output_path)}")
@@ -346,40 +338,29 @@ def plot_degradation_distribution(perturbation_results, metric, output_path):
 
 
 def generate_summary_report(perturbation_results, output_path):
-    """Generate text summary report of all results."""
+    """Generate text summary report with Wilcoxon signed-rank test results."""
     with open(output_path, 'w') as f:
         f.write("=" * 80 + "\n")
-        f.write("CheXbert Evaluation Results Summary\n")
+        f.write("CheXbert Evaluation Results - Wilcoxon Signed-Rank Test\n")
         f.write("=" * 80 + "\n\n")
 
         for perturbation, data in perturbation_results.items():
             f.write(f"\n{'='*80}\n")
             f.write(f"Perturbation: {data['label']}\n")
             f.write(f"{'='*80}\n")
-            f.write(f"File: {data['filename']}\n")
-            f.write(f"Number of samples: {data['stats']['accuracy']['n_samples']}\n\n")
+            f.write(f"Number of samples: {data['stats'][ALL_METRICS[0]]['n_samples']}\n\n")
 
             for metric in ALL_METRICS:
                 stats_data = data['stats'][metric]
-                f.write(f"\n{'-'*80}\n")
-                f.write(f"{METRIC_LABELS[metric]}\n")
-                f.write(f"{'-'*80}\n")
-                f.write(f"  Original:  {stats_data['original_mean']:.4f} ± {stats_data['original_std']:.4f}\n")
-                f.write(f"  Perturbed: {stats_data['perturbed_mean']:.4f} ± {stats_data['perturbed_std']:.4f}\n")
-                f.write(f"  Mean degradation: {stats_data['mean_degradation']:.4f} ± {stats_data['std_degradation']:.4f}\n")
-                f.write(f"\n")
-                f.write(f"  Score decreased: {stats_data['pct_decreased']:.1f}%\n")
-                f.write(f"  Score increased: {stats_data['pct_increased']:.1f}%\n")
-                f.write(f"  Score unchanged: {stats_data['pct_unchanged']:.1f}%\n")
 
                 if stats_data['wilcoxon_p_value'] is not None:
                     significance = "***" if stats_data['wilcoxon_p_value'] < 0.001 else \
                                  "**" if stats_data['wilcoxon_p_value'] < 0.01 else \
                                  "*" if stats_data['wilcoxon_p_value'] < 0.05 else "ns"
-                    f.write(f"\n  Wilcoxon signed-rank test:\n")
-                    f.write(f"    Statistic: {stats_data['wilcoxon_statistic']:.2f}\n")
-                    f.write(f"    p-value: {stats_data['wilcoxon_p_value']:.4e} {significance}\n")
-                    f.write(f"    (*** p<0.001, ** p<0.01, * p<0.05, ns p>=0.05)\n")
+
+                    f.write(f"{METRIC_LABELS[metric]}: ")
+                    f.write(f"W={stats_data['wilcoxon_statistic']:.2f}, ")
+                    f.write(f"p={stats_data['wilcoxon_p_value']:.4e} {significance}\n")
 
             f.write("\n")
 
@@ -463,7 +444,7 @@ def main():
     # Generate comparison bar plot (only weighted F1 for all 14 conditions)
     print("\nGenerating comparison bar plot (weighted F1 only)...")
     for metric in PLOT_METRICS:
-        output_path = os.path.join(analysis_output_dir, f'chexbert_{metric}_barplot.png')
+        output_path = os.path.join(analysis_output_dir, f'{metric}_barplot.png')
         plot_comparison(perturbation_results, metric, output_path)
 
     # Generate severity effect plots (only weighted F1 for all 14 conditions)

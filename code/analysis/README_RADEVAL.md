@@ -8,11 +8,10 @@ Analysis scripts for evaluating RadEval experiment results.
 Analyzes CheXbert evaluation results comparing original vs perturbed reports.
 
 **Metrics analyzed:**
-- All metrics computed and included in summary report:
-  - Accuracy (TOP5 conditions)
-  - Micro F1 (TOP5 and all 14 conditions)
-  - Macro F1 (TOP5 and all 14 conditions)
-  - Weighted F1 (TOP5 and all 14 conditions)
+- All metrics computed and included in summary report (all 14 conditions):
+  - Micro F1
+  - Macro F1
+  - Weighted F1
 
 **Output:**
 - Bar plot: Weighted F1 (all 14 conditions)
@@ -24,7 +23,7 @@ Analyzes CheXbert evaluation results comparing original vs perturbed reports.
   - Add Typos: Score degradation vs typo probability (0.3, 0.5, 0.7)
   - Remove Sentences: Score degradation vs percentage removed (30%, 50%, 70%)
   - Shows how increasing perturbation severity affects score degradation
-- Summary report with statistics for ALL metrics and significance tests
+- Summary report with Wilcoxon signed-rank test results for ALL metrics
 
 **Usage:**
 ```bash
@@ -53,7 +52,7 @@ Analyzes GREEN evaluation results comparing original vs perturbed reports.
   - Add Typos: Score degradation vs typo probability (0.3, 0.5, 0.7)
   - Remove Sentences: Score degradation vs percentage removed (30%, 50%, 70%)
   - Shows how increasing perturbation severity affects score degradation
-- Summary report with statistics and significance tests
+- Summary report with Wilcoxon signed-rank test results
 
 **Usage:**
 ```bash
@@ -80,17 +79,17 @@ output/radeval/analysis/
 - `chexbert_summary_report.txt` (includes ALL 7 metrics)
 
 **GREEN outputs:**
-- `green_barplot_{model_name}.png` (mean ± 95% CI)
-- `green_typo_severity_{model_name}.png` (degradation vs typo probability)
-- `green_remove_severity_{model_name}.png` (degradation vs sentences removed)
-- `green_summary_report_{model_name}.txt`
+- `green_barplot_gpt-4_1-2025-04-14.png` (mean ± 95% CI)
+- `green_typo_severity_gpt-4_1-2025-04-14.png` (degradation vs typo probability)
+- `green_remove_severity_gpt-4_1-2025-04-14.png` (degradation vs sentences removed)
+- `green_summary_report_gpt-4_1-2025-04-14.txt`
 
 ---
 
 ## Statistical Tests
 
 Both scripts use the **Wilcoxon signed-rank test** to compare original vs perturbed scores:
-- Tests if perturbations significantly decrease scores
+- Tests if perturbations significantly decrease scores (paired samples test)
 - Reports p-values with significance indicators:
   - `***` p < 0.001 (highly significant)
   - `**` p < 0.01 (very significant)
@@ -106,22 +105,11 @@ Both scripts use the **Wilcoxon signed-rank test** to compare original vs pertur
 ================================================================================
 Perturbation: Swap Qualifiers
 ================================================================================
-File: swap_qualifiers_chexbert_rating.jsonl
-Number of samples: 624
+Number of samples: 606
 
-Accuracy (TOP5)
---------------------------------------------------------------------------------
-  Original:  0.7452 ± 0.3214
-  Perturbed: 0.6891 ± 0.3456
-  Mean degradation: 0.0561 ± 0.1234
-
-  Score decreased: 45.2%
-  Score increased: 12.3%
-  Score unchanged: 42.5%
-
-  Wilcoxon signed-rank test:
-    Statistic: 12345.67
-    p-value: 1.2345e-10 ***
+Micro F1 (All 14): W=123678.00, p=3.4567e-08 ***
+Macro F1 (All 14): W=123890.00, p=5.6789e-06 ***
+Weighted F1 (All 14): W=124012.00, p=7.8901e-04 ***
 ```
 
 ---

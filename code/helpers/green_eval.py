@@ -80,12 +80,11 @@ def get_green_evaluator(model_name=None, cpu=False):
         if not api_key:
             raise ValueError("OPENAI_API_KEY not found in environment variables")
 
-        # Import MammoGREEN directly to set sleep time for rate limiting
+        # Import MammoGREEN directly
         from RadEval.factual.green_score import MammoGREEN
         evaluator = MammoGREEN(
             model_name=model_name,
             api_key=api_key,
-            sleep_s=5.0,  # 5 second delay between API calls to avoid rate limits
             output_dir="."
         )
     else:

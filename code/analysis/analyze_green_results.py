@@ -61,7 +61,7 @@ def compute_statistics(original_scores, perturbed_scores):
     pct_increased = np.mean(differences < 0) * 100
     pct_unchanged = np.mean(differences == 0) * 100
 
-    # Wilcoxon signed-rank test
+    # Wilcoxon signed-rank test for paired samples
     if len(original_scores) > 0:
         statistic, p_value = stats.wilcoxon(original_scores, perturbed_scores, alternative='greater')
     else:
@@ -216,11 +216,11 @@ def plot_severity_effect(perturbation_results, output_dir):
         filename = data['filename']
         parts = filename.replace('_green_rating.jsonl', '').split('_')
         if data['perturbation'] == 'add_typos':
-            model_name = '_'.join(parts[2:])
+            model_name = '_'.join(parts[3:])  # Skip add, typos, and prob
         elif data['perturbation'] == 'remove_sentences':
-            model_name = '_'.join(parts[2:])
+            model_name = '_'.join(parts[3:])  # Skip remove, sentences, and pct
         else:
-            model_name = '_'.join(parts[1:])
+            model_name = '_'.join(parts[1:])  # Skip perturbation name
         if model_name:
             break
 
@@ -324,10 +324,10 @@ def plot_degradation_distribution(perturbation_results, output_path):
 
 
 def generate_summary_report(perturbation_results, model_name, output_path):
-    """Generate text summary report."""
+    """Generate text summary report with Wilcoxon signed-rank test results."""
     with open(output_path, 'w') as f:
         f.write("=" * 80 + "\n")
-        f.write(f"GREEN Evaluation Results Summary\n")
+        f.write(f"GREEN Evaluation Results - Wilcoxon Signed-Rank Test\n")
         f.write(f"Model: {model_name}\n")
         f.write("=" * 80 + "\n\n")
 
@@ -335,28 +335,18 @@ def generate_summary_report(perturbation_results, model_name, output_path):
             f.write(f"\n{'='*80}\n")
             f.write(f"Perturbation: {data['label']}\n")
             f.write(f"{'='*80}\n")
-            f.write(f"File: {data['filename']}\n")
             f.write(f"Number of samples: {data['stats']['n_samples']}\n\n")
 
             stats_data = data['stats']
-            f.write(f"GREEN Score:\n")
-            f.write(f"{'-'*80}\n")
-            f.write(f"  Original:  {stats_data['original_mean']:.4f} ± {stats_data['original_std']:.4f}\n")
-            f.write(f"  Perturbed: {stats_data['perturbed_mean']:.4f} ± {stats_data['perturbed_std']:.4f}\n")
-            f.write(f"  Mean degradation: {stats_data['mean_degradation']:.4f} ± {stats_data['std_degradation']:.4f}\n")
-            f.write(f"\n")
-            f.write(f"  Score decreased: {stats_data['pct_decreased']:.1f}%\n")
-            f.write(f"  Score increased: {stats_data['pct_increased']:.1f}%\n")
-            f.write(f"  Score unchanged: {stats_data['pct_unchanged']:.1f}%\n")
 
             if stats_data['wilcoxon_p_value'] is not None:
                 significance = "***" if stats_data['wilcoxon_p_value'] < 0.001 else \
                              "**" if stats_data['wilcoxon_p_value'] < 0.01 else \
                              "*" if stats_data['wilcoxon_p_value'] < 0.05 else "ns"
-                f.write(f"\n  Wilcoxon signed-rank test:\n")
-                f.write(f"    Statistic: {stats_data['wilcoxon_statistic']:.2f}\n")
-                f.write(f"    p-value: {stats_data['wilcoxon_p_value']:.4e} {significance}\n")
-                f.write(f"    (*** p<0.001, ** p<0.01, * p<0.05, ns p>=0.05)\n")
+
+                f.write(f"GREEN Score: ")
+                f.write(f"W={stats_data['wilcoxon_statistic']:.2f}, ")
+                f.write(f"p={stats_data['wilcoxon_p_value']:.4e} {significance}\n")
 
             f.write("\n")
 
@@ -386,9 +376,9 @@ def main():
                     parts = filename.replace('_green_rating.jsonl', '').split('_')
                     # Find model part (everything after perturbation-specific parts)
                     if perturbation_dir == 'add_typos':
-                        model_name = '_'.join(parts[2:])  # Skip perturbation and prob
+                        model_name = '_'.join(parts[3:])  # Skip add, typos, and prob
                     elif perturbation_dir == 'remove_sentences':
-                        model_name = '_'.join(parts[2:])  # Skip perturbation and pct
+                        model_name = '_'.join(parts[3:])  # Skip remove, sentences, and pct
                     else:
                         model_name = '_'.join(parts[1:])  # Skip perturbation name
 

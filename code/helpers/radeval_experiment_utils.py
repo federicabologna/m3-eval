@@ -198,8 +198,7 @@ def get_or_create_radeval_perturbations(
 
             # Skip if no perturbation applied
             if perturbed_text == original_text and perturbation_name in ['swap_qualifiers', 'swap_organs']:
-                metadata['skip_reason'] = 'No applicable terms found to swap'
-                # Still save it with skip reason
+                continue
 
             # Build entry
             entry = item.copy()
