@@ -173,7 +173,8 @@ def run_baseline_experiment(args):
                 for typo_prob in typo_prob_values:
                     # Determine output filename
                     if perturbation_name == 'remove_sentences':
-                        output_filename = f"{perturbation_name}_{remove_pct}removed_{level}_{model_name_clean}_rating.jsonl"
+                        pct_str = str(int(remove_pct * 100))
+                        output_filename = f"{perturbation_name}_{pct_str}pct_{level}_{model_name_clean}_rating.jsonl"
                     elif perturbation_name == 'add_typos':
                         prob_str = str(typo_prob).replace('.', '')
                         output_filename = f"{perturbation_name}_{prob_str}prob_{level}_{model_name_clean}_rating.jsonl"
