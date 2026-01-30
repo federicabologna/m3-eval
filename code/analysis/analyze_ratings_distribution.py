@@ -207,13 +207,27 @@ for subdir, filename in sorted(output_files):
                    label='Perturbed', alpha=0.8, color='coral',
                    capsize=5, error_kw={'linewidth': 2})
 
-    # Add value labels on bars
-    for bars, means in [(bars1, means_original), (bars2, means_perturbed)]:
-        for bar, mean in zip(bars, means):
-            height = bar.get_height()
-            ax.text(bar.get_x() + bar.get_width()/2., height,
-                   f'{mean:.2f}',
-                   ha='center', va='bottom', fontsize=11, fontweight='bold')
+    # Add difference and significance labels on perturbed bars
+    for i, (bar, mean_orig, mean_pert, ci_pert_val, p_val) in enumerate(zip(bars2, means_original, means_perturbed, ci_perturbed, p_values)):
+        # Calculate difference (perturbed - original)
+        diff = mean_pert - mean_orig
+
+        # Get significance marker
+        if p_val < 0.001:
+            sig_marker = '***'
+        elif p_val < 0.01:
+            sig_marker = '**'
+        elif p_val < 0.05:
+            sig_marker = '*'
+        else:
+            sig_marker = 'ns'
+
+        # Add annotation above perturbed bar
+        height = bar.get_height()
+        y_pos = height + ci_pert_val + 0.1
+        ax.text(bar.get_x() + bar.get_width()/2., y_pos,
+               f'{diff:.2f}{sig_marker}',
+               ha='center', va='bottom', fontsize=10, fontweight='bold')
 
     # Formatting
     ax.set_xlabel('Evaluation Dimension', fontsize=12, fontweight='bold')
@@ -231,18 +245,7 @@ for subdir, filename in sorted(output_files):
     ax.legend(fontsize=11)
     ax.grid(axis='y', alpha=0.3)
 
-    # Add p-values as text annotations
-    for i, p_val in enumerate(p_values):
-        if p_val < 0.001:
-            sig_text = "p<0.001***"
-        elif p_val < 0.01:
-            sig_text = f"p={p_val:.3f}**"
-        elif p_val < 0.05:
-            sig_text = f"p={p_val:.3f}*"
-        else:
-            sig_text = f"p={p_val:.3f}"
-
-        ax.text(i, 5.2, sig_text, ha='center', fontsize=9, style='italic')
+    # P-values are now shown on the bars with significance markers
 
     plt.tight_layout()
 

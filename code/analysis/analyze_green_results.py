@@ -176,9 +176,10 @@ def plot_comparison(perturbation_results, output_path):
         else:
             stars = ''
 
-        # Add text annotation
+        # Add text annotation (show perturbed - original)
         y_pos = means[i] + cis[i] + 0.02
-        text = f'-{degradations[i]:.3f}{stars}'
+        diff = -degradations[i]  # degradation is (orig - pert), so negate for (pert - orig)
+        text = f'{diff:.3f}{stars}'
         ax.text(x[i], y_pos, text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
     # Customize plot

@@ -9,6 +9,7 @@ import json
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy import stats
 from collections import defaultdict
 
 # Path setup
@@ -25,6 +26,20 @@ METRIC_LABELS = {
     'relevance': 'Relevance',
     'safety': 'Safety'
 }
+
+
+def get_significance_marker(p_value):
+    """Return significance marker based on p-value."""
+    if p_value is None:
+        return ''
+    if p_value < 0.001:
+        return '***'
+    elif p_value < 0.01:
+        return '**'
+    elif p_value < 0.05:
+        return '*'
+    else:
+        return 'ns'
 
 
 def load_rating_file(filepath):
@@ -200,6 +215,30 @@ def plot_confidence_comparison(confidence_data, output_path):
             ax.bar(i + width/2, pert_means[i], width, yerr=pert_cis[i],
                    label='Perturbed' if i == 0 else '',
                    capsize=3, alpha=0.8, color=colors[model], hatch='//')
+
+        # Add difference and significance markers
+        for i, model in enumerate(models):
+            if model in confidence_data:
+                orig_data = confidence_data[model]['original'][metric]
+                pert_data = confidence_data[model]['perturbed'][metric]
+
+                if len(orig_data) > 0 and len(pert_data) > 0 and pert_means[i] > 0:
+                    # Calculate difference (perturbed - original)
+                    diff = pert_means[i] - orig_means[i]
+
+                    # Perform Wilcoxon test (if we have paired data)
+                    # Note: confidence data may not be naturally paired, so we use unpaired test
+                    try:
+                        _, p_val = stats.mannwhitneyu(orig_data, pert_data, alternative='two-sided')
+                    except:
+                        p_val = None
+
+                    sig_marker = get_significance_marker(p_val)
+
+                    # Add annotation
+                    y_pos = pert_means[i] + pert_cis[i] + 0.15
+                    ax.text(i + width/2, y_pos, f'{diff:.2f}{sig_marker}',
+                           ha='center', va='bottom', fontsize=8, fontweight='bold')
 
         # Customize subplot
         ax.set_ylabel('Mean Confidence Score', fontsize=11)

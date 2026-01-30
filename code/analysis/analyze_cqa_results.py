@@ -232,7 +232,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
 
                         # Calculate difference and get p-value
                         orig_mean = orig_means[len(differences)]
-                        diff = orig_mean - mean
+                        diff = mean - orig_mean  # perturbed - original
                         differences.append(diff)
                         p_values.append(data['stats'][metric]['wilcoxon_p_value'])
                     else:
@@ -250,7 +250,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                     if pert_mean > 0:
                         y_pos = pert_mean + pert_ci + 0.15
                         sig_marker = get_significance_marker(p_val)
-                        text = f'{diff:+.2f}{sig_marker}'
+                        text = f'{diff:.2f}{sig_marker}'
                         ax.text(x[i] + offsets[1 + prob_idx], y_pos, text,
                                ha='center', va='bottom', fontsize=8, fontweight='bold')
         else:
@@ -275,7 +275,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                     pert_cis.append(ci)
 
                     # Calculate difference and get p-value
-                    diff = orig_means[i] - mean
+                    diff = mean - orig_means[i]  # perturbed - original
                     differences.append(diff)
                     p_values.append(data['stats'][metric]['wilcoxon_p_value'])
                 else:
@@ -292,7 +292,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                 if pert_mean > 0:
                     y_pos = pert_mean + pert_ci + 0.15
                     sig_marker = get_significance_marker(p_val)
-                    text = f'{diff:+.2f}{sig_marker}'
+                    text = f'{diff:.2f}{sig_marker}'
                     ax.text(x[i] + offsets[1], y_pos, text,
                            ha='center', va='bottom', fontsize=8, fontweight='bold')
 
@@ -367,7 +367,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
 
                         # Calculate difference and get p-value
                         orig_mean = orig_means[len(differences)]
-                        diff = orig_mean - mean
+                        diff = mean - orig_mean  # perturbed - original
                         differences.append(diff)
                         p_values.append(data['stats'][metric]['wilcoxon_p_value'])
                     else:
@@ -385,7 +385,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                     if pert_mean > 0:
                         y_pos = pert_mean + pert_ci + 0.15
                         sig_marker = get_significance_marker(p_val)
-                        text = f'{diff:+.2f}{sig_marker}'
+                        text = f'{diff:.2f}{sig_marker}'
                         ax.text(x[i] + offsets[1 + prob_idx], y_pos, text,
                                ha='center', va='bottom', fontsize=8, fontweight='bold')
         else:
@@ -410,7 +410,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                     pert_cis.append(ci)
 
                     # Calculate difference and get p-value
-                    diff = orig_means[i] - mean
+                    diff = mean - orig_means[i]  # perturbed - original
                     differences.append(diff)
                     p_values.append(data['stats'][metric]['wilcoxon_p_value'])
                 else:
@@ -427,7 +427,7 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                 if pert_mean > 0:
                     y_pos = pert_mean + pert_ci + 0.15
                     sig_marker = get_significance_marker(p_val)
-                    text = f'{diff:+.2f}{sig_marker}'
+                    text = f'{diff:.2f}{sig_marker}'
                     ax.text(x[i] + offsets[1], y_pos, text,
                            ha='center', va='bottom', fontsize=8, fontweight='bold')
 
@@ -514,24 +514,24 @@ def plot_coarse_vs_fine_comparison(coarse_data_physician, coarse_data_model,
         # Add difference and significance markers
         # Coarse level
         if coarse_data_physician and coarse_pert_mean > 0:
-            diff = coarse_orig_mean - coarse_pert_mean
+            diff = coarse_pert_mean - coarse_orig_mean  # perturbed - original
             p_val = stats.wilcoxon(coarse_data_physician['original'][metric],
                                    coarse_data_physician['perturbed'][metric],
                                    alternative='greater')[1]
             sig_marker = get_significance_marker(p_val)
             y_pos = coarse_pert_mean + coarse_pert_ci + 0.15
-            ax.text(x[0] + width/2, y_pos, f'{diff:+.2f}{sig_marker}',
+            ax.text(x[0] + width/2, y_pos, f'{diff:.2f}{sig_marker}',
                    ha='center', va='bottom', fontsize=8, fontweight='bold')
 
         # Fine level
         if fine_data_physician and fine_pert_mean > 0:
-            diff = fine_orig_mean - fine_pert_mean
+            diff = fine_pert_mean - fine_orig_mean  # perturbed - original
             p_val = stats.wilcoxon(fine_data_physician['original'][metric],
                                    fine_data_physician['perturbed'][metric],
                                    alternative='greater')[1]
             sig_marker = get_significance_marker(p_val)
             y_pos = fine_pert_mean + fine_pert_ci + 0.15
-            ax.text(x[1] + width/2, y_pos, f'{diff:+.2f}{sig_marker}',
+            ax.text(x[1] + width/2, y_pos, f'{diff:.2f}{sig_marker}',
                    ha='center', va='bottom', fontsize=8, fontweight='bold')
 
         # Customize subplot
@@ -595,24 +595,24 @@ def plot_coarse_vs_fine_comparison(coarse_data_physician, coarse_data_model,
         # Add difference and significance markers
         # Coarse level
         if coarse_data_model and coarse_pert_mean > 0:
-            diff = coarse_orig_mean - coarse_pert_mean
+            diff = coarse_pert_mean - coarse_orig_mean  # perturbed - original
             p_val = stats.wilcoxon(coarse_data_model['original'][metric],
                                    coarse_data_model['perturbed'][metric],
                                    alternative='greater')[1]
             sig_marker = get_significance_marker(p_val)
             y_pos = coarse_pert_mean + coarse_pert_ci + 0.15
-            ax.text(x[0] + width/2, y_pos, f'{diff:+.2f}{sig_marker}',
+            ax.text(x[0] + width/2, y_pos, f'{diff:.2f}{sig_marker}',
                    ha='center', va='bottom', fontsize=8, fontweight='bold')
 
         # Fine level
         if fine_data_model and fine_pert_mean > 0:
-            diff = fine_orig_mean - fine_pert_mean
+            diff = fine_pert_mean - fine_orig_mean  # perturbed - original
             p_val = stats.wilcoxon(fine_data_model['original'][metric],
                                    fine_data_model['perturbed'][metric],
                                    alternative='greater')[1]
             sig_marker = get_significance_marker(p_val)
             y_pos = fine_pert_mean + fine_pert_ci + 0.15
-            ax.text(x[1] + width/2, y_pos, f'{diff:+.2f}{sig_marker}',
+            ax.text(x[1] + width/2, y_pos, f'{diff:.2f}{sig_marker}',
                    ha='center', va='bottom', fontsize=8, fontweight='bold')
 
         # Customize subplot

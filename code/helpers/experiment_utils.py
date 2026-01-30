@@ -90,6 +90,28 @@ def get_id_key(qa_pairs: List[Dict]) -> str:
     return 'sentence_id' if 'sentence_id' in qa_pairs[0] else 'answer_id'
 
 
+def extract_marked_text(text: str) -> Tuple[str, str, str]:
+    """
+    Extract marked text from answer with <mark> tags.
+
+    Returns:
+        (before_mark, marked_text, after_mark) where:
+        - before_mark: text before <mark> tag
+        - marked_text: text inside <mark> tags (without the tags)
+        - after_mark: text after </mark> tag
+
+    If no <mark> tags found, returns ('', full_text, '')
+    """
+    import re
+
+    match = re.search(r'(.*?)<mark>(.*?)</mark>(.*)', text, re.DOTALL)
+    if match:
+        return match.group(1), match.group(2), match.group(3)
+    else:
+        # No mark tags found, return entire text as marked portion
+        return '', text, ''
+
+
 def apply_perturbation(
     perturbation_name: str,
     original_answer: str,
@@ -99,6 +121,10 @@ def apply_perturbation(
 ) -> Tuple[str, Dict]:
     """
     Apply perturbation to an answer.
+
+    For fine-level data (annotation_type='fine'), perturbations are applied
+    only to the marked sentence within <mark> tags.
+    For coarse-level data, perturbations are applied to the entire answer.
 
     Returns:
         (perturbed_answer, metadata) where metadata contains perturbation-specific info
@@ -113,20 +139,41 @@ def apply_perturbation(
     perturbed_answer = None
     metadata = {}
 
+    # Check if this is fine-level data (has marked text)
+    is_fine_level = qa_pair.get('annotation_type') == 'fine' and '<mark>' in original_answer
+
+    if is_fine_level:
+        # Extract the marked sentence
+        before_mark, marked_text, after_mark = extract_marked_text(original_answer)
+        text_to_perturb = marked_text
+    else:
+        # Use entire answer for coarse-level
+        text_to_perturb = original_answer
+
+    # Apply perturbation to the text
     if perturbation_name == 'add_confusion':
-        perturbed_answer = add_confusion(original_answer)
+        perturbed_text = add_confusion(text_to_perturb)
 
     elif perturbation_name == 'add_typos':
-        perturbed_answer = add_typos(original_answer, typo_probability=typo_prob)
+        perturbed_text = add_typos(text_to_perturb, typo_probability=typo_prob)
         metadata['typo_probability'] = typo_prob
 
     elif perturbation_name == 'change_dosage':
-        perturbed_answer, change_counts = change_dosage(original_answer)
+        perturbed_text, change_counts = change_dosage(text_to_perturb)
         metadata['change_counts'] = change_counts
 
     elif perturbation_name == 'remove_sentences':
-        perturbed_answer = remove_sentences_by_percentage(original_answer, percentage=remove_pct)
+        perturbed_text = remove_sentences_by_percentage(text_to_perturb, percentage=remove_pct)
         metadata['removal_percentage'] = remove_pct
+    else:
+        perturbed_text = text_to_perturb
+
+    # Reconstruct the full answer
+    if is_fine_level:
+        # Put the perturbed text back inside <mark> tags
+        perturbed_answer = f"{before_mark}<mark>{perturbed_text}</mark>{after_mark}"
+    else:
+        perturbed_answer = perturbed_text
 
     if perturbed_answer is None:
         perturbed_answer = original_answer

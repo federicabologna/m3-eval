@@ -222,9 +222,10 @@ def plot_combined_comparison(green_results, chexbert_results, output_path):
         else:
             stars = ''
 
-        # Add text annotation
+        # Add text annotation (show perturbed - original)
         y_pos = green_means[i] + green_cis[i] + 0.02
-        text = f'-{green_degradations[i]:.3f}{stars}'
+        diff = -green_degradations[i]  # degradation is (orig - pert), so negate for (pert - orig)
+        text = f'{diff:.3f}{stars}'
         ax1.text(x[i], y_pos, text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
     ax1.set_ylabel('GREEN Score', fontsize=12)
@@ -256,9 +257,10 @@ def plot_combined_comparison(green_results, chexbert_results, output_path):
         else:
             stars = ''
 
-        # Add text annotation
+        # Add text annotation (show perturbed - original)
         y_pos = chexbert_means[i] + chexbert_cis[i] + 0.02
-        text = f'-{chexbert_degradations[i]:.3f}{stars}'
+        diff = -chexbert_degradations[i]  # degradation is (orig - pert), so negate for (pert - orig)
+        text = f'{diff:.3f}{stars}'
         ax2.text(x[i], y_pos, text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
     ax2.set_ylabel('Weighted F1 (All 14)', fontsize=12)
