@@ -47,21 +47,55 @@ def run_baseline_experiment(args):
     output_dir = paths['output_dir']
     model_name_clean = clean_model_name(args.model)
 
-    # Define perturbation types (starting with change_dosage and remove_sentences)
-    all_perturbations = ['change_dosage', 'remove_sentences', 'add_typos', 'add_confusion']
+    # Define perturbation types
+    all_perturbations_coarse = ['change_dosage', 'remove_sentences', 'add_typos', 'add_confusion']
+    all_perturbations_fine = ['change_dosage']  # Only change_dosage for fine level
 
     # Determine which perturbations to run
     if args.perturbation:
-        if args.perturbation not in all_perturbations:
-            raise ValueError(f"Invalid perturbation: {args.perturbation}")
+        # For fine level, skip unsupported perturbations
+        if args.level == 'fine' and args.perturbation not in all_perturbations_fine:
+            print(f"Warning: {args.perturbation} is not supported for fine level")
+            print(f"Fine level only supports: {', '.join(all_perturbations_fine)}")
+            return
+
         perturbation_names = [args.perturbation]
         print(f"Running single perturbation: {args.perturbation}")
     else:
-        perturbation_names = all_perturbations
-        print(f"Running all perturbations in order: {' -> '.join(perturbation_names)}")
+        # Use appropriate set based on level
+        perturbation_names = all_perturbations_coarse if args.level != 'fine' else all_perturbations_fine
+        print(f"Running perturbations: {' -> '.join(perturbation_names)}")
 
     # Determine which levels to run
     levels = ['coarse', 'fine'] if args.level == 'both' else [args.level]
+
+    # Print summary of experiments to be run
+    print(f"\n{'='*80}")
+    print("EXPERIMENT SUMMARY")
+    print(f"{'='*80}")
+    print(f"Model: {args.model}")
+    print(f"Levels: {', '.join(levels)}")
+    print(f"\nExperiments to run:")
+
+    for level in levels:
+        print(f"\n  {level.upper()}:")
+        level_perturbations = all_perturbations_fine if level == 'fine' else (perturbation_names if args.perturbation else all_perturbations_coarse)
+
+        for pert_name in level_perturbations:
+            if pert_name == 'remove_sentences':
+                if args.remove_pct is None:
+                    print(f"    - {pert_name}: 30%, 50%, 70%")
+                else:
+                    print(f"    - {pert_name}: {int(args.remove_pct * 100)}%")
+            elif pert_name == 'add_typos':
+                if args.typo_prob is None:
+                    print(f"    - {pert_name}: probability 0.3, 0.5, 0.7")
+                else:
+                    print(f"    - {pert_name}: probability {args.typo_prob}")
+            else:
+                print(f"    - {pert_name}")
+
+    print(f"{'='*80}\n")
 
     # Process each level
     for level in levels:
@@ -73,40 +107,84 @@ def run_baseline_experiment(args):
         data_path = paths['coarse_data_path'] if level == 'coarse' else paths['fine_data_path']
         print(f"Using data: {data_path}")
 
-        # Determine if we should use sentence_ids subset for fine level
-        sentence_ids_subset_file = None
-        if level == 'fine':
-            subset_file = os.path.join(paths['project_root'], 'data', 'fine_sentence_ids_subset.json')
-            if os.path.exists(subset_file):
-                sentence_ids_subset_file = subset_file
-                print(f"Using sentence_ids subset: {os.path.basename(subset_file)}")
+        # Load full dataset for perturbation generation
+        all_qa_pairs_full = load_qa_data(data_path)
+        print(f"Loaded {len(all_qa_pairs_full)} examples (full dataset)")
 
-        # Load data (with optional subset filtering for fine level)
-        all_qa_pairs = load_qa_data(data_path, sentence_ids_subset_file=sentence_ids_subset_file)
-        print(f"Loaded {len(all_qa_pairs)} examples")
+        # For fine level: Load subset for original/perturbed ratings
+        if level == 'fine':
+            subset_file = paths['fine_subset_path']
+            all_qa_pairs_subset = load_qa_data(data_path, sentence_ids_subset_file=subset_file)
+            print(f"Loaded {len(all_qa_pairs_subset)} examples from subset (for ratings)")
+        else:
+            all_qa_pairs_subset = all_qa_pairs_full
 
         # Apply start/end index filtering if specified
         if args.start_idx is not None or args.end_idx is not None:
             start = args.start_idx if args.start_idx is not None else 0
-            end = args.end_idx if args.end_idx is not None else len(all_qa_pairs)
-            qa_pairs = all_qa_pairs[start:end]
-            print(f"Using subset: indices {start} to {end} ({len(qa_pairs)} examples)")
+            end = args.end_idx if args.end_idx is not None else len(all_qa_pairs_subset)
+            qa_pairs_subset = all_qa_pairs_subset[start:end]
+            print(f"Using subset: indices {start} to {end} ({len(qa_pairs_subset)} examples)")
         else:
-            qa_pairs = all_qa_pairs
+            qa_pairs_subset = all_qa_pairs_subset
 
-        id_key = get_id_key(qa_pairs)
+        id_key = get_id_key(qa_pairs_subset)
 
         # Select prompt path
         prompt_path = os.path.join(paths['prompts_dir'], f'{level}prompt_system.txt')
 
-        # Step 1: Get/compute original ratings
+        # Step 1: Generate perturbations
         print(f"\n{'='*80}")
-        print("STEP 1: ORIGINAL RATINGS")
+        print("STEP 1: PERTURBATIONS")
+        print(f"{'='*80}")
+
+        # Generate all perturbations upfront
+        all_perturbations_dict = {}
+        for perturbation_name in perturbation_names:
+            all_perturbations_dict[perturbation_name] = {}
+
+            # Determine parameter values for this perturbation
+            # If None (not specified), use all values; otherwise use the specified value
+            if perturbation_name == 'remove_sentences':
+                remove_pcts = [0.3, 0.5, 0.7] if args.remove_pct is None else [args.remove_pct]
+            else:
+                remove_pcts = [0.3]  # Default for other perturbations
+
+            if perturbation_name == 'add_typos':
+                typo_probs = [0.3, 0.5, 0.7] if args.typo_prob is None else [args.typo_prob]
+            else:
+                typo_probs = [0.5]  # Default for other perturbations
+
+            for remove_pct in remove_pcts:
+                for typo_prob in typo_probs:
+                    param_key = (remove_pct, typo_prob)
+                    print(f"\n[{perturbation_name}]", end="")
+                    if perturbation_name == 'remove_sentences' and len(remove_pcts) > 1:
+                        print(f" remove_pct={remove_pct}", end="")
+                    if perturbation_name == 'add_typos' and len(typo_probs) > 1:
+                        print(f" typo_prob={typo_prob}", end="")
+                    print()
+
+                    perturbations_dict = get_or_create_perturbations(
+                        perturbation_name=perturbation_name,
+                        level=level,
+                        qa_pairs=all_qa_pairs_full,  # Use full dataset for perturbations
+                        typo_prob=typo_prob,
+                        remove_pct=remove_pct,
+                        seed=args.seed,
+                        output_dir=output_dir
+                    )
+                    all_perturbations_dict[perturbation_name][param_key] = perturbations_dict
+
+        # Step 2: Get/compute original ratings
+        print(f"\n{'='*80}")
+        print("STEP 2: ORIGINAL RATINGS")
         print(f"{'='*80}")
 
         # Always generate missing ratings (don't skip)
+        # Use subset for fine level, full dataset for coarse level
         original_ratings_dict = get_or_create_original_ratings(
-            qa_pairs=qa_pairs,
+            qa_pairs=qa_pairs_subset,
             level=level,
             prompt_path=prompt_path,
             model=args.model,
@@ -117,13 +195,12 @@ def run_baseline_experiment(args):
         )
 
         # Filter qa_pairs to only include IDs that have original ratings
-        # This is especially important for fine level where we skip computing missing ratings
-        qa_pairs = [qa for qa in qa_pairs if qa[id_key] in original_ratings_dict]
+        qa_pairs = [qa for qa in qa_pairs_subset if qa[id_key] in original_ratings_dict]
         print(f"✓ Processing {len(qa_pairs)} examples with original ratings")
 
-        # Step 2: Process each perturbation
+        # Step 3: Rate perturbed answers
         print(f"\n{'='*80}")
-        print("STEP 2: PERTURBATIONS")
+        print("STEP 3: RATE PERTURBED ANSWERS")
         print(f"{'='*80}")
 
         # Create baseline experiment directory
@@ -139,18 +216,23 @@ def run_baseline_experiment(args):
             perturbation_dir = os.path.join(baseline_dir, perturbation_name)
             os.makedirs(perturbation_dir, exist_ok=True)
 
-            # Determine parameter values
-            remove_pct_values = [args.remove_pct]
-            if perturbation_name == 'remove_sentences' and args.all_remove_pct:
-                remove_pct_values = [0.3, 0.5, 0.7]
+            # Determine parameter values for this perturbation
+            # If None (not specified), use all values; otherwise use the specified value
+            if perturbation_name == 'remove_sentences':
+                remove_pcts = [0.3, 0.5, 0.7] if args.remove_pct is None else [args.remove_pct]
+            else:
+                remove_pcts = [0.3]  # Default for other perturbations
 
-            typo_prob_values = [args.typo_prob]
-            if perturbation_name == 'add_typos' and args.all_typo_prob:
-                typo_prob_values = [0.3, 0.5, 0.7]
+            if perturbation_name == 'add_typos':
+                typo_probs = [0.3, 0.5, 0.7] if args.typo_prob is None else [args.typo_prob]
+            else:
+                typo_probs = [0.5]  # Default for other perturbations
 
             # Iterate over parameter combinations
-            for remove_pct in remove_pct_values:
-                for typo_prob in typo_prob_values:
+            for remove_pct in remove_pcts:
+                for typo_prob in typo_probs:
+                    param_key = (remove_pct, typo_prob)
+
                     # Determine output filename
                     if perturbation_name == 'remove_sentences':
                         pct_str = str(int(remove_pct * 100))
@@ -174,16 +256,8 @@ def run_baseline_experiment(args):
                     print(f"Processing {len(remaining_qa_pairs)} remaining QA pairs (out of {len(qa_pairs)} total)")
                     print(f"Saving results to: {perturbation_name}/{output_filename}")
 
-                    # Load or generate perturbations
-                    perturbations_dict = get_or_create_perturbations(
-                        perturbation_name=perturbation_name,
-                        level=level,
-                        qa_pairs=qa_pairs,
-                        typo_prob=typo_prob,
-                        remove_pct=remove_pct,
-                        seed=args.seed,
-                        output_dir=output_dir
-                    )
+                    # Get pre-generated perturbations
+                    perturbations_dict = all_perturbations_dict[perturbation_name][param_key]
 
                     # Process each QA pair
                     for qa_pair in remaining_qa_pairs:

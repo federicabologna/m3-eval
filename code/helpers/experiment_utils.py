@@ -18,6 +18,7 @@ def setup_paths(output_dir=None):
 
     coarse_data_path = os.path.join(project_root, 'data', 'coarse_5pt_expert+llm_consolidated.jsonl')
     fine_data_path = os.path.join(project_root, 'data', 'fine_5pt_expert+llm_consolidated.jsonl')
+    fine_subset_path = os.path.join(project_root, 'data', 'fine_sentence_ids_subset.json')
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -26,6 +27,7 @@ def setup_paths(output_dir=None):
         'output_dir': output_dir,
         'coarse_data_path': coarse_data_path,
         'fine_data_path': fine_data_path,
+        'fine_subset_path': fine_subset_path,
         'prompts_dir': os.path.join(script_dir, 'prompts')
     }
 

@@ -294,16 +294,31 @@ def add_typos(text, typo_probability=0.5):
         return text
 
     # Build result with typos applied to medical entities
+    # Track if at least one typo was applied
+    typo_applied = False
     result = []
+
     for token in doc:
         if token.i in medical_entities:
             # Apply typo with specified probability
             if random.random() < typo_probability:
                 result.append(apply_typo(token.text) + token.whitespace_)
+                typo_applied = True
             else:
                 result.append(token.text_with_ws)
         else:
             result.append(token.text_with_ws)
+
+    # If no typo was applied due to probability, force at least one
+    if not typo_applied and medical_entities:
+        # Rebuild with guaranteed typo on first medical entity
+        result = []
+        for token in doc:
+            if token.i in medical_entities and not typo_applied:
+                result.append(apply_typo(token.text) + token.whitespace_)
+                typo_applied = True
+            else:
+                result.append(token.text_with_ws)
 
     return ''.join(result)
     

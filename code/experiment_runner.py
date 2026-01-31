@@ -45,14 +45,26 @@ def generate_data_only(args):
     output_dir = paths['output_dir']
     model_name_clean = clean_model_name(args.model)
 
-    # Define perturbations to generate (starting with change_dosage and remove_sentences)
-    all_perturbations = ['change_dosage', 'remove_sentences', 'add_typos', 'add_confusion']
+    # Define perturbations to generate
+    all_perturbations_coarse = ['change_dosage', 'remove_sentences', 'add_typos', 'add_confusion']
+    all_perturbations_fine = ['change_dosage']  # Only change_dosage for fine level
+
     if args.perturbation:
-        if args.perturbation not in all_perturbations:
-            raise ValueError(f"Invalid perturbation: {args.perturbation}")
+        # Check if perturbation is valid for the level
+        if args.level == 'fine' and args.perturbation not in all_perturbations_fine:
+            print(f"Warning: {args.perturbation} is not supported for fine level")
+            print(f"Fine level only supports: {', '.join(all_perturbations_fine)}")
+            return
         perturbation_names = [args.perturbation]
     else:
-        perturbation_names = all_perturbations
+        # Use appropriate set based on level
+        if args.level == 'fine':
+            perturbation_names = all_perturbations_fine
+        elif args.level == 'coarse':
+            perturbation_names = all_perturbations_coarse
+        else:  # both
+            # For 'both', use full set for coarse and limited set for fine
+            perturbation_names = all_perturbations_coarse
 
     # Determine which levels to process
     levels = ['coarse', 'fine'] if args.level == 'both' else [args.level]
@@ -60,8 +72,29 @@ def generate_data_only(args):
     print(f"\n{'='*80}")
     print("DATA GENERATION MODE")
     print(f"{'='*80}")
+    print(f"Model: {args.model}")
     print(f"Levels: {', '.join(levels)}")
-    print(f"Perturbations: {', '.join(perturbation_names)}")
+    print(f"\nPerturbations to generate:")
+
+    for level in levels:
+        print(f"\n  {level.upper()}:")
+        level_perturbations = all_perturbations_fine if level == 'fine' else perturbation_names
+
+        for pert_name in level_perturbations:
+            if pert_name == 'remove_sentences':
+                if args.remove_pct is None:
+                    print(f"    - {pert_name}: 30%, 50%, 70%")
+                else:
+                    print(f"    - {pert_name}: {int(args.remove_pct * 100)}%")
+            elif pert_name == 'add_typos':
+                if args.typo_prob is None:
+                    print(f"    - {pert_name}: probability 0.3, 0.5, 0.7")
+                else:
+                    print(f"    - {pert_name}: probability {args.typo_prob}")
+            else:
+                print(f"    - {pert_name}")
+
+    print(f"{'='*80}")
 
     # Process each level
     for level in levels:
@@ -74,17 +107,14 @@ def generate_data_only(args):
         prompt_path = os.path.join(paths['prompts_dir'], f'{level}prompt_system.txt')
         print(f"Using data: {data_path}")
 
-        # Determine if we should use sentence_ids subset for fine level
-        sentence_ids_subset_file = None
-        if level == 'fine':
-            subset_file = os.path.join(paths['project_root'], 'data', 'fine_sentence_ids_subset.json')
-            if os.path.exists(subset_file):
-                sentence_ids_subset_file = subset_file
-                print(f"Using sentence_ids subset: {os.path.basename(subset_file)}")
-
-        # Load data
-        all_qa_pairs = load_qa_data(data_path, sentence_ids_subset_file=sentence_ids_subset_file)
+        # For fine level: Use full dataset for perturbation generation
+        # Subset will be created later from successful perturbations
+        all_qa_pairs = load_qa_data(data_path)
         print(f"Loaded {len(all_qa_pairs)} examples")
+
+        if level == 'fine':
+            print(f"Note: Using full fine dataset to maximize perturbation coverage")
+            print(f"      Subset will be created from successful perturbations")
 
         # Apply start/end index filtering if specified
         if args.start_idx is not None or args.end_idx is not None:
@@ -95,37 +125,44 @@ def generate_data_only(args):
         else:
             qa_pairs = all_qa_pairs
 
-        # Step 1: Generate/check original ratings
-        print(f"\n{'-'*80}")
-        print("STEP 1: ORIGINAL RATINGS")
-        print(f"{'-'*80}")
+        # For fine level in generate-only mode: skip original ratings
+        # (they will be generated later from the subset after running create_subset_from_perturbations.py)
+        if level != 'fine':
+            # Step 1: Generate/check original ratings
+            print(f"\n{'-'*80}")
+            print("STEP 1: ORIGINAL RATINGS")
+            print(f"{'-'*80}")
 
-        original_ratings_dict = get_or_create_original_ratings(
-            qa_pairs=qa_pairs,
-            level=level,
-            prompt_path=prompt_path,
-            model=args.model,
-            output_dir=output_dir,
-            model_name_clean=model_name_clean,
-            num_runs=args.num_runs
-        )
+            original_ratings_dict = get_or_create_original_ratings(
+                qa_pairs=qa_pairs,
+                level=level,
+                prompt_path=prompt_path,
+                model=args.model,
+                output_dir=output_dir,
+                model_name_clean=model_name_clean,
+                num_runs=args.num_runs
+            )
 
         # Step 2: Generate/check perturbations
         print(f"\n{'-'*80}")
-        print("STEP 2: PERTURBATIONS")
+        step_num = "STEP 1" if level == 'fine' else "STEP 2"
+        print(f"{step_num}: PERTURBATIONS")
         print(f"{'-'*80}")
 
         for perturbation_name in perturbation_names:
             print(f"\n[{perturbation_name}]")
 
             # Determine parameter values
-            remove_pct_values = [args.remove_pct]
-            if perturbation_name == 'remove_sentences' and args.all_remove_pct:
-                remove_pct_values = [0.3, 0.5, 0.7]
+            # If None (not specified), use all values; otherwise use the specified value
+            if perturbation_name == 'remove_sentences':
+                remove_pct_values = [0.3, 0.5, 0.7] if args.remove_pct is None else [args.remove_pct]
+            else:
+                remove_pct_values = [0.3]  # Default for other perturbations
 
-            typo_prob_values = [args.typo_prob]
-            if perturbation_name == 'add_typos' and args.all_typo_prob:
-                typo_prob_values = [0.3, 0.5, 0.7]
+            if perturbation_name == 'add_typos':
+                typo_prob_values = [0.3, 0.5, 0.7] if args.typo_prob is None else [args.typo_prob]
+            else:
+                typo_prob_values = [0.5]  # Default for other perturbations
 
             # Generate for each parameter combination
             for remove_pct in remove_pct_values:
@@ -148,9 +185,17 @@ def generate_data_only(args):
     print(f"\n{'='*80}")
     print("DATA GENERATION COMPLETED")
     print(f"{'='*80}")
-    print(f"\nOriginal ratings saved to: {output_dir}/original_ratings/")
-    print(f"Perturbations saved to: {output_dir}/perturbations/")
-    print(f"\nYou can now run experiments with: --experiment [baseline|error_detection|error_priming]")
+
+    if 'fine' in levels:
+        print(f"\nPerturbations saved to: {output_dir}/perturbations/")
+        print(f"\nNext steps for fine level:")
+        print(f"  1. Run: python code/create_subset_from_perturbations.py")
+        print(f"  2. Run experiments with: --experiment [baseline|error_detection|error_priming]")
+        print(f"     (Original ratings will be generated automatically for the subset)")
+    else:
+        print(f"\nOriginal ratings saved to: {output_dir}/original_ratings/")
+        print(f"Perturbations saved to: {output_dir}/perturbations/")
+        print(f"\nYou can now run experiments with: --experiment [baseline|error_detection|error_priming]")
 
 
 def main():
@@ -168,20 +213,23 @@ Workflow:
   2. Run experiments (--experiment)
 
 Examples:
-  # Step 1: Generate data only (no experiments)
-  python experiment_runner.py --generate-only --model Qwen3-8B --seed 42
-
-  # Step 2: Run baseline experiment
+  # Run all perturbations with all parameter variations (default)
   python experiment_runner.py --experiment baseline --model Qwen3-8B --seed 42
+
+  # Run only remove_sentences with 50% removal
+  python experiment_runner.py --experiment baseline --model Qwen3-8B --perturbation remove_sentences --remove-pct 0.5
+
+  # Run only add_typos with 0.3 probability
+  python experiment_runner.py --experiment baseline --model Qwen3-8B --perturbation add_typos --typo-prob 0.3
+
+  # Generate data only (no experiments)
+  python experiment_runner.py --generate-only --model Qwen3-8B --seed 42
 
   # Run error detection experiment
   python experiment_runner.py --experiment error_detection --model gpt-4o
 
   # Run error priming experiment
   python experiment_runner.py --experiment error_priming --model claude-opus-4-5-20251101
-
-  # Run everything in one command (generates data + runs experiment)
-  python experiment_runner.py --experiment baseline --model Qwen3-8B
         """
     )
 
@@ -223,24 +271,14 @@ Examples:
     parser.add_argument(
         '--remove-pct',
         type=float,
-        default=0.3,
-        help='For remove_sentences: percentage of sentences to remove (0.0-1.0). Default: 0.3 (30%%)'
-    )
-    parser.add_argument(
-        '--all-remove-pct',
-        action='store_true',
-        help='For remove_sentences: run all percentage values (0.3, 0.5, 0.7) sequentially'
+        default=None,
+        help='For remove_sentences: specific percentage to use (0.0-1.0). If not specified, runs all values: 0.3, 0.5, 0.7'
     )
     parser.add_argument(
         '--typo-prob',
         type=float,
-        default=0.5,
-        help='For add_typos: probability of applying typo to each term (0.0-1.0). Default: 0.5'
-    )
-    parser.add_argument(
-        '--all-typo-prob',
-        action='store_true',
-        help='For add_typos: run all probability values (0.3, 0.5, 0.7) sequentially'
+        default=None,
+        help='For add_typos: specific probability to use (0.0-1.0). If not specified, runs all values: 0.3, 0.5, 0.7'
     )
 
     # Rating parameters

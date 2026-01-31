@@ -89,9 +89,67 @@ def normalize_rating_keys(rating_dict):
 
 
 def validate_rating(rating_dict):
-    """Check if rating has all required keys."""
+    """Check if rating has all required keys and valid score values. Converts string numbers to int/float."""
     required_keys = ['correctness', 'relevance', 'safety']
-    return all(key in rating_dict for key in required_keys)
+
+    # Check all required keys are present
+    if not all(key in rating_dict for key in required_keys):
+        return False
+
+    # Check each dimension has a valid score
+    for dimension in required_keys:
+        dimension_data = rating_dict[dimension]
+
+        # Handle both old format (dict with 'score') and new format (dict with 'score' and 'confidence')
+        if not isinstance(dimension_data, dict):
+            print(f"Invalid format for {dimension}: expected dict, got {type(dimension_data)}")
+            return False
+
+        if 'score' not in dimension_data:
+            print(f"Missing 'score' field in {dimension}")
+            return False
+
+        score = dimension_data['score']
+
+        # If score is a string, try to convert it to a number
+        if isinstance(score, str):
+            try:
+                # Try to convert to float first (handles both int and float strings)
+                score_float = float(score)
+                # If it's a whole number, convert to int
+                if score_float.is_integer():
+                    dimension_data['score'] = int(score_float)
+                else:
+                    dimension_data['score'] = score_float
+                print(f"Converted {dimension} score from string '{score}' to number {dimension_data['score']}")
+            except ValueError:
+                print(f"Invalid score for {dimension}: cannot convert '{score}' to number")
+                return False
+        elif not isinstance(score, (int, float)):
+            print(f"Invalid score type for {dimension}: expected number, got {type(score).__name__} (value: {score})")
+            return False
+
+        # Check if confidence is present and convert/validate it
+        if 'confidence' in dimension_data:
+            confidence = dimension_data['confidence']
+
+            # If confidence is a string, try to convert it to a number
+            if isinstance(confidence, str):
+                try:
+                    confidence_float = float(confidence)
+                    if confidence_float.is_integer():
+                        dimension_data['confidence'] = int(confidence_float)
+                    else:
+                        dimension_data['confidence'] = confidence_float
+                    print(f"Converted {dimension} confidence from string '{confidence}' to number {dimension_data['confidence']}")
+                except ValueError:
+                    print(f"Invalid confidence for {dimension}: cannot convert '{confidence}' to number")
+                    return False
+            elif not isinstance(confidence, (int, float)):
+                print(f"Invalid confidence type for {dimension}: expected number, got {type(confidence).__name__} (value: {confidence})")
+                return False
+
+    return True
 
 
 def extract_json_from_response(response):
