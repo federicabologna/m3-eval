@@ -32,7 +32,17 @@ source .venv/bin/activate || { echo "Failed to activate venv"; exit 1; }
 echo "Running fine level experiments with Qwen3-8B..."
 echo "========================================"
 
-python code/experiment_runner.py \
+# Verify output directory exists
+OUTPUT_DIR="output/cqa_eval"
+if [ ! -d "$OUTPUT_DIR" ]; then
+    echo "Creating output directory: $OUTPUT_DIR"
+    mkdir -p "$OUTPUT_DIR"
+fi
+
+echo "Output directory: $(pwd)/$OUTPUT_DIR"
+echo "========================================"
+
+python -u code/experiment_runner.py \
   --experiment baseline \
   --model Qwen3-8B \
   --level fine \
@@ -42,6 +52,18 @@ python code/experiment_runner.py \
 if [ $? -eq 0 ]; then
     echo "========================================"
     echo "Pipeline completed successfully!"
+    echo "Checking output files..."
+
+    # List generated files
+    echo "Original ratings files:"
+    ls -lh $OUTPUT_DIR/original_ratings/*fine*Qwen3-8B* 2>/dev/null || echo "  (none found)"
+
+    echo "Perturbation files:"
+    ls -lh $OUTPUT_DIR/perturbations/*fine* 2>/dev/null || echo "  (none found)"
+
+    echo "Experiment result files:"
+    find $OUTPUT_DIR/experiment_results/baseline -name "*fine*Qwen3-8B*" -ls 2>/dev/null || echo "  (none found)"
+
     echo "Job ended at: $(date)"
     echo "========================================"
 else

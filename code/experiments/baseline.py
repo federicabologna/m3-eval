@@ -107,28 +107,26 @@ def run_baseline_experiment(args):
         data_path = paths['coarse_data_path'] if level == 'coarse' else paths['fine_data_path']
         print(f"Using data: {data_path}")
 
-        # Load full dataset for perturbation generation
-        all_qa_pairs_full = load_qa_data(data_path)
-        print(f"Loaded {len(all_qa_pairs_full)} examples (full dataset)")
-
-        # For fine level: Load subset for original/perturbed ratings
+        # For fine level: Use subset for experiments (perturbations should already exist from --generate-only)
+        # For coarse level: Use full dataset
         if level == 'fine':
             subset_file = paths['fine_subset_path']
-            all_qa_pairs_subset = load_qa_data(data_path, sentence_ids_subset_file=subset_file)
-            print(f"Loaded {len(all_qa_pairs_subset)} examples from subset (for ratings)")
+            all_qa_pairs = load_qa_data(data_path, sentence_ids_subset_file=subset_file)
+            print(f"Loaded {len(all_qa_pairs)} examples from subset")
         else:
-            all_qa_pairs_subset = all_qa_pairs_full
+            all_qa_pairs = load_qa_data(data_path)
+            print(f"Loaded {len(all_qa_pairs)} examples")
 
         # Apply start/end index filtering if specified
         if args.start_idx is not None or args.end_idx is not None:
             start = args.start_idx if args.start_idx is not None else 0
-            end = args.end_idx if args.end_idx is not None else len(all_qa_pairs_subset)
-            qa_pairs_subset = all_qa_pairs_subset[start:end]
-            print(f"Using subset: indices {start} to {end} ({len(qa_pairs_subset)} examples)")
+            end = args.end_idx if args.end_idx is not None else len(all_qa_pairs)
+            qa_pairs = all_qa_pairs[start:end]
+            print(f"Using subset: indices {start} to {end} ({len(qa_pairs)} examples)")
         else:
-            qa_pairs_subset = all_qa_pairs_subset
+            qa_pairs = all_qa_pairs
 
-        id_key = get_id_key(qa_pairs_subset)
+        id_key = get_id_key(qa_pairs)
 
         # Select prompt path
         prompt_path = os.path.join(paths['prompts_dir'], f'{level}prompt_system.txt')
@@ -168,7 +166,7 @@ def run_baseline_experiment(args):
                     perturbations_dict = get_or_create_perturbations(
                         perturbation_name=perturbation_name,
                         level=level,
-                        qa_pairs=all_qa_pairs_full,  # Use full dataset for perturbations
+                        qa_pairs=qa_pairs,  # Use subset for fine, full for coarse
                         typo_prob=typo_prob,
                         remove_pct=remove_pct,
                         seed=args.seed,
@@ -182,9 +180,8 @@ def run_baseline_experiment(args):
         print(f"{'='*80}")
 
         # Always generate missing ratings (don't skip)
-        # Use subset for fine level, full dataset for coarse level
         original_ratings_dict = get_or_create_original_ratings(
-            qa_pairs=qa_pairs_subset,
+            qa_pairs=qa_pairs,
             level=level,
             prompt_path=prompt_path,
             model=args.model,
@@ -195,8 +192,8 @@ def run_baseline_experiment(args):
         )
 
         # Filter qa_pairs to only include IDs that have original ratings
-        qa_pairs = [qa for qa in qa_pairs_subset if qa[id_key] in original_ratings_dict]
-        print(f"✓ Processing {len(qa_pairs)} examples with original ratings")
+        qa_pairs_to_rate = [qa for qa in qa_pairs if qa[id_key] in original_ratings_dict]
+        print(f"✓ Processing {len(qa_pairs_to_rate)} examples with original ratings")
 
         # Step 3: Rate perturbed answers
         print(f"\n{'='*80}")
@@ -247,13 +244,13 @@ def run_baseline_experiment(args):
 
                     # Check which entries have already been processed
                     processed_ids = get_processed_ids(output_path)
-                    remaining_qa_pairs = [qa for qa in qa_pairs if qa[id_key] not in processed_ids]
+                    remaining_qa_pairs = [qa for qa in qa_pairs_to_rate if qa[id_key] not in processed_ids]
 
                     if len(remaining_qa_pairs) == 0:
-                        print(f"All {len(qa_pairs)} QA pairs already processed. Skipping.")
+                        print(f"All {len(qa_pairs_to_rate)} QA pairs already processed. Skipping.")
                         continue
 
-                    print(f"Processing {len(remaining_qa_pairs)} remaining QA pairs (out of {len(qa_pairs)} total)")
+                    print(f"Processing {len(remaining_qa_pairs)} remaining QA pairs (out of {len(qa_pairs_to_rate)} total)")
                     print(f"Saving results to: {perturbation_name}/{output_filename}")
 
                     # Get pre-generated perturbations

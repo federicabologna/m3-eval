@@ -190,7 +190,7 @@ def save_result(output_path: str, result: Dict):
             json.dump(result, f)
             f.write('\n')
     except IOError as e:
-        print(f"ERROR: Failed to save result: {e}")
+        print(f"ERROR: Failed to save result to {output_path}: {e}")
         raise
 
 

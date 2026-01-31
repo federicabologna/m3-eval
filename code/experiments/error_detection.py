@@ -55,11 +55,11 @@ def get_detection_prompt(perturbation_name: str, question: str, answer: str, lev
 Your task is to carefully analyze the {text_type} and determine if there are any errors or if important information is missing.
 
 Provide your response in the following JSON format:
-{
+{{
   "detected": "yes" or "no",
   "explanation": "Brief explanation of your decision",
   "location": "Specific part of answer with error/issue, or null if none detected"
-}"""
+}}"""
 
     user_prompt = f"""QUESTION:
 {question}
@@ -185,9 +185,14 @@ def run_error_detection_experiment(args):
         data_path = paths['coarse_data_path'] if level == 'coarse' else paths['fine_data_path']
         print(f"Using data: {data_path}")
 
-        # Load data
-        all_qa_pairs = load_qa_data(data_path)
-        print(f"Loaded {len(all_qa_pairs)} examples")
+        # For fine level: Use subset; for coarse: Use full dataset
+        if level == 'fine':
+            subset_file = paths['fine_subset_path']
+            all_qa_pairs = load_qa_data(data_path, sentence_ids_subset_file=subset_file)
+            print(f"Loaded {len(all_qa_pairs)} examples from subset")
+        else:
+            all_qa_pairs = load_qa_data(data_path)
+            print(f"Loaded {len(all_qa_pairs)} examples")
 
         # Apply start/end index filtering if specified
         if args.start_idx is not None or args.end_idx is not None:
@@ -211,13 +216,16 @@ def run_error_detection_experiment(args):
             os.makedirs(perturbation_dir, exist_ok=True)
 
             # Determine parameter values
-            remove_pct_values = [args.remove_pct]
-            if perturbation_name == 'remove_sentences' and args.all_remove_pct:
-                remove_pct_values = [0.3, 0.5, 0.7]
+            # If None (not specified), use all values; otherwise use the specified value
+            if perturbation_name == 'remove_sentences':
+                remove_pct_values = [0.3, 0.5, 0.7] if args.remove_pct is None else [args.remove_pct]
+            else:
+                remove_pct_values = [0.3]
 
-            typo_prob_values = [args.typo_prob]
-            if perturbation_name == 'add_typos' and args.all_typo_prob:
-                typo_prob_values = [0.3, 0.5, 0.7]
+            if perturbation_name == 'add_typos':
+                typo_prob_values = [0.3, 0.5, 0.7] if args.typo_prob is None else [args.typo_prob]
+            else:
+                typo_prob_values = [0.5]
 
             # Iterate over parameter combinations
             for remove_pct in remove_pct_values:

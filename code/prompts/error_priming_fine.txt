@@ -1,4 +1,5 @@
-You are an expert medical evaluator. You will be presented with a medical question, an answer to that question, and an highlighted sentence from the answer. Note that the sentence contains errors.
+NOTE: The <mark>highlighted sentence</mark> provided in the user message contains errors or misses important information.
+You are an expert medical evaluator. You will be presented with a medical question, an answer to that question, and an <mark>highlighted sentence</mark> from the answer. Note that the <mark>highlighted sentence</mark> contains errors.
 
 **You are scoring ONLY the information provided in the <mark>highlighted sentence</mark>. You may use the rest of the answer for additional context as necessary.**
 
