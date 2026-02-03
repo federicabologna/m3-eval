@@ -45,13 +45,13 @@ def generate_data_only(args):
     print(f"Using model: {args.model} (provider: {get_provider_from_model(args.model)})")
 
     # Setup paths
-    paths = setup_paths(args.output_dir)
+    paths = setup_paths(args.output_dir, dataset=args.dataset)
     output_dir = paths['output_dir']
     model_name_clean = clean_model_name(args.model)
 
     # Define perturbations to generate
-    all_perturbations_coarse = ['change_dosage', 'remove_sentences', 'add_typos', 'add_confusion']
-    all_perturbations_fine = ['change_dosage']  # Only change_dosage for fine level
+    all_perturbations_coarse = ['change_dosage', 'remove_sentences', 'add_typos']  # 'add_confusion' commented out
+    all_perturbations_fine = ['change_dosage', 'add_typos']  # Fine level perturbations ('add_confusion' commented out)
 
     if args.perturbation:
         # Check if perturbation is valid for the level
@@ -217,8 +217,11 @@ Workflow:
   2. Run experiments (--experiment)
 
 Examples:
-  # Run all perturbations with all parameter variations (default)
+  # Run all perturbations with all parameter variations (default cqa_eval dataset)
   python experiment_runner.py --experiment baseline --model Qwen3-8B --seed 42
+
+  # Run with MedInfo2019 dataset
+  python experiment_runner.py --experiment baseline --model Qwen3-8B --dataset medinfo
 
   # Run only remove_sentences with 50% removal
   python experiment_runner.py --experiment baseline --model Qwen3-8B --perturbation remove_sentences --remove-pct 0.5
@@ -229,8 +232,8 @@ Examples:
   # Generate data only (no experiments)
   python experiment_runner.py --generate-only --model Qwen3-8B --seed 42
 
-  # Run error detection experiment
-  python experiment_runner.py --experiment error_detection --model gpt-4o
+  # Run error detection with medinfo dataset
+  python experiment_runner.py --experiment error_detection --model gpt-4o --dataset medinfo
 
   # Run error priming experiment
   python experiment_runner.py --experiment error_priming --model claude-opus-4-5-20251101
@@ -259,7 +262,7 @@ Examples:
         '--perturbation',
         type=str,
         default=None,
-        help='Specific perturbation to run. Options: add_typos, change_dosage, remove_sentences, add_confusion. If not specified, runs all.'
+        help='Specific perturbation to run. Options: add_typos, change_dosage, remove_sentences. If not specified, runs all.'
     )
 
     # Level selection
@@ -327,6 +330,15 @@ Examples:
         type=str,
         default=None,
         help='Output directory (default: project_root/output)'
+    )
+
+    # Dataset selection
+    parser.add_argument(
+        '--dataset',
+        type=str,
+        default='cqa_eval',
+        choices=['cqa_eval', 'medinfo'],
+        help='Dataset to use: cqa_eval (default) or medinfo (MedInfo2019-QA-Medications)'
     )
 
     # Data generation mode

@@ -175,12 +175,7 @@ def run_baseline_experiment(args):
         print("STEP 1: GENERATE PERTURBATIONS")
         print(f"{'='*80}")
 
-        # Collect parameter values for later use
-        perturbation_params = {}
-
         for perturbation_name in perturbation_names:
-            print(f"\n[{perturbation_name.upper()}]")
-
             # Get the dataset for this perturbation
             qa_pairs_full = perturbation_to_dataset[perturbation_name]
 
@@ -189,32 +184,45 @@ def run_baseline_experiment(args):
                 start = args.start_idx if args.start_idx is not None else 0
                 end = args.end_idx if args.end_idx is not None else len(qa_pairs_full)
                 qa_pairs = qa_pairs_full[start:end]
-                print(f"  Dataset: {len(qa_pairs)} examples (indices {start}-{end})")
+                print(f"\n{perturbation_name}: Using subset: indices {start} to {end} ({len(qa_pairs)} examples)")
             else:
                 qa_pairs = qa_pairs_full
-                print(f"  Dataset: {len(qa_pairs)} examples")
+
+            id_key = get_id_key(qa_pairs)
+
+            print(f"\n{'='*80}")
+            print(f"Processing perturbation: {perturbation_name.upper()}")
+            print(f"Dataset: {len(qa_pairs)} examples")
+            print(f"{'='*80}")
+
+            # STEP 1: Generate perturbations for this perturbation type
+            print(f"\nSTEP 1: Generate perturbations")
+            print(f"{'-'*80}")
+
+            all_perturbations_dict = {}
 
             # Determine parameter values for this perturbation
             if perturbation_name == 'remove_sentences':
                 remove_pcts = [0.3, 0.5, 0.7] if args.remove_pct is None else [args.remove_pct]
             else:
-                remove_pcts = [0.3]
+                remove_pcts = [0.3]  # Default for other perturbations
 
             if perturbation_name == 'add_typos':
                 typo_probs = [0.3, 0.5, 0.7] if args.typo_prob is None else [args.typo_prob]
             else:
-                typo_probs = [0.5]
+                typo_probs = [0.5]  # Default for other perturbations
 
-            # Store for later use
-            perturbation_params[perturbation_name] = {
-                'remove_pcts': remove_pcts,
-                'typo_probs': typo_probs
-            }
-
-            # Generate perturbations
             for remove_pct in remove_pcts:
                 for typo_prob in typo_probs:
-                    get_or_create_perturbations(
+                    param_key = (remove_pct, typo_prob)
+                    print(f"[{perturbation_name}]", end="")
+                    if perturbation_name == 'remove_sentences' and len(remove_pcts) > 1:
+                        print(f" remove_pct={remove_pct}", end="")
+                    if perturbation_name == 'add_typos' and len(typo_probs) > 1:
+                        print(f" typo_prob={typo_prob}", end="")
+                    print()
+
+                    perturbations_dict = get_or_create_perturbations(
                         perturbation_name=perturbation_name,
                         level=level,
                         qa_pairs=qa_pairs,
@@ -223,93 +231,40 @@ def run_baseline_experiment(args):
                         seed=args.seed,
                         output_dir=output_dir
                     )
+                    all_perturbations_dict[param_key] = perturbations_dict
 
-        # =================================================================
-        # STEP 2: Collect successful perturbation IDs
-        # =================================================================
-        print(f"\n{'='*80}")
-        print("STEP 2: COLLECT SUCCESSFUL PERTURBATION IDS")
-        print(f"{'='*80}")
+            # STEP 2: Get/compute original ratings for this perturbation's dataset
+            print(f"\nSTEP 2: Generate original ratings")
+            print(f"{'-'*80}")
 
-        from helpers.experiment_utils import get_successful_perturbation_ids
+            original_ratings_dict = get_or_create_original_ratings(
+                qa_pairs=qa_pairs,
+                level=level,
+                prompt_path=prompt_path,
+                model=args.model,
+                output_dir=output_dir,
+                model_name_clean=model_name_clean,
+                num_runs=args.num_runs,
+                skip_missing=False  # Generate missing ratings automatically
+            )
 
-        # Get all typo probs and remove pcts used
-        all_typo_probs = set()
-        all_remove_pcts = set()
-        for params in perturbation_params.values():
-            all_typo_probs.update(params['typo_probs'])
-            all_remove_pcts.update(params['remove_pcts'])
+            # Filter qa_pairs to only include IDs that have original ratings
+            qa_pairs_to_rate = [qa for qa in qa_pairs if qa[id_key] in original_ratings_dict]
+            print(f"✓ Processing {len(qa_pairs_to_rate)} examples with original ratings")
 
-        successful_ids = get_successful_perturbation_ids(
-            perturbation_names=perturbation_names,
-            level=level,
-            output_dir=output_dir,
-            typo_probs=list(all_typo_probs),
-            remove_pcts=list(all_remove_pcts)
-        )
+            # STEP 3: Rate perturbed answers
+            print(f"\nSTEP 3: Rate perturbed answers")
+            print(f"{'-'*80}")
 
-        print(f"✓ Found {len(successful_ids)} IDs with successful perturbations")
-
-        # =================================================================
-        # STEP 3: Generate original ratings for successful IDs only
-        # =================================================================
-        print(f"\n{'='*80}")
-        print("STEP 3: GENERATE ORIGINAL RATINGS")
-        print(f"{'='*80}")
-
-        # Load full dataset and filter to successful IDs
-        if args.dataset == 'medinfo':
-            if level == 'coarse':
-                full_data_path = os.path.join(paths['project_root'], 'data', 'medinfo2019_medications_qa_coarse.jsonl')
-            else:
-                full_data_path = os.path.join(paths['project_root'], 'data', 'medinfo2019_medications_qa_fine.jsonl')
-        else:
-            full_data_path = data_path
-
-        all_qa_data = load_qa_data(full_data_path)
-        id_key = get_id_key(all_qa_data)
-
-        # Filter to only successful IDs
-        qa_pairs_for_rating = [qa for qa in all_qa_data if qa[id_key] in successful_ids]
-        print(f"Filtered to {len(qa_pairs_for_rating)} examples with successful perturbations")
-
-        # Generate original ratings
-        original_ratings_dict = get_or_create_original_ratings(
-            qa_pairs=qa_pairs_for_rating,
-            level=level,
-            prompt_path=prompt_path,
-            model=args.model,
-            output_dir=output_dir,
-            model_name_clean=model_name_clean,
-            num_runs=args.num_runs,
-            skip_missing=False
-        )
-
-        print(f"✓ {len(original_ratings_dict)} original ratings available")
-
-        # =================================================================
-        # STEP 4: Rate perturbed answers
-        # =================================================================
-        print(f"\n{'='*80}")
-        print("STEP 4: RATE PERTURBED ANSWERS")
-        print(f"{'='*80}")
-
-        # Process each perturbation
-        for perturbation_name in perturbation_names:
-            print(f"\n[{perturbation_name.upper()}]")
-
-            # Create perturbation-specific subdirectory
+            # Create perturbation-specific subdirectory under baseline
             perturbation_dir = os.path.join(baseline_dir, perturbation_name)
             os.makedirs(perturbation_dir, exist_ok=True)
-
-            # Get parameters for this perturbation
-            params = perturbation_params[perturbation_name]
-            remove_pcts = params['remove_pcts']
-            typo_probs = params['typo_probs']
 
             # Iterate over parameter combinations
             for remove_pct in remove_pcts:
                 for typo_prob in typo_probs:
+                    param_key = (remove_pct, typo_prob)
+
                     # Determine output filename
                     if perturbation_name == 'remove_sentences':
                         pct_str = str(int(remove_pct * 100))
@@ -322,51 +277,22 @@ def run_baseline_experiment(args):
 
                     output_path = os.path.join(perturbation_dir, output_filename)
 
-                    # Load perturbations from file
-                    perturbations_dir = os.path.join(output_dir, 'perturbations')
-                    if perturbation_name == 'remove_sentences':
-                        pct_str = str(int(remove_pct * 100))
-                        pert_filename = f"{perturbation_name}_{pct_str}pct_{level}.jsonl"
-                    elif perturbation_name == 'add_typos':
-                        prob_str = str(typo_prob).replace('.', '')
-                        pert_filename = f"{perturbation_name}_{prob_str}prob_{level}.jsonl"
-                    else:
-                        pert_filename = f"{perturbation_name}_{level}.jsonl"
-
-                    pert_filepath = os.path.join(perturbations_dir, pert_filename)
-
-                    if not os.path.exists(pert_filepath):
-                        print(f"  Perturbation file not found: {pert_filename}")
-                        continue
-
-                    # Load perturbations into dict
-                    perturbations_dict = {}
-                    with open(pert_filepath, 'r') as f:
-                        for line in f:
-                            entry = json.loads(line)
-                            perturbations_dict[entry[id_key]] = entry
-
                     # Check which entries have already been processed
                     processed_ids = get_processed_ids(output_path)
+                    remaining_qa_pairs = [qa for qa in qa_pairs_to_rate if qa[id_key] not in processed_ids]
 
-                    # Get IDs that have perturbations and original ratings but haven't been rated yet
-                    ids_to_rate = [
-                        id_ for id_ in perturbations_dict.keys()
-                        if id_ in original_ratings_dict and id_ not in processed_ids
-                        and 'skip_reason' not in perturbations_dict[id_]
-                    ]
-
-                    if len(ids_to_rate) == 0:
-                        print(f"  All perturbed answers already rated. Skipping.")
+                    if len(remaining_qa_pairs) == 0:
+                        print(f"All {len(qa_pairs_to_rate)} QA pairs already processed. Skipping.")
                         continue
 
-                    print(f"  Rating {len(ids_to_rate)} perturbed answers")
+                    print(f"Processing {len(remaining_qa_pairs)} remaining QA pairs (out of {len(qa_pairs_to_rate)} total)")
+                    print(f"Saving results to: {perturbation_name}/{output_filename}")
 
-                    # Create QA pairs for rating (need full QA data)
-                    qa_pairs_to_rate = [qa for qa in qa_pairs_for_rating if qa[id_key] in ids_to_rate]
+                    # Get pre-generated perturbations
+                    perturbations_dict = all_perturbations_dict[param_key]
 
                     # Process each QA pair
-                    for qa_pair in qa_pairs_to_rate:
+                    for qa_pair in remaining_qa_pairs:
                         question = qa_pair['question']
                         original_answer = qa_pair['answer']
 

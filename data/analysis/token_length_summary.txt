@@ -1,0 +1,57 @@
+================================================================================
+Token Length Analysis Summary
+================================================================================
+
+Dataset                        N        Mean       Median     Min      Max     
+--------------------------------------------------------------------------------
+CQA Eval - Coarse (Answer-level) 300      154.4      142.0      34       363     
+CQA Eval - Fine (Sentence-level) 1229     158.9      147.0      39       367     
+MedInfo2019 (Answer-level)     690      93.1       62.0       1        1038    
+
+================================================================================
+
+
+CQA Eval - Coarse (Answer-level)
+--------------------------------------------------------------------------------
+Samples:        300
+Mean:           154.4
+Median:         142.0
+Std Dev:        66.2
+Min:            34
+Max:            363
+25th percentile: 109.0
+75th percentile: 196.2
+90th percentile: 253.1
+95th percentile: 286.1
+99th percentile: 320.0
+
+
+CQA Eval - Fine (Sentence-level)
+--------------------------------------------------------------------------------
+Samples:        1229
+Mean:           158.9
+Median:         147.0
+Std Dev:        57.9
+Min:            39
+Max:            367
+25th percentile: 118.0
+75th percentile: 192.0
+90th percentile: 239.0
+95th percentile: 268.6
+99th percentile: 326.7
+
+
+MedInfo2019 (Answer-level)
+--------------------------------------------------------------------------------
+Samples:        690
+Mean:           93.1
+Median:         62.0
+Std Dev:        101.9
+Min:            1
+Max:            1038
+25th percentile: 30.0
+75th percentile: 118.8
+90th percentile: 219.1
+95th percentile: 280.0
+99th percentile: 429.9
+

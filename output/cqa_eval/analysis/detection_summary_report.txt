@@ -1,0 +1,63 @@
+================================================================================
+ERROR DETECTION EXPERIMENT SUMMARY
+================================================================================
+
+
+COARSE LEVEL
+--------------------------------------------------------------------------------
+
+Model: gpt-4_1-2025-04-14
+----------------------------------------
+
+  remove_sentences:
+    Total examples: 888
+    Detected (yes): 823 (92.7%)
+    Missed (no):    65 (7.3%)
+
+  change_dosage:
+    Total examples: 32
+    Detected (yes): 31 (96.9%)
+    Missed (no):    1 (3.1%)
+
+  add_typos:
+    Total examples: 894
+    Detected (yes): 837 (93.6%)
+    Missed (no):    57 (6.4%)
+
+  OVERALL:
+    Total examples: 1814
+    Detection rate: 93.2%
+
+
+FINE LEVEL
+--------------------------------------------------------------------------------
+
+Model: gpt-4_1-2025-04-14
+----------------------------------------
+
+  change_dosage:
+    Total examples: 24
+    Detected (yes): 23 (95.8%)
+    Missed (no):    1 (4.2%)
+
+  add_typos:
+    Total examples: 42
+    Detected (yes): 42 (100.0%)
+    Missed (no):    0 (0.0%)
+
+  OVERALL:
+    Total examples: 66
+    Detection rate: 98.5%
+
+
+================================================================================
+CROSS-PERTURBATION COMPARISON
+================================================================================
+
+level                        coarse               fine
+model            gpt-4_1-2025-04-14 gpt-4_1-2025-04-14
+perturbation                                          
+add_typos                  0.936242           1.000000
+change_dosage              0.968750           0.958333
+remove_sentences           0.926802                NaN
+

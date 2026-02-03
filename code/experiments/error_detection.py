@@ -149,7 +149,7 @@ def run_error_detection_experiment(args):
     print(f"Using model: {args.model} (provider: {get_provider_from_model(args.model)})")
 
     # Setup paths
-    paths = setup_paths(args.output_dir)
+    paths = setup_paths(args.output_dir, dataset=args.dataset)
     output_dir = paths['output_dir']
     model_name_clean = clean_model_name(args.model)
 
@@ -157,7 +157,7 @@ def run_error_detection_experiment(args):
     experiment_dir = os.path.join(output_dir, 'experiment_results', 'error_detection')
     os.makedirs(experiment_dir, exist_ok=True)
 
-    # Define perturbations to test (all except add_confusion which is too obvious)
+    # Define perturbations to test
     all_perturbations = ['change_dosage', 'remove_sentences', 'add_typos']
 
     # Determine which perturbations to run
@@ -181,29 +181,24 @@ def run_error_detection_experiment(args):
         print(f"PROCESSING LEVEL: {level.upper()}")
         print(f"{'='*80}")
 
-        # Select data path
+        # Select data path for loading full QA data
         data_path = paths['coarse_data_path'] if level == 'coarse' else paths['fine_data_path']
-        print(f"Using data: {data_path}")
 
-        # For fine level: Use subset; for coarse: Use full dataset
-        if level == 'fine':
-            subset_file = paths['fine_subset_path']
-            all_qa_pairs = load_qa_data(data_path, sentence_ids_subset_file=subset_file)
-            print(f"Loaded {len(all_qa_pairs)} examples from subset")
+        # Load full QA dataset (we'll filter to IDs with perturbations)
+        if args.dataset == 'medinfo':
+            if level == 'coarse':
+                full_data_path = os.path.join(paths['project_root'], 'data', 'medinfo2019_medications_qa_coarse.jsonl')
+            else:
+                full_data_path = os.path.join(paths['project_root'], 'data', 'medinfo2019_medications_qa_fine.jsonl')
         else:
-            all_qa_pairs = load_qa_data(data_path)
-            print(f"Loaded {len(all_qa_pairs)} examples")
+            full_data_path = data_path
 
-        # Apply start/end index filtering if specified
-        if args.start_idx is not None or args.end_idx is not None:
-            start = args.start_idx if args.start_idx is not None else 0
-            end = args.end_idx if args.end_idx is not None else len(all_qa_pairs)
-            qa_pairs = all_qa_pairs[start:end]
-            print(f"Using subset: indices {start} to {end} ({len(qa_pairs)} examples)")
-        else:
-            qa_pairs = all_qa_pairs
+        all_qa_data = load_qa_data(full_data_path)
+        print(f"Loaded {len(all_qa_data)} QA pairs")
 
-        id_key = get_id_key(qa_pairs)
+        # Create a lookup dict for fast access
+        id_key = get_id_key(all_qa_data)
+        qa_lookup = {qa[id_key]: qa for qa in all_qa_data}
 
         # Process each perturbation
         for perturbation_name in perturbation_names:
@@ -216,7 +211,6 @@ def run_error_detection_experiment(args):
             os.makedirs(perturbation_dir, exist_ok=True)
 
             # Determine parameter values
-            # If None (not specified), use all values; otherwise use the specified value
             if perturbation_name == 'remove_sentences':
                 remove_pct_values = [0.3, 0.5, 0.7] if args.remove_pct is None else [args.remove_pct]
             else:
@@ -230,9 +224,39 @@ def run_error_detection_experiment(args):
             # Iterate over parameter combinations
             for remove_pct in remove_pct_values:
                 for typo_prob in typo_prob_values:
+                    # Load perturbations from file
+                    perturbations_dir = os.path.join(output_dir, 'perturbations')
+                    if perturbation_name == 'remove_sentences':
+                        pct_str = str(int(remove_pct * 100))
+                        pert_filename = f"{perturbation_name}_{pct_str}pct_{level}.jsonl"
+                    elif perturbation_name == 'add_typos':
+                        prob_str = str(typo_prob).replace('.', '')
+                        pert_filename = f"{perturbation_name}_{prob_str}prob_{level}.jsonl"
+                    else:
+                        pert_filename = f"{perturbation_name}_{level}.jsonl"
+
+                    pert_filepath = os.path.join(perturbations_dir, pert_filename)
+
+                    if not os.path.exists(pert_filepath):
+                        print(f"  Perturbation file not found: {pert_filename}")
+                        print(f"  Please run baseline experiment first to generate perturbations")
+                        continue
+
+                    # Load perturbations
+                    perturbations_dict = {}
+                    with open(pert_filepath, 'r') as f:
+                        for line in f:
+                            entry = json.loads(line)
+                            # Only include successful perturbations
+                            if 'skip_reason' not in entry:
+                                perturbations_dict[entry[id_key]] = entry
+
+                    print(f"  Loaded {len(perturbations_dict)} successful perturbations from {pert_filename}")
+
                     # Determine output filename
                     if perturbation_name == 'remove_sentences':
-                        output_filename = f"detection_{perturbation_name}_{remove_pct}removed_{level}_{model_name_clean}.jsonl"
+                        pct_str = str(int(remove_pct * 100))
+                        output_filename = f"detection_{perturbation_name}_{pct_str}pct_{level}_{model_name_clean}.jsonl"
                     elif perturbation_name == 'add_typos':
                         prob_str = str(typo_prob).replace('.', '')
                         output_filename = f"detection_{perturbation_name}_{prob_str}prob_{level}_{model_name_clean}.jsonl"
@@ -243,38 +267,23 @@ def run_error_detection_experiment(args):
 
                     # Check which entries have already been processed
                     processed_ids = get_processed_ids(output_path)
-                    remaining_qa_pairs = [qa for qa in qa_pairs if qa[id_key] not in processed_ids]
+                    ids_to_process = [id_ for id_ in perturbations_dict.keys() if id_ not in processed_ids]
 
-                    if len(remaining_qa_pairs) == 0:
-                        print(f"All {len(qa_pairs)} QA pairs already processed. Skipping.")
+                    if len(ids_to_process) == 0:
+                        print(f"  All perturbed answers already processed. Skipping.")
                         continue
 
-                    print(f"Processing {len(remaining_qa_pairs)} remaining QA pairs (out of {len(qa_pairs)} total)")
-                    print(f"Saving results to: error_detection/{perturbation_name}/{output_filename}")
+                    print(f"  Processing {len(ids_to_process)} remaining entries")
 
-                    # Load or generate perturbations
-                    perturbations_dict = get_or_create_perturbations(
-                        perturbation_name=perturbation_name,
-                        level=level,
-                        qa_pairs=qa_pairs,
-                        typo_prob=typo_prob,
-                        remove_pct=remove_pct,
-                        seed=args.seed,
-                        output_dir=output_dir
-                    )
+                    # Process each perturbed answer
+                    for entry_id in ids_to_process:
+                        perturbation_entry = perturbations_dict[entry_id]
+                        qa_pair = qa_lookup.get(entry_id)
 
-                    # Process each QA pair
-                    for qa_pair in remaining_qa_pairs:
-                        question = qa_pair['question']
-                        original_answer = qa_pair['answer']
-
-                        # Get pre-generated perturbation
-                        perturbation_entry = perturbations_dict.get(qa_pair[id_key])
-
-                        if perturbation_entry is None:
-                            print(f"Skipping {qa_pair[id_key]} - no perturbation found")
+                        if qa_pair is None:
+                            print(f"  Warning: QA pair not found for {entry_id}")
                             continue
-
+                        question = qa_pair['question']
                         perturbed_answer = perturbation_entry['perturbed_answer']
 
                         # Get detection result

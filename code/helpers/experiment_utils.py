@@ -8,17 +8,29 @@ import random
 from typing import Dict, List, Set, Tuple
 
 
-def setup_paths(output_dir=None):
+def setup_paths(output_dir=None, dataset='cqa_eval'):
     """Setup project paths."""
     script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     project_root = os.path.dirname(script_dir)
 
+    # Set default output directory based on dataset
     if output_dir is None:
-        output_dir = os.path.join(project_root, 'output', 'cqa_eval')
+        if dataset == 'medinfo':
+            output_dir = os.path.join(project_root, 'output', 'medinfo')
+        else:
+            output_dir = os.path.join(project_root, 'output', 'cqa_eval')
 
-    coarse_data_path = os.path.join(project_root, 'data', 'coarse_5pt_expert+llm_consolidated.jsonl')
-    fine_data_path = os.path.join(project_root, 'data', 'fine_5pt_expert+llm_consolidated.jsonl')
+    # Select dataset paths
+    if dataset == 'medinfo':
+        # MedInfo2019 dataset (using 300-sample subsets)
+        coarse_data_path = os.path.join(project_root, 'data', 'medinfo_coarse_subset300.jsonl')
+        fine_data_path = os.path.join(project_root, 'data', 'medinfo_fine_subset300.jsonl')
+    else:  # cqa_eval (default)
+        coarse_data_path = os.path.join(project_root, 'data', 'coarse_5pt_expert+llm_consolidated.jsonl')
+        fine_data_path = os.path.join(project_root, 'data', 'fine_5pt_expert+llm_consolidated.jsonl')
+
     fine_subset_path = os.path.join(project_root, 'data', 'fine_sentence_ids_subset.json')
+    fine_balanced_subset_path = os.path.join(project_root, 'data', 'fine_sentence_ids_balanced_subset.json')
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -28,7 +40,9 @@ def setup_paths(output_dir=None):
         'coarse_data_path': coarse_data_path,
         'fine_data_path': fine_data_path,
         'fine_subset_path': fine_subset_path,
-        'prompts_dir': os.path.join(script_dir, 'prompts')
+        'fine_balanced_subset_path': fine_balanced_subset_path,
+        'prompts_dir': os.path.join(script_dir, 'prompts'),
+        'dataset': dataset
     }
 
 
@@ -90,6 +104,70 @@ def clean_model_name(model: str) -> str:
 def get_id_key(qa_pairs: List[Dict]) -> str:
     """Determine ID key (sentence_id or answer_id) from QA pairs."""
     return 'sentence_id' if 'sentence_id' in qa_pairs[0] else 'answer_id'
+
+
+def get_successful_perturbation_ids(
+    perturbation_names: List[str],
+    level: str,
+    output_dir: str,
+    typo_probs: List[float] = None,
+    remove_pcts: List[float] = None
+) -> Set[str]:
+    """
+    Load all perturbation files and collect IDs that have successful perturbations.
+
+    Args:
+        perturbation_names: List of perturbation types
+        level: 'coarse' or 'fine'
+        output_dir: Output directory path
+        typo_probs: List of typo probabilities to check (for add_typos)
+        remove_pcts: List of removal percentages to check (for remove_sentences)
+
+    Returns:
+        Set of IDs that have successful perturbations
+    """
+    perturbations_dir = os.path.join(output_dir, 'perturbations')
+    successful_ids = set()
+
+    # Default parameters
+    if typo_probs is None:
+        typo_probs = [0.3, 0.5, 0.7]
+    if remove_pcts is None:
+        remove_pcts = [0.3, 0.5, 0.7]
+
+    for perturbation_name in perturbation_names:
+        # Determine parameter values for this perturbation
+        if perturbation_name == 'remove_sentences':
+            param_values = [(pct, 0.5) for pct in remove_pcts]
+        elif perturbation_name == 'add_typos':
+            param_values = [(0.3, prob) for prob in typo_probs]
+        else:
+            param_values = [(0.3, 0.5)]
+
+        for remove_pct, typo_prob in param_values:
+            # Build filename
+            if perturbation_name == 'remove_sentences':
+                pct_str = str(int(remove_pct * 100))
+                filename = f"{perturbation_name}_{pct_str}pct_{level}.jsonl"
+            elif perturbation_name == 'add_typos':
+                prob_str = str(typo_prob).replace('.', '')
+                filename = f"{perturbation_name}_{prob_str}prob_{level}.jsonl"
+            else:
+                filename = f"{perturbation_name}_{level}.jsonl"
+
+            filepath = os.path.join(perturbations_dir, filename)
+
+            # Load perturbations if file exists
+            if os.path.exists(filepath):
+                with open(filepath, 'r') as f:
+                    for line in f:
+                        entry = json.loads(line)
+                        # Skip entries without successful perturbations
+                        if 'skip_reason' not in entry:
+                            id_key = 'sentence_id' if 'sentence_id' in entry else 'answer_id'
+                            successful_ids.add(entry[id_key])
+
+    return successful_ids
 
 
 def extract_marked_text(text: str) -> Tuple[str, str, str]:
@@ -399,7 +477,7 @@ def get_perturbation_prompt_mapping(level='coarse'):
             'question': f'Is there an error in this {text_type}?',
             'priming_text': f'Note: This {text_type} contains an error.'
         },
-        'remove_must_have': {
+        'remove_sentences': {
             'detection_type': 'missing',
             'question': f'Is important information missing from this {text_type}?',
             'priming_text': f'Note: This {text_type} is missing important information.'

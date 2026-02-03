@@ -15,11 +15,18 @@ Evaluates how robust language models are to common types of medical errors in Q&
 - **Typos** in medical terms
 - **Dosage errors** (wrong amounts, timing, instructions)
 - **Missing information** (removed sentences)
-- **Confusion** (scrambled sentence order)
+
+**Supported Datasets**:
+- **CQA Eval** (default): Expert + LLM-generated medical Q&A
+  - Coarse: 300 Q&A pairs
+  - Fine: 1,229 sentences (250 in original subset, 300 in balanced subset)
+- **MedInfo2019**: MedlinePlus medication Q&A
+  - Coarse: 300 Q&A pairs (sampled from 690 total)
+  - Fine: 300 sentences (sampled from 2,311 total)
 
 **Evaluation Levels**:
-- **Coarse**: Full answer evaluation (300 Q&A pairs)
-- **Fine**: Sentence-level evaluation (250 sentences with 3+ annotations)
+- **Coarse**: Full answer evaluation
+- **Fine**: Sentence-level evaluation (uses balanced subset for add_typos, full dataset for change_dosage)
 
 ### 2. RadEval: Radiology Report Evaluation
 Evaluates radiology report generation using the GREEN metric:
@@ -62,13 +69,22 @@ cp .env.example .env
 
 ### 3. Run Your First Experiment
 
-**CQA Eval:**
+**CQA Eval (default dataset):**
 ```bash
 python code/experiment_runner.py \
   --experiment baseline \
   --model Qwen3-8B \
   --level coarse \
   --perturbation change_dosage
+```
+
+**CQA Eval (MedInfo2019 dataset):**
+```bash
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --dataset medinfo \
+  --level coarse
 ```
 
 **RadEval:**
@@ -104,10 +120,18 @@ python code/experiment_runner.py \
 
 #### Run All Perturbations
 ```bash
+# Run both coarse and fine levels (default dataset)
 python code/experiment_runner.py \
   --experiment baseline \
   --model Qwen3-8B \
-  --level both  # Run both coarse and fine
+  --level both
+
+# Run with MedInfo2019 dataset (coarse only)
+python code/experiment_runner.py \
+  --experiment baseline \
+  --model Qwen3-8B \
+  --dataset medinfo \
+  --level coarse
 ```
 
 #### Run Multiple Parameter Values
@@ -193,9 +217,14 @@ python code/experiment_runner.py \
 ```
 
 **Output**: Ratings for both original and perturbed answers
-- `output/cqa_eval/experiment_results/baseline/`
+- `output/cqa_eval/experiment_results/baseline/` (default dataset)
+- `output/medinfo/experiment_results/baseline/` (MedInfo2019 dataset)
 - Shows rating drops across correctness, relevance, safety
 - Tests model robustness to errors
+
+**Dataset Selection**:
+- Fine level change_dosage: Full dataset (1,229 sentences)
+- Fine level add_typos: Balanced subset (300 sentences)
 
 ### 2. Error Detection: Can Models Spot Errors?
 
@@ -208,6 +237,8 @@ python code/experiment_runner.py \
   --level coarse \
   --perturbation change_dosage
 ```
+
+**Supported Perturbations**: change_dosage, remove_sentences, add_typos
 
 **Output**: Detection results (yes/no + explanation + location)
 - `output/cqa_eval/experiment_results/error_detection/`
@@ -226,10 +257,43 @@ python code/experiment_runner.py \
   --perturbation add_typos
 ```
 
+**Supported Perturbations**: change_dosage, remove_sentences, add_typos
+
 **Output**: Both control and primed ratings
 - `output/cqa_eval/experiment_results/error_priming/`
 - Tests if knowledge affects judgment
 - Measures priming effect strength
+
+---
+
+## 📚 Datasets
+
+### CQA Eval Dataset (default)
+Expert and LLM-generated medical Q&A from MedlinePlus:
+- **Coarse level**: 300 Q&A pairs
+- **Fine level**: 1,229 sentences from 300 Q&A pairs
+  - Original subset: 250 sentences (3+ annotations)
+  - Balanced subset: 300 sentences (100 physician, 100 llama, 100 gpt4)
+
+**Usage**: Automatically selected (default) or use `--dataset cqa_eval`
+
+**Subset Selection**:
+- change_dosage (fine): Uses full dataset (1,229 sentences)
+- add_typos (fine): Uses balanced subset (300 sentences)
+
+### MedInfo2019-QA-Medications
+Real-world medication questions from MedlinePlus:
+- **Coarse level**: 690 Q&A pairs (300 subset for most perturbations)
+- **Fine level**: 2,311 sentences (300 subset for most perturbations)
+- Questions about drug interactions, side effects, usage
+
+**Usage**: Add `--dataset medinfo` flag
+
+**Output**: Saved to `output/medinfo/` (separate from CQA Eval results)
+
+**Dataset Selection per Perturbation**:
+- **change_dosage**: Uses full dataset (690 coarse / 2,311 fine) - more instances needed
+- **add_typos, remove_sentences**: Uses 300-sample subset (balanced comparison with CQA Eval)
 
 ---
 
@@ -290,16 +354,7 @@ python code/run_radeval_experiments.py --perturbation swap_organs
 
 ### CQA Eval Perturbations
 
-#### 1. Add Typos
-Introduces typos to medical terms by swapping adjacent characters.
-
-**Parameters**:
-- `--typo-prob`: Probability per term (0.0-1.0)
-- `--all-typo-prob`: Test multiple values (0.3, 0.5, 0.7)
-
-**Example**: "acetaminophen" → "acetamnophen"
-
-#### 2. Change Dosage
+#### 1. Change Dosage
 Modifies dosages, timing, and administration instructions.
 
 **Modifications**:
@@ -308,21 +363,35 @@ Modifies dosages, timing, and administration instructions.
 - Instructions: Flip (swallow ↔ chew)
 - Anatomy: Change (both → one eye)
 
+**Supported in**: Baseline (coarse + fine), Error Detection, Error Priming
+
 **Example**: "500mg twice daily" → "5000mg once daily"
+
+**Fine Level Dataset**: Uses full dataset (1,229 sentences)
+
+#### 2. Add Typos
+Introduces typos to medical terms by swapping adjacent characters.
+
+**Parameters**:
+- `--typo-prob`: Probability per term (0.0-1.0)
+- Default: Tests multiple values (0.3, 0.5, 0.7)
+
+**Supported in**: Baseline (coarse + fine), Error Detection, Error Priming
+
+**Example**: "acetaminophen" → "acetamnophen"
+
+**Fine Level Dataset**: Uses balanced subset (300 sentences: 100 physician, 100 llama, 100 gpt4)
 
 #### 3. Remove Sentences
 Randomly removes a percentage of sentences from answers.
 
 **Parameters**:
 - `--remove-pct`: Percentage to remove (0.0-1.0)
-- `--all-remove-pct`: Test multiple values (0.3, 0.5, 0.7)
+- Default: Tests multiple values (0.3, 0.5, 0.7)
+
+**Supported in**: Baseline (coarse only), Error Detection, Error Priming
 
 **Example**: Removes 30%, 50%, or 70% of sentences
-
-#### 4. Add Confusion
-Randomly shuffles sentence order.
-
-**Example**: "A. B. C." → "C. A. B."
 
 ### RadEval Perturbations
 
@@ -454,9 +523,19 @@ m3-eval/
 ├── .env.example                   # API key template
 │
 ├── data/                          # Dataset files
-│   ├── coarse_5pt_expert+llm_consolidated.jsonl     # Answer-level (300)
-│   ├── fine_5pt_expert+llm_consolidated.jsonl       # Sentence-level (250)
+│   ├── coarse_5pt_expert+llm_consolidated.jsonl     # CQA Eval: Answer-level (300)
+│   ├── fine_5pt_expert+llm_consolidated.jsonl       # CQA Eval: Sentence-level (1,229)
+│   ├── fine_sentence_ids_subset.json                # Original fine subset (250 IDs)
+│   ├── fine_sentence_ids_balanced_subset.json       # Balanced fine subset (300 IDs)
+│   ├── medinfo2019_medications_qa.jsonl             # MedInfo2019: Coarse full (690)
+│   ├── medinfo2019_medications_qa_fine.jsonl        # MedInfo2019: Fine full (2,311)
+│   ├── medinfo_coarse_subset300.jsonl               # MedInfo2019: Coarse subset (300) *used in experiments*
+│   ├── medinfo_fine_subset300.jsonl                 # MedInfo2019: Fine subset (300) *used in experiments*
+│   ├── create_medinfo_fine.py                       # Script to create MedInfo fine dataset
+│   ├── create_medinfo_subsets.py                    # Script to create MedInfo subsets
 │   ├── radeval_expert_dataset.jsonl                 # RadEval dataset
+│   ├── analysis/                  # Dataset analysis scripts
+│   │   └── analyze_token_lengths.py
 │   └── old/                       # Original unconsolidated data
 │       ├── consolidate_fine_data.py
 │       ├── consolidate_coarse_data.py
@@ -492,19 +571,37 @@ m3-eval/
 │   └── baseline_experiments.ipynb
 │
 ├── output/
-│   ├── cqa_eval/                  # CQA eval results
+│   ├── cqa_eval/                  # CQA Eval results (default dataset)
 │   │   ├── original_ratings/
 │   │   ├── perturbations/
+│   │   ├── analysis/
 │   │   └── experiment_results/
-│   │       └── baseline/
+│   │       ├── baseline/
+│   │       │   ├── add_typos/
+│   │       │   ├── change_dosage/
+│   │       │   └── remove_sentences/
+│   │       ├── error_detection/
+│   │       │   ├── add_typos/
+│   │       │   ├── change_dosage/
+│   │       │   └── remove_sentences/
+│   │       └── error_priming/
 │   │           ├── add_typos/
 │   │           ├── change_dosage/
-│   │           ├── remove_sentences/
-│   │           └── add_confusion/
+│   │           └── remove_sentences/
+│   │
+│   ├── medinfo/                   # MedInfo2019 results
+│   │   ├── original_ratings/
+│   │   ├── perturbations/
+│   │   ├── analysis/
+│   │   └── experiment_results/
+│   │       ├── baseline/
+│   │       ├── error_detection/
+│   │       └── error_priming/
 │   │
 │   └── radeval/                   # RadEval results
 │       ├── original_ratings/
 │       ├── perturbations/
+│       ├── analysis/
 │       └── experiment_results/
 │           └── baseline/
 │               ├── add_typos/
@@ -524,6 +621,7 @@ m3-eval/
 - `download_radeval_data.py` - Download RadEval dataset
 - `perturbation_pipeline.py` - Legacy CQA pipeline (backward compatibility)
 - `generate_perturbations.py` - Standalone perturbation generator
+- `create_balanced_fine_subset.py` - Create balanced subset from fine dataset
 
 **Experiment Modules:**
 - `baseline.py` - Baseline rating experiments
