@@ -192,10 +192,16 @@ python code/generate_perturbations.py \
 ### SLURM Cluster Jobs
 
 ```bash
-# Run on HPC cluster
+# Run on HPC cluster (all scripts in slurm/ folder)
+cd slurm
+
+# CQA Eval experiments
+sbatch run_fine_qwen3_8b.slurm
+sbatch run_change_dosage_fine.slurm
 sbatch run_add_typos_all_probs.slurm
-sbatch run_remove_sentences_all_pcts.slurm
-sbatch run_perturbation_pipeline.slurm
+
+# MedInfo experiments
+sbatch run_medinfo_change_dosage_qwen3_8b.slurm
 ```
 
 ---
@@ -569,6 +575,13 @@ m3-eval/
 │
 ├── notebooks/                     # Jupyter notebooks
 │   └── baseline_experiments.ipynb
+│
+├── slurm/                         # SLURM cluster job scripts
+│   ├── run_fine_qwen3_8b.slurm
+│   ├── run_change_dosage_fine.slurm
+│   ├── run_add_typos_all_probs.slurm
+│   ├── run_medinfo_change_dosage_qwen3_8b.slurm
+│   └── *.slurm                    # Other cluster scripts
 │
 ├── output/
 │   ├── cqa_eval/                  # CQA Eval results (default dataset)

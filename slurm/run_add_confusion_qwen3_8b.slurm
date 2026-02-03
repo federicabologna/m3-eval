@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH -J m3_add_confusion_qwen3_8b       # Job name
-#SBATCH -o m3_add_confusion_qwen3_8b.out   # Name of stdout output log file
-#SBATCH -e m3_add_confusion_qwen3_8b.err   # Name of stderr output log file
+#SBATCH -o logs/m3_add_confusion_qwen3_8b.out   # Name of stdout output log file
+#SBATCH -e logs/m3_add_confusion_qwen3_8b.err   # Name of stderr output log file
 #SBATCH -N 1                                # Total number of nodes requested
 #SBATCH -n 1                                # Total number of cores requested
 #SBATCH --cpus-per-task=8                   # Total number of cores requested per task
@@ -19,8 +19,9 @@ echo "Job started at: $(date)"
 echo "Job ID: $SLURM_JOB_ID"
 echo "========================================"
 
-# Navigate to project directory
+# Navigate to project directory (from slurm folder)
 cd $HOME/m3-eval || { echo "Failed to cd to m3-eval"; exit 1; }
+echo "Working directory: $(pwd)"
 
 # Activate virtual environment
 source .venv/bin/activate || { echo "Failed to activate venv"; exit 1; }
