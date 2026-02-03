@@ -267,6 +267,7 @@ def save_result(output_path: str, result: Dict):
         with open(output_path, 'a') as f:
             json.dump(result, f)
             f.write('\n')
+            f.flush()  # Ensure data is written to disk immediately
     except IOError as e:
         print(f"ERROR: Failed to save result to {output_path}: {e}")
         raise
@@ -357,6 +358,7 @@ def get_or_create_perturbations(
             # Save to file
             json.dump(entry, f)
             f.write('\n')
+            f.flush()  # Ensure data is written to disk immediately
 
             # Add to dictionary
             perturbations[qa_pair[id_key]] = entry
@@ -445,6 +447,7 @@ def get_or_create_original_ratings(
             # Save to file
             json.dump(result, f)
             f.write('\n')
+            f.flush()  # Ensure data is written to disk immediately
 
             # Add to dictionary
             ratings_dict[qa_pair[id_key]] = original_rating
