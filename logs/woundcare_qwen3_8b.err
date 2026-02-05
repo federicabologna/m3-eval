@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/fb265/m3-eval/code/run_woundcare_experiments.py", line 683, in <module>
+    main()
+  File "/home/fb265/m3-eval/code/run_woundcare_experiments.py", line 661, in main
+    run_woundcare_perturbation_experiment(
+  File "/home/fb265/m3-eval/code/run_woundcare_experiments.py", line 597, in run_woundcare_perturbation_experiment
+    generate_perturbations(data_path, output_dir, perturbations, seed)
+  File "/home/fb265/m3-eval/code/run_woundcare_experiments.py", line 202, in generate_perturbations
+    with open(data_path, 'r') as f:
+         ^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/Users/Federica_1/Documents/GitHub/m3-eval/data/woundcare_gpt4o_coarse.jsonl'

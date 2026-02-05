@@ -8,9 +8,9 @@
 #SBATCH --get-user-env                                  # retrieve the users login environment
 #SBATCH --mail-type=ALL                                 # Request status by email
 #SBATCH --mail-user=fb265@cornell.edu                   # Email address to send results to
-#SBATCH --mem=200000                                     # Total amount of memory requested in MB (per node)
+#SBATCH --mem=100000                                     # Total amount of memory requested in MB (per node)
 #SBATCH -t 72:00:00                                     # Time limit (72 hours)
-#SBATCH --gres=gpu:2                                    # Specify GPU type and number
+#SBATCH --gres=gpu:1                                    # Specify GPU type and number
 #SBATCH --partition=luxlab                              # Request partition for resource allocation
 
 # Print job info
