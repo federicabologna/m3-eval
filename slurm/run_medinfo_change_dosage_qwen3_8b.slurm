@@ -50,7 +50,7 @@ echo "========================================"
 python -u code/experiment_runner.py \
   --experiment baseline \
   --model Qwen3-8B \
-  --level both \
+  --level fine \
   --seed 42 \
   --dataset medinfo \
   --perturbation change_dosage
