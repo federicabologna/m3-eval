@@ -92,15 +92,20 @@ def load_qa_data(data_path: str, sentence_ids_subset_file: str = None) -> List[D
 
 
 def get_processed_ids(output_path: str) -> Set[str]:
-    """Get set of already processed answer IDs from output file."""
+    """Get set of already processed IDs from output file."""
     processed_ids = set()
     if os.path.exists(output_path):
         try:
             with open(output_path, 'r') as f:
                 for line in f:
                     entry = json.loads(line)
-                    # Use answer_id for coarse/fine, or sentence_id if present
-                    id_key = 'sentence_id' if 'sentence_id' in entry else 'answer_id'
+                    # Check for different ID field names depending on dataset
+                    if 'sentence_id' in entry:
+                        id_key = 'sentence_id'
+                    elif 'question_id' in entry:
+                        id_key = 'question_id'  # WoundCare uses this
+                    else:
+                        id_key = 'answer_id'  # CQA/MedInfo use this
                     processed_ids.add(entry[id_key])
             print(f"Found {len(processed_ids)} already processed entries in output file")
         except Exception as e:
@@ -114,8 +119,13 @@ def clean_model_name(model: str) -> str:
 
 
 def get_id_key(qa_pairs: List[Dict]) -> str:
-    """Determine ID key (sentence_id or answer_id) from QA pairs."""
-    return 'sentence_id' if 'sentence_id' in qa_pairs[0] else 'answer_id'
+    """Determine ID key (sentence_id, question_id, or answer_id) from QA pairs."""
+    if 'sentence_id' in qa_pairs[0]:
+        return 'sentence_id'
+    elif 'question_id' in qa_pairs[0]:
+        return 'question_id'  # WoundCare uses this
+    else:
+        return 'answer_id'  # CQA/MedInfo use this
 
 
 def get_successful_perturbation_ids(
