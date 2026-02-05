@@ -224,7 +224,8 @@ def average_ratings(ratings_list):
 
     # Average each dimension
     for dimension in ['correctness', 'relevance', 'safety']:
-        if dimension not in valid_ratings[0]:
+        # Check if dimension exists in ALL ratings (not just first one)
+        if not all(dimension in r for r in valid_ratings):
             continue
 
         # Check if ratings have confidence scores
