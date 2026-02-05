@@ -47,6 +47,8 @@ echo "Num runs: 5 (single API call with n=5)"
 echo "========================================"
 
 python -u code/run_woundcare_experiments.py \
+  --data data/woundcare_gpt4o_coarse.jsonl \
+  --output-dir output/woundcare/experiment_results/baseline \
   --model Qwen3-8B \
   --seed 42
 

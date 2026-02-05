@@ -294,7 +294,7 @@ def get_rating_with_averaging(question, answer, system_prompt, user_template, mo
     for i, response in enumerate(responses):
         if flush_output:
             print(f"  Completion {i + 1}/{num_runs}")
-        rating = parse_rating(response)
+        rating = extract_json_from_response(response)
         all_ratings.append(rating)
 
     # Average the ratings
