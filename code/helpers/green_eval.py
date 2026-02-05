@@ -1,127 +1,194 @@
 """
-GREEN (Generation, Ranking, and Evaluation using Expert Notes) evaluation wrapper.
+GREEN (Generative Radiology Error Evaluation) evaluation wrapper.
 
-Based on: https://github.com/jbdel/RadEval
-
-GREEN evaluates radiology report generation by comparing generated reports
-against reference reports using clinical entity matching.
+Uses the GREEN framework from green.py to evaluate radiology report generation
+by comparing generated reports against reference reports using LLM-based error analysis.
 
 Supports:
-- GREEN's radllama2-7b model (default)
-- API models (gpt-4.1-2025-04-14, gpt-4o, gpt-4o-mini, etc.)
+- OpenAI API models (gpt-4.1-2025-04-14, gpt-4o, gpt-4o-mini, etc.)
+- Azure OpenAI models
+
+Requirements:
+- pip install openai numpy pandas datasets tqdm azure-identity
 """
 
 import os
-from typing import Dict, List
+import sys
+from typing import Dict, List, Optional
 from pathlib import Path
 from dotenv import load_dotenv
-from RadEval import RadEval
+
+# Add parent directory to path to import green.py
+code_dir = Path(__file__).parent.parent
+sys.path.insert(0, str(code_dir))
+
+try:
+    from green import GREEN, GreenClientConfig, AzureGreenClientConfig, GreenGenerationConfig
+except ImportError as e:
+    raise ImportError(
+        f"Failed to import GREEN modules: {e}\n"
+        "Please install required packages:\n"
+        "pip install openai numpy pandas datasets tqdm azure-identity"
+    )
 
 # Load environment variables from .env file in project root
-project_root = Path(__file__).parent.parent.parent
+project_root = code_dir.parent
 env_path = project_root / '.env'
 load_dotenv(dotenv_path=env_path)
 
-# Cache evaluators to avoid reloading models
+# Cache evaluators to avoid recreating clients
 _evaluator_cache = {}
 
 
-def get_model_type(model_name):
-    """Determine if model is GREEN's LLM or an API model."""
-    if model_name is None or model_name == "StanfordAIMI/GREEN-radllama2-7b":
-        return "green"
-    elif model_name.startswith("gpt-"):
-        return "openai"
-    elif model_name.startswith("claude-"):
-        return "anthropic"
-    elif model_name.startswith("gemini-"):
-        return "google"
-    else:
-        # Assume it's a HuggingFace model for GREEN
-        return "green"
-
-
-def get_green_evaluator(model_name=None, cpu=False):
+def get_green_evaluator(
+    model_name: str = "gpt-4o",
+    is_azure: bool = False,
+    azure_endpoint: Optional[str] = None,
+    api_version: Optional[str] = None,
+    temperature: float = 1.0,
+    max_completion_tokens: int = 2048,
+    n: int = 5
+) -> GREEN:
     """
     Get or create a GREEN evaluator with the specified model.
 
     Args:
-        model_name: Model to use. Options:
-            - None or "StanfordAIMI/GREEN-radllama2-7b": Use GREEN's radllama2-7b (default)
-            - "gpt-4.1-2025-04-14", "gpt-4o", "gpt-4o-mini": Use OpenAI API models
-        cpu: If True, run on CPU (for GREEN model only)
+        model_name: Model to use (e.g., "gpt-4o", "gpt-4.1-2025-04-14")
+        is_azure: Whether to use Azure OpenAI
+        azure_endpoint: Azure OpenAI endpoint URL (if using Azure)
+        api_version: Azure API version (if using Azure)
+        temperature: Sampling temperature (default: 1.0)
+        max_completion_tokens: Maximum tokens in response (default: 2048)
+        n: Number of completions per API call for averaging (default: 5)
 
     Returns:
-        RadEval evaluator instance
+        GREEN evaluator instance
     """
-    model_type = get_model_type(model_name)
-    cache_key = f"{model_name}_{cpu}"
+    cache_key = f"{model_name}_{is_azure}_{azure_endpoint}_{temperature}_{n}"
 
     if cache_key in _evaluator_cache:
         return _evaluator_cache[cache_key]
 
-    if model_type == "green":
-        # Use GREEN's radllama2-7b model
-        green_model = model_name if model_name else "StanfordAIMI/GREEN-radllama2-7b"
-        print(f"Initializing GREEN evaluator with model: {green_model}")
-        evaluator = RadEval(
-            do_green=True,
-            do_radgraph=False,
-            do_chexbert=False,
-        )
-        # Override the model if custom one specified
-        if model_name:
-            from RadEval.factual.green_score import GREEN
-            evaluator.green_scorer = GREEN(green_model, cpu=cpu)
-    elif model_type == "openai":
-        # Use OpenAI API via MammoGREEN with rate limit handling
-        print(f"Initializing GREEN evaluator with OpenAI model: {model_name}")
-        api_key = os.getenv("OPENAI_API_KEY")
-        if not api_key:
-            raise ValueError("OPENAI_API_KEY not found in environment variables")
+    print(f"Initializing GREEN evaluator with model: {model_name}")
 
-        # Import MammoGREEN directly
-        from RadEval.factual.green_score import MammoGREEN
-        evaluator = MammoGREEN(
-            model_name=model_name,
-            api_key=api_key,
-            output_dir="."
+    # Get API key from environment
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key and not is_azure:
+        raise ValueError("OPENAI_API_KEY not found in environment variables")
+
+    # Configure client
+    if is_azure:
+        if not azure_endpoint:
+            azure_endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
+        if not api_version:
+            api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+
+        client_config = AzureGreenClientConfig(
+            model=model_name,
+            azure_endpoint=azure_endpoint,
+            api_version=api_version,
+            is_async=False,
+            is_azure=True,
+            max_retries=30
         )
     else:
-        raise ValueError(f"Unsupported model type: {model_name}")
+        client_config = GreenClientConfig(
+            model=model_name,
+            api_key=api_key,
+            is_async=False,
+            is_azure=False,
+            max_retries=30
+        )
+
+    # Configure generation
+    generation_config = GreenGenerationConfig(
+        max_completion_tokens=max_completion_tokens,
+        temperature=temperature,
+        n=n  # Number of completions to average (default: 5)
+    )
+
+    # Create evaluator
+    evaluator = GREEN(
+        client_config=client_config,
+        generation_config=generation_config,
+        output_dir=".",
+        compute_summary_stats=False
+    )
 
     _evaluator_cache[cache_key] = evaluator
     return evaluator
 
 
-def compute_green_score(prediction, reference, model_name=None, cpu=False):
+def compute_green_score(
+    prediction: str,
+    reference: str,
+    model_name: str = "gpt-4o",
+    is_azure: bool = False,
+    temperature: float = 1.0,
+    n: int = 5
+) -> Dict:
     """
     Compute GREEN score for a single prediction-reference pair.
 
     Args:
         prediction: Generated radiology report text
         reference: Reference radiology report text
-        model_name: Model to use for evaluation (default: StanfordAIMI/GREEN-radllama2-7b)
-        cpu: If True, run on CPU (for GREEN model only)
+        model_name: Model to use for evaluation (default: gpt-4o)
+        is_azure: Whether to use Azure OpenAI
+        temperature: Sampling temperature
+        n: Number of completions to average (default: 5)
 
     Returns:
-        Dictionary with GREEN metrics
+        Dictionary with GREEN score and error analysis (averaged across n completions)
     """
-    evaluator = get_green_evaluator(model_name, cpu)
+    evaluator = get_green_evaluator(
+        model_name=model_name,
+        is_azure=is_azure,
+        temperature=temperature,
+        n=n
+    )
 
-    # Run evaluation - returns (mean, std, scores_list, results_df)
-    results = evaluator(refs=[reference], hyps=[prediction])
-    mean_score, std_score, scores_list, _ = results
+    # Use update method for single evaluation
+    evaluator.update(hyp=prediction, ref=reference, compute_completion=True)
 
-    green_score = scores_list[0] if scores_list else mean_score
+    # Compute results (returns mean, std, scores, summary, df)
+    _mean, _std, scores, _summary, _df = evaluator.compute()
+
+    # Extract score for the single example (averaged)
+    green_score = scores[-1] if scores else 0.0
+    error_counts = evaluator.error_counts.iloc[-1].to_dict() if len(evaluator.error_counts) > 0 else {}
+    completion = evaluator.completions[-1][0] if evaluator.completions else ""
+
+    # Extract individual scores from all n completions before averaging
+    # evaluator.error_counts is already averaged, but we need to access the pre-averaged data
+    # The GREEN class stores individual error_counts in a list during process_results()
+    # We'll extract individual scores from results_df if available
+    individual_scores = []
+    if hasattr(evaluator, 'results_df') and len(evaluator.results_df) > 0:
+        # Get the last entry's green_analysis (list of n completions)
+        last_completions = evaluator.completions[-1] if evaluator.completions else []
+        # Recompute individual GREEN scores from each completion
+        for completion_text in last_completions:
+            indiv_score_data = evaluator.compute_green_and_error_counts(completion_text)
+            individual_scores.append(float(indiv_score_data[0]))  # First element is the green score
 
     return {
-        'green_score': float(green_score),
-        'model': model_name or "StanfordAIMI/GREEN-radllama2-7b"
+        'score': float(green_score),
+        'model': model_name,
+        'error_counts': error_counts,
+        'analysis': completion,
+        'individual_scores': individual_scores  # Add list of n individual scores
     }
 
 
-def batch_compute_green_scores(predictions, references, model_name=None, cpu=False):
+def batch_compute_green_scores(
+    predictions: List[str],
+    references: List[str],
+    model_name: str = "gpt-4o",
+    is_azure: bool = False,
+    temperature: float = 1.0,
+    n: int = 5
+) -> List[Dict]:
     """
     Compute GREEN scores for multiple prediction-reference pairs.
 
@@ -129,49 +196,89 @@ def batch_compute_green_scores(predictions, references, model_name=None, cpu=Fal
         predictions: List of generated report texts
         references: List of reference report texts
         model_name: Model to use for evaluation
-        cpu: If True, run on CPU (for GREEN model only)
+        is_azure: Whether to use Azure OpenAI
+        temperature: Sampling temperature
+        n: Number of completions to average per example (default: 5)
 
     Returns:
-        List of score dictionaries
+        List of score dictionaries (each averaged across n completions)
     """
-    evaluator = get_green_evaluator(model_name, cpu)
+    evaluator = get_green_evaluator(
+        model_name=model_name,
+        is_azure=is_azure,
+        temperature=temperature,
+        n=n
+    )
 
-    # Run batch evaluation - returns (mean, std, scores_list, results_df)
-    mean_score, std_score, scores_list, _ = evaluator(refs=references, hyps=predictions)
+    # Run batch evaluation - now returns (mean, std, scores_list, summary, results_df)
+    mean_score, std_score, scores_list, summary, results_df = evaluator(refs=references, hyps=predictions)
 
-    return [
-        {
-            'green_score': float(score),
-            'model': model_name or "StanfordAIMI/GREEN-radllama2-7b"
-        }
-        for score in scores_list
-    ]
+    # Extract individual scores
+    results = []
+    for i, green_score in enumerate(scores_list):
+        error_counts = evaluator.error_counts.iloc[i].to_dict()
+        completion = evaluator.completions[i][0] if i < len(evaluator.completions) else ""
+
+        # Extract individual scores from all n completions for this example
+        individual_scores = []
+        if i < len(evaluator.completions):
+            completions_for_example = evaluator.completions[i]
+            for completion_text in completions_for_example:
+                indiv_score_data = evaluator.compute_green_and_error_counts(completion_text)
+                individual_scores.append(float(indiv_score_data[0]))
+
+        results.append({
+            'score': float(green_score),
+            'model': model_name,
+            'error_counts': error_counts,
+            'analysis': completion,
+            'individual_scores': individual_scores  # Add list of n individual scores
+        })
+
+    return results
 
 
-def get_green_rating(prediction, reference, model_name=None, cpu=False, num_runs=1):
+def get_green_rating(
+    prediction: str,
+    reference: str,
+    model_name: str = "gpt-4o",
+    cpu: bool = False,  # Kept for API compatibility, not used
+    num_runs: int = 5,  # Now uses n parameter for single API call with 5 completions
+    is_azure: bool = False,
+    temperature: float = 1.0
+) -> Dict:
     """
-    Get GREEN rating with optional averaging over multiple runs.
+    Get GREEN rating with averaging over multiple completions.
+
+    Uses OpenAI's n parameter to get multiple completions in a single API call.
+    The green.py script automatically averages them.
 
     For consistency with CQA eval pipeline structure.
 
     Args:
         prediction: Generated report text
         reference: Reference report text
-        model_name: Model to use for evaluation
-        cpu: If True, run on CPU (for GREEN model only)
-        num_runs: Number of evaluation runs (GREEN is deterministic, so this is mainly for API consistency)
+        model_name: Model to use for evaluation (default: gpt-4o)
+        cpu: Unused (kept for API compatibility)
+        num_runs: Number of completions to average via n parameter (default: 5)
+        is_azure: Whether to use Azure OpenAI
+        temperature: Sampling temperature
 
     Returns:
-        Dictionary with GREEN metrics
+        Dictionary with GREEN metrics (automatically averaged across n completions)
     """
-    # GREEN is deterministic, so multiple runs return the same score
-    # But we maintain this interface for consistency with CQA pipeline
-    score = compute_green_score(prediction, reference, model_name, cpu)
+    # Use n parameter for efficient single-call averaging
+    result = compute_green_score(
+        prediction=prediction,
+        reference=reference,
+        model_name=model_name,
+        is_azure=is_azure,
+        temperature=temperature,
+        n=num_runs  # Pass num_runs as n parameter
+    )
 
-    if num_runs > 1:
-        score['_meta'] = {
-            'num_runs': num_runs,
-            'note': 'GREEN is deterministic - multiple runs return identical scores'
-        }
+    # Add metadata about averaging
+    result['num_runs'] = num_runs
+    result['_note'] = f'Averaged across {num_runs} completions from single API call (n={num_runs})'
 
-    return score
+    return result

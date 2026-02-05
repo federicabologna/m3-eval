@@ -109,7 +109,7 @@ def run_radeval_baseline_experiments(args):
             output_dir=output_dir,
             model=args.model,
             cpu=args.cpu,
-            num_runs=1  # GREEN is deterministic
+            num_runs=5  # Use n=5 for averaging (for API models like GPT-4)
         )
 
     # Step 2: Process each perturbation
@@ -226,7 +226,7 @@ def run_radeval_baseline_experiments(args):
                             perturbed_text, reference,
                             model_name=args.model,
                             cpu=args.cpu,
-                            num_runs=1
+                            num_runs=5  # Use n=5 for averaging
                         )
                         elapsed_time = time.time() - start_time
                         print(f"{elapsed_time:.1f}s")

@@ -1,0 +1,383 @@
+{
+    "name": "DermaVQA",
+    "title": "",
+    "description": "A corpus of dermatology visual question answering dataset.",
+    "doi": "",
+    "version": "1",
+    "created": "2024-03-30T07:00:00.000Z",
+    "licenses": [
+        {
+            "title": "Creative Commons Attribution 4.0",
+            "name": "CC-BY-4.0",
+            "path": "https://creativecommons.org/licenses/by/4.0/"
+        }
+    ],
+    "sources": [
+        {
+            "title": "iiyi",
+            "path": "https://bbs.iiyi.com/",
+            "contributors": []
+        },
+        {
+            "title": "reddit",
+            "path": "reddit.com",
+            "contributors": []
+        }
+    ],
+    "resources": [
+        {
+            "name": "iiyi-train-answers",
+            "description": "Consumer health queries and medical doctor responses for queries.",
+            "path": "data/iiyi/train.json",
+            "doi": "",
+            "format": "json",
+            "mediatype": "text/json",
+            "bytes": "",
+            "date": "2024-03-30T07:00:00.000Z",
+            "encoding": "",
+            "version": "1",
+            "language": "",
+            "schema": [
+                {
+                    "name": "encounter_id",
+                    "type": "",
+                    "description": "Identifier"
+                },
+                {
+                    "name": "author_id",
+                    "type": "",
+                    "description": "Author Identifier"
+                },
+                {
+                    "name": "image_ids",
+                    "type": "",
+                    "description": "List of image names."
+                },
+                {
+                    "name": "query_title_zh",
+                    "type": "",
+                    "description": "Query title (Chinese)"
+                },
+                {
+                    "name": "query_content_zh",
+                    "type": "",
+                    "description": "Content of query (Chinese)"
+                },
+                {
+                    "name": "query_title_en",
+                    "type": "",
+                    "description": "Query title (English)"
+                },
+                {
+                    "name": "query_content_en",
+                    "type": "",
+                    "description": "Content of query (English)"
+                },
+                {
+                    "name": "query_title_es",
+                    "type": "",
+                    "description": "Query title (Spanish)"
+                },
+                {
+                    "name": "query_content_es",
+                    "type": "",
+                    "description": "Content of query (Spanish)"
+                },
+                {
+                    "name": "responses",
+                    "type": "",
+                    "description": "List of json objects with fields author_id and content_{zh,en,es}."
+                }
+            ],
+            "dialect": {}
+        },
+        {
+            "name": "iiyi-valid",
+            "description": "Consumer health queries and medical doctor responses for queries.",
+            "path": "data/iiyi/valid_ht.json",
+            "doi": "",
+            "format": "json",
+            "mediatype": "text/json",
+            "bytes": "",
+            "date": "2024-03-30T07:00:00.000Z",
+            "encoding": "",
+            "version": "1",
+            "language": "",
+            "schema": [
+                {
+                    "name": "encounter_id",
+                    "type": "",
+                    "description": "Identifier"
+                },
+                {
+                    "name": "author_id",
+                    "type": "",
+                    "description": "Author Identifier"
+                },
+                {
+                    "name": "image_ids",
+                    "type": "",
+                    "description": "List of image names."
+                },
+                {
+                    "name": "query_title_zh",
+                    "type": "",
+                    "description": "Query title (Chinese)"
+                },
+                {
+                    "name": "query_content_zh",
+                    "type": "",
+                    "description": "Content of query (Chinese)"
+                },
+                {
+                    "name": "query_title_en",
+                    "type": "",
+                    "description": "Query title (English)"
+                },
+                {
+                    "name": "query_content_en",
+                    "type": "",
+                    "description": "Content of query (English)"
+                },
+                {
+                    "name": "query_title_es",
+                    "type": "",
+                    "description": "Query title (Spanish)"
+                },
+                {
+                    "name": "query_content_es",
+                    "type": "",
+                    "description": "Content of query (Spanish)"
+                },
+                {
+                    "name": "responses",
+                    "type": "",
+                    "description": "List of json objects with fields author_id, content_{zh,en,es}, completeness, contain_freq_ans."
+                }
+            ],
+            "dialect": {}
+        },
+        {
+            "name": "iiyi-test",
+            "description": "Consumer health queries and medical doctor responses for queries.",
+            "path": "data/iiyi/test_ht.json",
+            "doi": "",
+            "format": "json",
+            "mediatype": "text/json",
+            "bytes": "",
+            "date": "2024-03-30T07:00:00.000Z",
+            "encoding": "",
+            "version": "1",
+            "language": "",
+            "schema": [
+                {
+                    "name": "encounter_id",
+                    "type": "",
+                    "description": "Identifier"
+                },
+                {
+                    "name": "author_id",
+                    "type": "",
+                    "description": "Author Identifier"
+                },
+                {
+                    "name": "image_ids",
+                    "type": "",
+                    "description": "List of image names."
+                },
+                {
+                    "name": "query_title_zh",
+                    "type": "",
+                    "description": "Query title (Chinese)"
+                },
+                {
+                    "name": "query_content_zh",
+                    "type": "",
+                    "description": "Content of query (Chinese)"
+                },
+                {
+                    "name": "query_title_en",
+                    "type": "",
+                    "description": "Query title (English)"
+                },
+                {
+                    "name": "query_content_en",
+                    "type": "",
+                    "description": "Content of query (English)"
+                },
+                {
+                    "name": "query_title_es",
+                    "type": "",
+                    "description": "Query title (Spanish)"
+                },
+                {
+                    "name": "query_content_es",
+                    "type": "",
+                    "description": "Content of query (Spanish)"
+                },
+                {
+                    "name": "responses",
+                    "type": "",
+                    "description": "List of json objects with fields author_id, content_{zh,en,es}, completeness, contain_freq_ans."
+                }
+            ],
+            "dialect": {}
+        },
+        {
+            "name": "reddit-train-answers",
+            "description": "Medical doctor responses for patient queries.",
+            "path": "data/reddit/train_answersonly.json",
+            "doi": "",
+            "format": "json",
+            "mediatype": "text/json",
+            "bytes": "",
+            "date": "2024-03-30T07:00:00.000Z",
+            "encoding": "",
+            "version": "1",
+            "language": "",
+            "schema": [
+                {
+                    "name": "encounter_id",
+                    "type": "",
+                    "description": "Identifier"
+                },
+                {
+                    "name": "image_ids",
+                    "type": "",
+                    "description": "List of image names."
+                },
+                {
+                    "name": "responses",
+                    "type": "",
+                    "description": "List of json objects with fields author_id, content_en, completeness, contain_freq_ans."
+                }
+            ],
+            "dialect": {}
+        },
+        {
+            "name": "reddit-valid-answers",
+            "description": "Medical doctor responses for patient queries.",
+            "path": "data/reddit/valid_answersonly.json",
+            "doi": "",
+            "format": "json",
+            "mediatype": "text/json",
+            "bytes": "",
+            "date": "2024-03-30T07:00:00.000Z",
+            "encoding": "",
+            "version": "1",
+            "language": "",
+            "schema": [
+                {
+                    "name": "encounter_id",
+                    "type": "",
+                    "description": "Identifier"
+                },
+                {
+                    "name": "image_ids",
+                    "type": "",
+                    "description": "List of image names."
+                },
+                {
+                    "name": "responses",
+                    "type": "",
+                    "description": "List of json objects with fields author_id, content_en, completeness, contain_freq_ans."
+                }
+            ],
+            "dialect": {}
+        },
+        {
+            "name": "reddit-test-answers",
+            "description": "Medical doctor responses for patient queries.",
+            "path": "data/reddit/test_answersonly.json",
+            "doi": "",
+            "format": "json",
+            "mediatype": "text/json",
+            "bytes": "",
+            "date": "2024-03-30T07:00:00.000Z",
+            "encoding": "",
+            "version": "1",
+            "language": "",
+            "schema": [
+                {
+                    "name": "encounter_id",
+                    "type": "",
+                    "description": "Identifier"
+                },
+                {
+                    "name": "image_ids",
+                    "type": "",
+                    "description": "List of image names."
+                },
+                {
+                    "name": "responses",
+                    "type": "",
+                    "description": "List of json objects with fields author_id, content_en, completeness, contain_freq_ans."
+                }
+            ],
+            "dialect": {}
+        }
+    ],
+    "contributors": [
+        {
+            "title": "Wen-wai Yim",
+            "path": "",
+            "email": "",
+            "role": "author"
+        },
+        {
+            "title": "Asma Ben Abacha",
+            "path": "",
+            "email": "",
+            "role": "author"
+        }
+    ],
+    "privacy": [
+        {
+            "notice": {
+                "path": "",
+                "description": ""
+            },
+            "useTerms": {
+                "path": "",
+                "description": ""
+            },
+            "sensitivity": {
+                "description": "This dataset includes health information including clinical history and dermatological images.",
+                "types": []
+            },
+            "confidentiality": {
+                "path": "",
+                "description": "Identifiable images were removed. Text does not include any identifiable information."
+            },
+            "assessments": [
+                {
+                    "name": "other",
+                    "path": "",
+                    "description": "Microsoft CELA Review was conducted."
+                }
+            ]
+        }
+    ],
+    "security": [],
+    "procedures": {
+        "collection": [],
+        "processing": [],
+        "update": [
+            {
+                "isUpdated": "false",
+                "description": "Data is as-is.",
+                "path": "",
+                "contributors": [],
+                "periodicity": {},
+                "method": {},
+                "versioning": {}
+            }
+        ]
+    },
+    "use": [
+        {
+            "description": "Research Use Only.",
+            "examples": []
+        }
+    ]
+}

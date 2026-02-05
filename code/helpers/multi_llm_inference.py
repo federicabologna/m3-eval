@@ -162,7 +162,28 @@ def get_qwen_response(messages, model_name):
     return response
 
 
-def get_response(messages, model="Qwen3-1.7B"):
+def get_response_with_averaging(messages, model="Qwen3-1.7B", n=5, parse_fn=None):
+    """
+    Get n responses and return all for averaging.
+
+    Args:
+        messages: List of message dicts with 'role' and 'content'
+        model: Model name
+        n: Number of completions to request (default: 5)
+        parse_fn: Optional function to parse each response before returning
+
+    Returns:
+        List of n responses (parsed if parse_fn provided)
+    """
+    responses = get_response(messages, model, n=n, return_all=True)
+
+    if parse_fn:
+        return [parse_fn(r) for r in responses]
+    else:
+        return responses
+
+
+def get_response(messages, model="Qwen3-1.7B", n=1, return_all=False):
     """
     Get response from various LLM providers.
 
@@ -170,17 +191,29 @@ def get_response(messages, model="Qwen3-1.7B"):
         messages: List of message dicts with 'role' and 'content'
         model: Specific model name (defaults: Qwen3-1.7B)
               Provider is automatically deduced from model name
+        n: Number of completions to request (default: 1)
+           For OpenAI: Uses n parameter (single API call with n completions)
+           For other providers: Makes n separate calls
+        return_all: If True, return list of all n completions
+                   If False, return first completion (default)
 
     Returns:
-        String response from the model
+        String response (if return_all=False) or List of responses (if return_all=True)
     """
 
     # Deduce provider from model name
     provider = get_provider_from_model(model)
 
     if provider == "qwen":
-        # Use local Qwen model
-        return get_qwen_response(messages, model)
+        # Use local Qwen model (doesn't support n natively, make multiple calls)
+        if n == 1:
+            return get_qwen_response(messages, model)
+        else:
+            responses = [get_qwen_response(messages, model) for _ in range(n)]
+            if return_all:
+                return responses
+            else:
+                return responses[0]
 
     elif provider == "openai":
         # OpenAI API (GPT models, O3, etc.)
@@ -193,11 +226,16 @@ def get_response(messages, model="Qwen3-1.7B"):
             model=model,
             messages=messages,
             temperature=1.0,
-            max_tokens=2048
+            max_tokens=2048,
+            n=n  # Request n completions in single API call
         )
 
-        time.sleep(0.2)  # Rate limit delay
-        return response.choices[0].message.content
+        if return_all:
+            # Return all n completions
+            return [choice.message.content for choice in response.choices]
+        else:
+            # Return first completion
+            return response.choices[0].message.content
 
     elif provider == "anthropic":
         # Anthropic API (Claude models)
@@ -219,16 +257,22 @@ def get_response(messages, model="Qwen3-1.7B"):
                     'content': msg['content']
                 })
 
-        response = client.messages.create(
-            model=model,
-            max_tokens=2048,
-            temperature=1.0,
-            system=system_message,
-            messages=anthropic_messages
-        )
+        # Anthropic doesn't support n parameter, so make multiple calls if needed
+        responses = []
+        for _ in range(n):
+            response = client.messages.create(
+                model=model,
+                max_tokens=2048,
+                temperature=1.0,
+                system=system_message,
+                messages=anthropic_messages
+            )
+            responses.append(response.content[0].text)
 
-        time.sleep(0.2)  # Rate limit delay
-        return response.content[0].text
+        if return_all:
+            return responses
+        else:
+            return responses[0]
 
     elif provider == "google":
         # Google Gemini API (new google.genai)
@@ -258,14 +302,20 @@ def get_response(messages, model="Qwen3-1.7B"):
         if system_instruction:
             config['system_instruction'] = system_instruction
 
-        response = client.models.generate_content(
-            model=model,
-            contents=contents,
-            config=config
-        )
+        # Google doesn't support n parameter, so make multiple calls if needed
+        responses = []
+        for _ in range(n):
+            response = client.models.generate_content(
+                model=model,
+                contents=contents,
+                config=config
+            )
+            responses.append(response.text)
 
-        time.sleep(0.2)  # Rate limit delay
-        return response.text
+        if return_all:
+            return responses
+        else:
+            return responses[0]
 
     else:
         raise ValueError(f"Unknown provider: {provider}")

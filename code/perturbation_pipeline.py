@@ -262,13 +262,39 @@ def average_ratings(ratings_list):
 
 
 def get_rating_with_averaging(question, answer, system_prompt, user_template, model="Qwen3-1.7B", num_runs=5, flush_output=False):
-    """Get multiple ratings and return the average."""
-    print(f"Collecting {num_runs} ratings to average...")
+    """
+    Get multiple ratings and return the average.
 
+    For OpenAI models: Uses n parameter (single API call with n completions)
+    For other models: Makes n separate API calls
+
+    Returns:
+        Averaged rating with individual ratings
+    """
+    from helpers.multi_llm_inference import get_response, get_provider_from_model
+
+    provider = get_provider_from_model(model)
+    if provider == "openai":
+        print(f"Collecting {num_runs} ratings to average (single API call with n={num_runs})...")
+    else:
+        print(f"Collecting {num_runs} ratings to average ({num_runs} separate calls)...")
+
+    # Build the prompt
+    user_prompt = user_template.format(question=question, answer=answer)
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_prompt}
+    ]
+
+    # Get n completions (OpenAI uses single call with n, others make n separate calls)
+    responses = get_response(messages, model, n=num_runs, return_all=True)
+
+    # Parse each response into a rating
     all_ratings = []
-    for run in range(num_runs):
-        print(f"  Run {run + 1}/{num_runs}...")
-        rating = get_rating(question, answer, system_prompt, user_template, model, flush_output=flush_output)
+    for i, response in enumerate(responses):
+        if flush_output:
+            print(f"  Completion {i + 1}/{num_runs}")
+        rating = parse_rating(response)
         all_ratings.append(rating)
 
     # Average the ratings
@@ -276,6 +302,8 @@ def get_rating_with_averaging(question, answer, system_prompt, user_template, mo
 
     # Store individual ratings for reference
     averaged_rating['individual_ratings'] = all_ratings
+    averaged_rating['_n_completions'] = num_runs
+    averaged_rating['_provider'] = provider
 
     return averaged_rating
 

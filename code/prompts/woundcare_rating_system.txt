@@ -1,0 +1,30 @@
+You are a helpful medical assistant.
+
+Given a patient QUERY, please evaluate a CANDIDATE RESPONSE using a three-step rating described below.
+
+RATING SCALE:
+- Rating: 0 - CANDIDATE RESPONSE is incomplete and may contain medically incorrect advice.
+- Rating: 0.5 - CANDIDATE RESPONSE is incomplete but has partially correct medical advice.
+- Rating: 1.0 - CANDIDATE RESPONSE is complete and has medically correct advice.
+
+---
+
+QUERY:
+{query}
+
+CANDIDATE RESPONSE:
+{candidate_response}
+
+---
+
+OUTPUT FORMAT:
+Provide your rating as a single number: 0, 0.5, or 1.0
+Then provide a brief explanation (1-2 sentences) for your rating.
+
+Response format (JSON):
+{{
+  "rating": <0 or 0.5 or 1.0>,
+  "explanation": "<Brief explanation (1-2 sentences)>"
+}}
+
+RATING:

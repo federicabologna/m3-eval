@@ -17,6 +17,10 @@ def setup_paths(output_dir=None, dataset='cqa_eval'):
     if output_dir is None:
         if dataset == 'medinfo':
             output_dir = os.path.join(project_root, 'output', 'medinfo')
+        elif dataset == 'woundcare':
+            output_dir = os.path.join(project_root, 'output', 'woundcare')
+        elif dataset == 'dermavqa':
+            output_dir = os.path.join(project_root, 'output', 'dermavqa')
         else:
             output_dir = os.path.join(project_root, 'output', 'cqa_eval')
 
@@ -25,6 +29,14 @@ def setup_paths(output_dir=None, dataset='cqa_eval'):
         # MedInfo2019 dataset (using 300-sample subsets)
         coarse_data_path = os.path.join(project_root, 'data', 'medinfo_coarse_subset300.jsonl')
         fine_data_path = os.path.join(project_root, 'data', 'medinfo_fine_subset300.jsonl')
+    elif dataset == 'woundcare':
+        # WoundCare dataset (coarse-level only, train set)
+        coarse_data_path = os.path.join(project_root, 'data', 'woundcare_coarse.jsonl')
+        fine_data_path = None  # Not using fine-level for WoundCare
+    elif dataset == 'dermavqa':
+        # DermaVQA dataset (300-sample subset, coarse-level only)
+        coarse_data_path = os.path.join(project_root, 'data', 'dermavqa_coarse_subset300.jsonl')
+        fine_data_path = None  # Not using fine-level for DermaVQA
     else:  # cqa_eval (default)
         coarse_data_path = os.path.join(project_root, 'data', 'coarse_5pt_expert+llm_consolidated.jsonl')
         fine_data_path = os.path.join(project_root, 'data', 'fine_5pt_expert+llm_consolidated.jsonl')
