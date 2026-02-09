@@ -31,14 +31,18 @@ def load_results(filepath):
 
 
 def extract_green_scores(results):
-    """Extract original and perturbed GREEN scores."""
+    """Extract original and perturbed GREEN scores.
+
+    Supports both old format (green_score) and new format (score).
+    """
     original_scores = []
     perturbed_scores = []
 
     for entry in results:
         if 'original_rating' in entry and 'perturbed_rating' in entry:
-            orig = entry['original_rating'].get('green_score')
-            pert = entry['perturbed_rating'].get('green_score')
+            # Try new format first (score), fall back to old format (green_score)
+            orig = entry['original_rating'].get('score') or entry['original_rating'].get('green_score')
+            pert = entry['perturbed_rating'].get('score') or entry['perturbed_rating'].get('green_score')
 
             if orig is not None and pert is not None:
                 original_scores.append(orig)

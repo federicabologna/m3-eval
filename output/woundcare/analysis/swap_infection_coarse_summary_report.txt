@@ -1,0 +1,38 @@
+================================================================================
+WoundCare Evaluation Results - Wilcoxon Signed-Rank Test
+Level: Coarse
+Perturbation: swap_infection
+================================================================================
+
+
+================================================================================
+Model: gpt-4_1-2025-04-14
+================================================================================
+Number of samples: 138
+
+Original Mean: 0.8964 ± 0.2034
+Perturbed Mean: 0.7522 ± 0.2444
+Mean Degradation: 0.1442 ± 0.2374
+
+Percentage Decreased: 36.23%
+Percentage Increased: 2.90%
+Percentage Unchanged: 60.87%
+
+Wilcoxon Test: W=1395.50, p=2.3452e-09 ***
+
+
+================================================================================
+Model: Qwen3-8B
+================================================================================
+Number of samples: 94
+
+Original Mean: 0.8319 ± 0.1969
+Perturbed Mean: 0.7670 ± 0.2085
+Mean Degradation: 0.0649 ± 0.1655
+
+Percentage Decreased: 41.49%
+Percentage Increased: 15.96%
+Percentage Unchanged: 42.55%
+
+Wilcoxon Test: W=1141.50, p=2.4625e-04 ***
+

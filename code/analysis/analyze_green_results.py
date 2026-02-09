@@ -30,20 +30,33 @@ def load_green_results(filepath):
 
 
 def extract_green_scores(results):
-    """Extract original and perturbed GREEN scores."""
+    """Extract original and perturbed GREEN scores.
+
+    Supports both old format (green_score) and new format (score).
+    """
     original_scores = []
     perturbed_scores = []
+    original_individual_scores = []  # List of lists: each entry contains 5 individual scores
+    perturbed_individual_scores = []
 
     for entry in results:
         if 'original_rating' in entry and 'perturbed_rating' in entry:
-            orig = entry['original_rating'].get('green_score')
-            pert = entry['perturbed_rating'].get('green_score')
+            # Try new format first (score), fall back to old format (green_score)
+            orig = entry['original_rating'].get('score') or entry['original_rating'].get('green_score')
+            pert = entry['perturbed_rating'].get('score') or entry['perturbed_rating'].get('green_score')
 
             if orig is not None and pert is not None:
                 original_scores.append(orig)
                 perturbed_scores.append(pert)
 
-    return np.array(original_scores), np.array(perturbed_scores)
+                # Extract individual scores if available (new format only)
+                orig_individual = entry['original_rating'].get('individual_scores', [])
+                pert_individual = entry['perturbed_rating'].get('individual_scores', [])
+                original_individual_scores.append(orig_individual)
+                perturbed_individual_scores.append(pert_individual)
+
+    return (np.array(original_scores), np.array(perturbed_scores),
+            original_individual_scores, perturbed_individual_scores)
 
 
 def compute_statistics(original_scores, perturbed_scores):
@@ -431,8 +444,13 @@ def main():
                 results = load_green_results(filepath)
                 print(f"  Loaded {len(results)} entries")
 
-                orig, pert = extract_green_scores(results)
+                orig, pert, orig_individual, pert_individual = extract_green_scores(results)
                 stats_data = compute_statistics(orig, pert)
+
+                # Check if we have individual scores (new format)
+                has_individual_scores = any(len(ind) > 0 for ind in orig_individual)
+                if has_individual_scores:
+                    print(f"  Found individual scores (n={len(orig_individual[0])} completions per sample)")
 
                 key = f"{perturbation_dir}_{filename}"
                 perturbation_results[key] = {

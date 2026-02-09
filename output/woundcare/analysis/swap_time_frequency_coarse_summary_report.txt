@@ -1,0 +1,22 @@
+================================================================================
+WoundCare Evaluation Results - Wilcoxon Signed-Rank Test
+Level: Coarse
+Perturbation: swap_time_frequency
+================================================================================
+
+
+================================================================================
+Model: gpt-4_1-2025-04-14
+================================================================================
+Number of samples: 89
+
+Original Mean: 0.8775 ± 0.2092
+Perturbed Mean: 0.6022 ± 0.2093
+Mean Degradation: 0.2753 ± 0.2386
+
+Percentage Decreased: 60.67%
+Percentage Increased: 1.12%
+Percentage Unchanged: 38.20%
+
+Wilcoxon Test: W=1537.50, p=5.9065e-12 ***
+

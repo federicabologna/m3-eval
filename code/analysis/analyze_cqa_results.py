@@ -146,7 +146,7 @@ def get_significance_marker(p_value):
         return 'ns'
 
 
-def plot_comparison(results_by_model, results_by_model_physician, level, perturbation, output_path, is_add_typos=False):
+def plot_comparison(results_by_model, results_by_model_physician, level, perturbation, output_path, is_add_typos=False, is_remove_sentences=False):
     """Create 2x3 grid: top row for physician answers, bottom row for model answers."""
     if len(results_by_model) == 0 and len(results_by_model_physician) == 0:
         return
@@ -163,10 +163,10 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
     eval_models = sorted(list(eval_models))
     x = np.arange(len(eval_models))
 
-    if is_add_typos:
-        # For add_typos, we need to handle multiple probabilities
+    if is_add_typos or is_remove_sentences:
+        # For add_typos or remove_sentences, we need to handle multiple severities
         width = 0.18
-        offsets = [-1.5*width, -0.5*width, 0.5*width, 1.5*width]  # Original, p=0.3, p=0.5, p=0.7
+        offsets = [-1.5*width, -0.5*width, 0.5*width, 1.5*width]  # Original, severity1, severity2, severity3
     else:
         width = 0.25
         offsets = [-width, 0, width]  # Original, Perturbed
@@ -252,6 +252,54 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                         sig_marker = get_significance_marker(p_val)
                         text = f'{diff:.2f}{sig_marker}'
                         ax.text(x[i] + offsets[1 + prob_idx], y_pos, text,
+                               ha='center', va='bottom', fontsize=8, fontweight='bold')
+        elif is_remove_sentences:
+            # For remove_sentences, plot separate bars for each percentage
+            percentages = ['30', '50', '70']
+            colors = ['#2ca02c', '#60c060', '#90d090']  # Green shades for physician
+
+            for pct_idx, pct in enumerate(percentages):
+                pert_means = []
+                pert_cis = []
+                differences = []
+                p_values = []
+
+                for eval_model in eval_models:
+                    data = None
+                    for key, d in results_by_model_physician.items():
+                        if d['eval_model'] == eval_model and d.get('percentage') == pct:
+                            data = d
+                            break
+
+                    if data:
+                        pert_scores = data['perturbed'][metric]
+                        mean = np.mean(pert_scores) if len(pert_scores) > 0 else 0
+                        ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores)) if len(pert_scores) > 0 else 0
+                        pert_means.append(mean)
+                        pert_cis.append(ci)
+
+                        # Calculate difference and get p-value
+                        orig_mean = orig_means[len(differences)]
+                        diff = mean - orig_mean  # perturbed - original
+                        differences.append(diff)
+                        p_values.append(data['stats'][metric]['wilcoxon_p_value'])
+                    else:
+                        pert_means.append(0)
+                        pert_cis.append(0)
+                        differences.append(0)
+                        p_values.append(None)
+
+                ax.bar(x + offsets[1 + pct_idx], pert_means, width, yerr=pert_cis,
+                       label=f'Pert. {pct}%',
+                       capsize=3, alpha=0.8, color=colors[pct_idx])
+
+                # Add difference and significance markers
+                for i, (diff, p_val, pert_mean, pert_ci) in enumerate(zip(differences, p_values, pert_means, pert_cis)):
+                    if pert_mean > 0:
+                        y_pos = pert_mean + pert_ci + 0.15
+                        sig_marker = get_significance_marker(p_val)
+                        text = f'{diff:.2f}{sig_marker}'
+                        ax.text(x[i] + offsets[1 + pct_idx], y_pos, text,
                                ha='center', va='bottom', fontsize=8, fontweight='bold')
         else:
             # Regular perturbation
@@ -387,6 +435,54 @@ def plot_comparison(results_by_model, results_by_model_physician, level, perturb
                         sig_marker = get_significance_marker(p_val)
                         text = f'{diff:.2f}{sig_marker}'
                         ax.text(x[i] + offsets[1 + prob_idx], y_pos, text,
+                               ha='center', va='bottom', fontsize=8, fontweight='bold')
+        elif is_remove_sentences:
+            # For remove_sentences, plot separate bars for each percentage
+            percentages = ['30', '50', '70']
+            colors = ['#ff7f0e', '#ff9f4a', '#ffbf7f']  # Orange shades for models
+
+            for pct_idx, pct in enumerate(percentages):
+                pert_means = []
+                pert_cis = []
+                differences = []
+                p_values = []
+
+                for eval_model in eval_models:
+                    data = None
+                    for key, d in results_by_model.items():
+                        if d['eval_model'] == eval_model and d.get('percentage') == pct:
+                            data = d
+                            break
+
+                    if data:
+                        pert_scores = data['perturbed'][metric]
+                        mean = np.mean(pert_scores) if len(pert_scores) > 0 else 0
+                        ci = 1.96 * np.std(pert_scores) / np.sqrt(len(pert_scores)) if len(pert_scores) > 0 else 0
+                        pert_means.append(mean)
+                        pert_cis.append(ci)
+
+                        # Calculate difference and get p-value
+                        orig_mean = orig_means[len(differences)]
+                        diff = mean - orig_mean  # perturbed - original
+                        differences.append(diff)
+                        p_values.append(data['stats'][metric]['wilcoxon_p_value'])
+                    else:
+                        pert_means.append(0)
+                        pert_cis.append(0)
+                        differences.append(0)
+                        p_values.append(None)
+
+                ax.bar(x + offsets[1 + pct_idx], pert_means, width, yerr=pert_cis,
+                       label=f'Pert. {pct}%',
+                       capsize=3, alpha=0.8, color=colors[pct_idx])
+
+                # Add difference and significance markers
+                for i, (diff, p_val, pert_mean, pert_ci) in enumerate(zip(differences, p_values, pert_means, pert_cis)):
+                    if pert_mean > 0:
+                        y_pos = pert_mean + pert_ci + 0.15
+                        sig_marker = get_significance_marker(p_val)
+                        text = f'{diff:.2f}{sig_marker}'
+                        ax.text(x[i] + offsets[1 + pct_idx], y_pos, text,
                                ha='center', va='bottom', fontsize=8, fontweight='bold')
         else:
             # Regular perturbation
@@ -649,8 +745,11 @@ def generate_summary_report(results_by_model, level, perturbation, output_path):
             f.write(f"\n{'='*80}\n")
             eval_model = data['eval_model']
             prob = data.get('prob')
+            percentage = data.get('percentage')
             if prob:
                 f.write(f"Model: {eval_model} (p={float(prob)/10})\n")
+            elif percentage:
+                f.write(f"Model: {eval_model} ({percentage}% removed)\n")
             else:
                 f.write(f"Model: {eval_model}\n")
             f.write(f"{'='*80}\n")
@@ -704,17 +803,25 @@ def main():
 
                 filepath = os.path.join(perturbation_dir, filename)
 
-                # Extract model name and probability (for add_typos) from filename
+                # Extract model name and probability/percentage from filename
                 # Format: perturbation_level_model_rating.jsonl
                 parts = filename.replace('_rating.jsonl', '').split('_')
                 prob = None
+                percentage = None
 
                 # Skip perturbation name and level
                 if perturbation == 'change_dosage':
                     model = '_'.join(parts[3:])  # change_dosage_level_model
                 elif perturbation == 'remove_sentences':
-                    # May have percentage: remove_sentences_0.3removed_level_model
-                    # Skip to after level
+                    # May have percentage: remove_sentences_30pct_level_model or remove_sentences_0.3removed_level_model
+                    # Extract percentage
+                    for part in parts:
+                        if 'pct' in part or 'removed' in part:
+                            percentage = part.replace('pct', '').replace('removed', '').replace('0.', '')
+                            # Handle both '30' and '0.3' formats
+                            if '.' not in part and len(percentage) == 1:
+                                percentage = percentage + '0'  # '3' -> '30'
+                            break
                     level_idx = parts.index(level)
                     model = '_'.join(parts[level_idx + 1:])
                 elif perturbation == 'add_typos':
@@ -773,12 +880,18 @@ def main():
                             metric_data[metric]['perturbed']
                         )
 
-                    # Store results (key by model_prob for add_typos, just model otherwise)
-                    key = f"{model}_{prob}" if prob else model
+                    # Store results (key by model_prob for add_typos, model_percentage for remove_sentences, just model otherwise)
+                    if prob:
+                        key = f"{model}_{prob}"
+                    elif percentage:
+                        key = f"{model}_{percentage}"
+                    else:
+                        key = model
                     results_by_model[key] = {
                         'filename': filename,
                         'eval_model': model,
                         'prob': prob,
+                        'percentage': percentage,
                         'original': {m: metric_data[m]['original'] for m in METRICS},
                         'perturbed': {m: metric_data[m]['perturbed'] for m in METRICS},
                         'stats': stats_data
@@ -803,12 +916,18 @@ def main():
                             metric_data[metric]['perturbed']
                         )
 
-                    # Store results (key by model_prob for add_typos, just model otherwise)
-                    key = f"{model}_{prob}" if prob else model
+                    # Store results (key by model_prob for add_typos, model_percentage for remove_sentences, just model otherwise)
+                    if prob:
+                        key = f"{model}_{prob}"
+                    elif percentage:
+                        key = f"{model}_{percentage}"
+                    else:
+                        key = model
                     results_by_model_physician[key] = {
                         'filename': filename,
                         'eval_model': model,
                         'prob': prob,
+                        'percentage': percentage,
                         'original': {m: metric_data[m]['original'] for m in METRICS},
                         'perturbed': {m: metric_data[m]['perturbed'] for m in METRICS},
                         'stats': stats_data
@@ -827,7 +946,8 @@ def main():
             plot_path = os.path.join(analysis_output_dir,
                                     f'{perturbation}_{level}_comparison.png')
             is_add_typos = (perturbation == 'add_typos')
-            plot_comparison(results_by_model, results_by_model_physician, level, perturbation, plot_path, is_add_typos=is_add_typos)
+            is_remove_sentences = (perturbation == 'remove_sentences')
+            plot_comparison(results_by_model, results_by_model_physician, level, perturbation, plot_path, is_add_typos=is_add_typos, is_remove_sentences=is_remove_sentences)
 
             # Generate summary reports
             if results_by_model:
