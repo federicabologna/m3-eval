@@ -1,6 +1,6 @@
 ========================================
-Job started at: Thu Feb  5 02:07:45 AM EST 2026
-Job ID: 574603
+Job started at: Thu Feb  5 12:30:25 PM EST 2026
+Job ID: 586596
 ========================================
 Working directory: /home/fb265/m3-eval
 Running MedInfo change_dosage experiments with Qwen3-8B...
@@ -56,11 +56,17 @@ STEP 2: COLLECT SUCCESSFUL PERTURBATION IDS
 STEP 3: GENERATE ORIGINAL RATINGS
 ================================================================================
 Filtered to 242 examples with successful perturbations
-✓ Loaded 196 existing original ratings from original_fine_Qwen3-8B_rating.jsonl
-⚠ 46 original ratings missing (out of 242 total)
-  Computing missing ratings...
+✓ Loaded 242 existing original ratings from original_fine_Qwen3-8B_rating.jsonl
+✓ All 242 original ratings complete!
+✓ 242 original ratings available
 
-Getting rating for medinfo_588_0...
+================================================================================
+STEP 4: RATE PERTURBED ANSWERS
+================================================================================
+
+[CHANGE_DOSAGE]
+Found 6 already processed entries in output file
+  Rating 236 perturbed answers
 Collecting 5 ratings to average (5 separate calls)...
 Loading Qwen model: Qwen3-8B... This may take a few minutes on first run.
 Using CUDA (GPU: NVIDIA RTX A6000)
@@ -78,467 +84,1687 @@ Model loaded successfully with unsloth (4-bit)!
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 181.01 seconds
-
-Getting rating for medinfo_588_1...
+Time taken for medinfo_22_0: 299.27 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 194.84 seconds
-
-Getting rating for medinfo_591_4...
+Time taken for medinfo_25_0: 236.71 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 212.21 seconds
-
-Getting rating for medinfo_592_2...
+Time taken for medinfo_25_1: 238.52 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 191.69 seconds
-
-Getting rating for medinfo_592_3...
+Time taken for medinfo_27_0: 216.53 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 204.56 seconds
-
-Getting rating for medinfo_592_5...
+Time taken for medinfo_27_1: 202.63 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 192.45 seconds
-
-Getting rating for medinfo_594_0...
+Time taken for medinfo_29_0: 191.67 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 197.07 seconds
-
-Getting rating for medinfo_594_1...
+Time taken for medinfo_30_1: 199.56 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 200.46 seconds
-
-Getting rating for medinfo_594_2...
+Time taken for medinfo_33_0: 187.08 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 194.14 seconds
-
-Getting rating for medinfo_594_4...
+Time taken for medinfo_38_6: 199.07 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 339.46 seconds
-
-Getting rating for medinfo_595_1...
+Time taken for medinfo_40_0: 295.17 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 272.46 seconds
-
-Getting rating for medinfo_595_4...
+Time taken for medinfo_42_1: 230.66 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 201.96 seconds
-
-Getting rating for medinfo_596_0...
+Time taken for medinfo_42_2: 229.00 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 183.86 seconds
-
-Getting rating for medinfo_596_1...
+Time taken for medinfo_47_0: 237.95 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 216.07 seconds
-
-Getting rating for medinfo_600_2...
+Time taken for medinfo_50_0: 167.37 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 177.89 seconds
-
-Getting rating for medinfo_600_3...
+Time taken for medinfo_70_3: 202.00 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 213.08 seconds
-
-Getting rating for medinfo_600_4...
+Time taken for medinfo_77_0: 277.71 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 214.13 seconds
-
-Getting rating for medinfo_600_5...
+Time taken for medinfo_85_0: 227.00 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 204.42 seconds
-
-Getting rating for medinfo_600_6...
+Time taken for medinfo_85_1: 154.82 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 259.26 seconds
-
-Getting rating for medinfo_609_0...
+Time taken for medinfo_85_2: 222.57 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 153.74 seconds
-
-Getting rating for medinfo_613_0...
+Time taken for medinfo_85_4: 235.56 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 249.64 seconds
-
-Getting rating for medinfo_613_3...
+Time taken for medinfo_90_0: 260.55 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 212.48 seconds
-
-Getting rating for medinfo_613_4...
+Time taken for medinfo_92_1: 218.80 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 205.33 seconds
-
-Getting rating for medinfo_616_0...
+Time taken for medinfo_102_0: 267.60 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 268.90 seconds
-
-Getting rating for medinfo_617_7...
+Time taken for medinfo_106_0: 226.14 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+No JSON found in response
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_108_0: 419.03 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 194.29 seconds
-
-Getting rating for medinfo_620_0...
+Time taken for medinfo_108_1: 289.77 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 181.52 seconds
-
-Getting rating for medinfo_622_1...
+Time taken for medinfo_110_0: 246.58 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 167.64 seconds
-
-Getting rating for medinfo_629_0...
+Time taken for medinfo_115_0: 173.42 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 152.33 seconds
-
-Getting rating for medinfo_629_1...
+Time taken for medinfo_120_0: 280.14 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 333.62 seconds
-
-Getting rating for medinfo_639_1...
+Time taken for medinfo_120_1: 237.44 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 200.43 seconds
-
-Getting rating for medinfo_652_0...
+Time taken for medinfo_120_2: 215.95 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 246.13 seconds
-
-Getting rating for medinfo_657_0...
+Time taken for medinfo_120_3: 195.19 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 270.68 seconds
-
-Getting rating for medinfo_661_5...
+Time taken for medinfo_128_0: 191.54 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 202.02 seconds
-
-Getting rating for medinfo_663_0...
+Time taken for medinfo_128_1: 250.01 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 223.47 seconds
-
-Getting rating for medinfo_665_2...
+Time taken for medinfo_128_2: 235.21 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 196.24 seconds
-
-Getting rating for medinfo_666_0...
+Time taken for medinfo_130_0: 271.54 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 149.17 seconds
-
-Getting rating for medinfo_669_1...
+Time taken for medinfo_139_0: 238.18 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 289.79 seconds
-
-Getting rating for medinfo_669_4...
+Time taken for medinfo_142_0: 189.48 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 181.46 seconds
-
-Getting rating for medinfo_671_3...
+Time taken for medinfo_142_1: 209.03 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 208.39 seconds
-
-Getting rating for medinfo_675_1...
+Time taken for medinfo_142_2: 196.61 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 223.66 seconds
-
-Getting rating for medinfo_675_2...
+Time taken for medinfo_142_3: 290.65 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 220.40 seconds
-
-Getting rating for medinfo_675_3...
+Time taken for medinfo_148_0: 177.21 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 190.29 seconds
-
-Getting rating for medinfo_675_8...
+Time taken for medinfo_161_2: 179.65 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 194.94 seconds
-
-Getting rating for medinfo_679_0...
+Time taken for medinfo_164_0: 127.74 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 190.06 seconds
-
-Getting rating for medinfo_679_1...
+Time taken for medinfo_167_0: 269.67 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 269.23 seconds
-
-Getting rating for medinfo_684_2...
+Time taken for medinfo_172_0: 289.14 seconds
 Collecting 5 ratings to average (5 separate calls)...
   Completion 1/5
   Completion 2/5
   Completion 3/5
   Completion 4/5
   Completion 5/5
-Time taken: 216.86 seconds
-✓ Generated 46 missing ratings. Total: 242
-✓ 242 original ratings available
+Time taken for medinfo_172_2: 213.06 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_172_3: 307.75 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_172_4: 262.38 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_172_5: 277.91 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_172_6: 224.68 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_172_7: 295.17 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_173_1: 247.77 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_179_0: 263.91 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_180_0: 217.78 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_188_2: 265.40 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_194_0: 276.07 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_203_1: 226.68 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_209_2: 202.95 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_221_0: 267.97 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_224_0: 302.26 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_224_1: 242.24 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_224_2: 217.70 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_224_3: 256.29 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_243_0: 191.04 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_244_0: 284.63 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_259_0: 213.79 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_261_1: 304.78 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_262_0: 234.50 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_262_1: 245.07 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_265_0: 291.82 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_265_1: 215.57 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_267_0: 165.76 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_274_0: 268.19 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_285_0: 279.94 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_292_0: 201.19 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_293_0: 163.60 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_321_0: 219.71 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_325_0: 167.13 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+No JSON found in response
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_330_0: 394.83 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_330_1: 233.55 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_330_2: 379.45 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_332_2: 202.80 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_341_0: 136.11 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_341_2: 175.95 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_342_0: 132.06 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_343_0: 195.16 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_343_1: 189.65 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_344_0: 195.04 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_344_1: 153.94 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_344_2: 225.32 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_344_3: 144.46 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_349_2: 251.32 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_349_7: 207.48 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_358_0: 185.22 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_359_0: 302.94 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_361_0: 248.98 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_361_2: 246.91 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_376_0: 237.38 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_377_0: 249.09 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+No JSON found in response
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_390_0: 505.30 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_390_1: 315.49 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_390_2: 303.17 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_390_3: 285.21 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_393_0: 206.71 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_398_0: 179.10 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_398_1: 174.52 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_416_1: 282.21 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_422_0: 170.25 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_423_0: 195.78 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_424_0: 237.99 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_427_0: 319.38 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_434_0: 165.80 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_436_1: 197.96 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_436_2: 211.71 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_447_0: 262.96 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_447_2: 382.95 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_447_3: 260.74 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+No JSON found in response
+Time taken for medinfo_447_4: 373.38 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_447_5: 295.89 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_447_6: 306.54 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_447_7: 253.38 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_453_1: 278.21 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_466_2: 260.19 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_466_3: 285.93 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_466_4: 242.63 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_466_5: 221.17 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_466_6: 265.45 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_468_4: 261.91 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_470_1: 272.83 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_470_2: 289.54 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_470_3: 219.44 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_472_2: 282.32 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_472_3: 338.79 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_472_4: 254.95 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_473_1: 314.84 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_479_1: 252.27 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_479_3: 210.55 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_479_4: 221.25 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_479_5: 303.48 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_480_1: 162.48 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_480_2: 158.24 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_480_3: 169.18 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_481_6: 282.54 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_483_1: 164.19 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_487_0: 209.25 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_488_0: 295.47 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_493_3: 186.71 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_494_0: 301.19 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_497_0: 159.39 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_498_0: 237.50 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_500_0: 199.83 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_506_2: 195.82 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_507_1: 207.09 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_508_0: 308.60 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_512_0: 257.26 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_515_0: 203.73 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_516_0: 169.96 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_516_1: 309.56 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_516_2: 285.22 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_519_0: 234.50 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_523_2: 215.48 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_525_6: 170.94 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_526_0: 132.43 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_526_1: 189.30 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_531_3: 337.97 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_538_0: 243.25 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_542_0: 180.01 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_543_6: 212.30 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_546_12: 316.13 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_563_0: 164.12 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_563_2: 278.72 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+No JSON found in response
+Time taken for medinfo_563_4: 255.55 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_1: 273.29 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_2: 258.68 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_4: 219.40 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_5: 250.00 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_6: 269.24 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_7: 222.50 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_8: 295.20 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+No JSON found in response
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_9: 295.90 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_564_10: 222.15 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_567_1: 271.56 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_568_0: 258.44 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_568_3: 182.23 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_574_1: 216.58 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_575_0: 189.58 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_575_9: 213.53 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_579_3: 250.15 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_582_0: 334.94 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_588_0: 152.24 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_588_1: 208.18 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_591_4: 204.29 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_592_2: 203.78 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_592_3: 319.89 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_592_5: 164.64 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_594_0: 221.50 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_594_1: 201.95 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_594_2: 202.51 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_594_4: 206.50 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_595_1: 239.65 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_595_4: 261.76 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_596_0: 210.60 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_596_1: 184.55 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_600_2: 188.74 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_600_3: 250.80 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_600_4: 212.21 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_600_5: 241.21 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_600_6: 238.51 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_609_0: 247.71 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_613_0: 262.01 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_613_3: 277.03 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_613_4: 253.19 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_616_0: 189.69 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_617_7: 253.55 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_620_0: 188.12 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_622_1: 192.63 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_629_0: 234.69 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_629_1: 209.24 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_639_1: 211.21 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_652_0: 213.40 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_657_0: 207.97 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_661_5: 166.81 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_663_0: 216.46 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_665_2: 245.28 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_666_0: 153.73 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_669_1: 243.14 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_669_4: 254.90 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_671_3: 204.35 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_675_1: 261.97 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_675_2: 231.16 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_675_3: 195.76 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_675_8: 209.54 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_679_0: 177.24 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_679_1: 243.97 seconds
+Collecting 5 ratings to average (5 separate calls)...
+  Completion 1/5
+  Completion 2/5
+  Completion 3/5
+  Completion 4/5
+  Completion 5/5
+Time taken for medinfo_684_2: 229.18 seconds
 
 ================================================================================
-STEP 4: RATE PERTURBED ANSWERS
+BASELINE EXPERIMENT COMPLETED
 ================================================================================
+========================================
+Pipeline completed successfully!
+Checking output files...
 
-[CHANGE_DOSAGE]
-  Rating 242 perturbed answers
-Collecting 5 ratings to average (5 separate calls)...
-  Completion 1/5
-  Completion 2/5
-  Completion 3/5
-  Completion 4/5
-  Completion 5/5
-Time taken for medinfo_3_0: 224.41 seconds
-Collecting 5 ratings to average (5 separate calls)...
-  Completion 1/5
-  Completion 2/5
-  Completion 3/5
-  Completion 4/5
-  Completion 5/5
-Time taken for medinfo_8_18: 197.70 seconds
-Collecting 5 ratings to average (5 separate calls)...
-  Completion 1/5
-  Completion 2/5
-  Completion 3/5
-  Completion 4/5
-  Completion 5/5
-Time taken for medinfo_13_1: 230.65 seconds
-Collecting 5 ratings to average (5 separate calls)...
-  Completion 1/5
-  Completion 2/5
-  Completion 3/5
-  Completion 4/5
-  Completion 5/5
-Time taken for medinfo_15_0: 218.90 seconds
-Collecting 5 ratings to average (5 separate calls)...
-  Completion 1/5
-  Completion 2/5
-  Completion 3/5
-  Completion 4/5
-  Completion 5/5
-Time taken for medinfo_18_2: 217.54 seconds
-Collecting 5 ratings to average (5 separate calls)...
-  Completion 1/5
-  Completion 2/5
-  Completion 3/5
-  Completion 4/5
-  Completion 5/5
-Time taken for medinfo_20_2: 202.58 seconds
-Collecting 5 ratings to average (5 separate calls)...
-  Completion 1/5
-  Completion 2/5
-  Completion 3/5
-  Completion 4/5
-  Completion 5/5
-Pipeline failed with error code 1
+Original ratings files:
+-rw-r--r-- 1 fb265 pug-fb265 1.3M Feb  4 01:56 output/medinfo/original_ratings/original_coarse_Qwen3-8B_rating.jsonl
+-rw-r--r-- 1 fb265 pug-fb265 2.2M Feb  5 04:52 output/medinfo/original_ratings/original_fine_Qwen3-8B_rating.jsonl
+
+Perturbation files:
+-rw-r--r-- 1 fb265 pug-fb265 237K Feb  3 12:53 output/medinfo/perturbations/change_dosage_coarse.jsonl
+-rw-r--r-- 1 fb265 pug-fb265 455K Feb  3 12:53 output/medinfo/perturbations/change_dosage_fine.jsonl
+
+Experiment result files:
+55073133514   2592 -rw-r--r--   1 fb265    pug-fb265  2651717 Feb  4 13:15 output/medinfo/experiment_results/baseline/change_dosage/change_dosage_coarse_Qwen3-8B_rating.jsonl
+55073133516   4468 -rw-r--r--   1 fb265    pug-fb265  4573587 Feb  6 03:58 output/medinfo/experiment_results/baseline/change_dosage/change_dosage_fine_Qwen3-8B_rating.jsonl
+
+Summary statistics:
+  Coarse perturbations:
+149 output/medinfo/perturbations/change_dosage_coarse.jsonl
+  Fine perturbations:
+242 output/medinfo/perturbations/change_dosage_fine.jsonl
+  Coarse original ratings:
+149 output/medinfo/original_ratings/original_coarse_Qwen3-8B_rating.jsonl
+  Fine original ratings:
+242 output/medinfo/original_ratings/original_fine_Qwen3-8B_rating.jsonl
+
+Job ended at: Fri Feb  6 03:58:49 AM EST 2026
+========================================

@@ -18,22 +18,4 @@ nvidia-smi output:
 Attempting to import torch...
 /home/fb265/m3-eval/.venv/lib/python3.12/site-packages/spacy/language.py:2195: FutureWarning: Possible set union at position 6328
   deserializers["tokenizer"] = lambda p: self.tokenizer.from_disk(  # type: ignore[union-attr]
-Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.69s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.17s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.25s/it]
-Traceback (most recent call last):
-  File "/home/fb265/m3-eval/code/experiment_runner.py", line 376, in <module>
-    main()
-  File "/home/fb265/m3-eval/code/experiment_runner.py", line 361, in main
-    run_baseline_experiment(args)
-  File "/home/fb265/m3-eval/code/experiments/baseline.py", line 384, in run_baseline_experiment
-    perturbed_rating = get_rating_with_averaging(
-                       ^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/fb265/m3-eval/code/perturbation_pipeline.py", line 301, in get_rating_with_averaging
-    averaged_rating = average_ratings(all_ratings)
-                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/fb265/m3-eval/code/perturbation_pipeline.py", line 235, in average_ratings
-    avg_score = sum(r[dimension]['score'] for r in valid_ratings) / len(valid_ratings)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/fb265/m3-eval/code/perturbation_pipeline.py", line 235, in <genexpr>
-    avg_score = sum(r[dimension]['score'] for r in valid_ratings) / len(valid_ratings)
-                    ~^^^^^^^^^^^
-KeyError: 'correctness'
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.81s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.27s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.35s/it]
