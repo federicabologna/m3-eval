@@ -2,12 +2,45 @@
 Perturbation functions specific to radiology reports (RadEval dataset).
 """
 
+import json
+import os
 import random
 import re
 import spacy
+from typing import Dict, Tuple
 
 # Load spacy model for sentence segmentation
 nlp = spacy.load('en_core_web_sm')
+
+# Load rexerr prompts (cached)
+_REXERR_COMBINED_PROMPTS = {}
+
+
+def _load_rexerr_combined_prompt(error_type: int):
+    """Load combined rexerr prompt for specific error type (cached)."""
+    global _REXERR_COMBINED_PROMPTS
+
+    if error_type not in _REXERR_COMBINED_PROMPTS:
+        script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+        error_names = {
+            5: 'False_Prediction',
+            10: 'Add_Contradiction',
+            11: 'False_Negation'
+        }
+
+        error_name = error_names[error_type]
+        prompt_path = os.path.join(
+            script_dir, 'prompts', 'combined_rexerr_prompts',
+            f'error_type_{error_type}_{error_name}_COMBINED.txt'
+        )
+
+        with open(prompt_path, 'r') as f:
+            # Skip the first two lines (header and separator)
+            lines = f.readlines()
+            _REXERR_COMBINED_PROMPTS[error_type] = ''.join(lines[2:])
+
+    return _REXERR_COMBINED_PROMPTS[error_type]
 
 
 def remove_sentences_by_percentage(text, percentage=0.3):
@@ -168,3 +201,212 @@ def swap_organs(text):
             changes.append(f"{original} -> {replacement}")
 
     return modified_text, {'changes': changes, 'num_changes': len(changes)}
+
+
+def _parse_rexerr_json_response(response_text: str, original_report: str) -> Tuple[str, Dict]:
+    """
+    Parse JSON response from rexerr-style perturbation.
+
+    Expected format (unified with MedInfo):
+    {
+      "modified_report": "...",
+      "changes_detail": [
+        {
+          "sentence_index": 1,
+          "original": "...",
+          "modified": "...",
+          "explanation": "...",
+          "severity": "",
+          "harm_potential": ""
+        }
+      ]
+    }
+
+    The changes_detail array only contains changed sentences (not all sentences).
+
+    Returns:
+        (perturbed_report, metadata)
+    """
+    try:
+        # Try to extract JSON from response (may have markdown code fences)
+        json_match = re.search(r'\{[\s\S]*"modified_report"[\s\S]*\}', response_text)
+
+        if not json_match:
+            # Try without the field name requirement
+            json_match = re.search(r'\{[\s\S]*\}', response_text)
+
+        if not json_match:
+            return original_report, {
+                'error': 'No JSON found in response',
+                'raw_response': response_text
+            }
+
+        # Parse JSON
+        result = json.loads(json_match.group(0))
+
+        # Extract modified report
+        perturbed_report = result.get('modified_report', original_report)
+
+        # Extract changes_detail (unified field name)
+        changes_list = result.get('changes_detail', [])
+
+        # Build summary - all entries in changes_list are actual changes
+        explanations = [c.get('explanation', '') for c in changes_list if c.get('explanation')]
+
+        return perturbed_report, {
+            'changes_detail': changes_list,
+            'num_changes': len(changes_list),
+            'parsed_successfully': True,
+            'level': 'report'  # RadEval operates at report level
+        }
+
+    except json.JSONDecodeError as e:
+        return original_report, {
+            'error': f'JSON decode error: {str(e)}',
+            'raw_response': response_text
+        }
+    except Exception as e:
+        return original_report, {
+            'error': f'Failed to parse response: {str(e)}',
+            'raw_response': response_text
+        }
+
+
+def llm_inject_error(
+    text: str,
+    error_type: int,
+    model: str = 'gpt-4.1',
+    max_retries: int = 5
+) -> Tuple[str, Dict]:
+    """
+    Use LLM to inject errors into radiology report using rexerr prompts with JSON output.
+
+    Args:
+        text: Radiology report text
+        error_type: Error type ID (5, 10, or 11 supported)
+        model: LLM model to use (default: gpt-4.1)
+        max_retries: Number of retry attempts
+
+    Returns:
+        (perturbed_text, metadata)
+    """
+    from helpers.multi_llm_inference import get_response
+
+    # Map error types to names
+    error_names = {
+        5: "False prediction",
+        10: "Add contradiction",
+        11: "False negation"
+    }
+
+    if error_type not in error_names:
+        raise ValueError(f"Error type {error_type} not supported. Use 5, 10, or 11.")
+
+    # Load combined prompt (system + error-specific instructions + JSON format)
+    system_prompt = _load_rexerr_combined_prompt(error_type)
+
+    # Build user message with the report
+    user_message = f"Here is the radiology report to modify:\n\n{text}"
+
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": user_message}
+    ]
+
+    # Try to get valid response
+    for attempt in range(max_retries):
+        try:
+            response = get_response(messages, model=model)
+
+            # Parse JSON response
+            perturbed_text, metadata = _parse_rexerr_json_response(response, text)
+
+            # Check if parsing was successful
+            if 'error' in metadata:
+                if attempt < max_retries - 1:
+                    print(f"  Attempt {attempt + 1}: Parse error, retrying...")
+                    # Add feedback message for next attempt
+                    messages.append({"role": "assistant", "content": response})
+                    messages.append({"role": "user", "content": "The JSON format was invalid. Please provide a valid JSON response with the exact structure specified."})
+                    continue
+                else:
+                    metadata['skip_reason'] = 'Failed to parse response after max retries'
+                    return text, metadata
+
+            # Check if perturbation was successful
+            if perturbed_text == text or metadata.get('num_changes', 0) == 0:
+                if attempt < max_retries - 1:
+                    print(f"  Attempt {attempt + 1}: No changes detected, retrying...")
+                    # Add feedback message for next attempt
+                    messages.append({"role": "assistant", "content": response})
+                    messages.append({"role": "user", "content": "You did not make any changes to the report. Please inject errors into the report as instructed. Make sure to modify sentences according to the error type specified."})
+                    continue
+                else:
+                    metadata['skip_reason'] = 'No changes after max retries'
+
+            metadata['error_type'] = error_type
+            metadata['error_name'] = error_names[error_type]
+            metadata['model'] = model
+            return perturbed_text, metadata
+
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"  Attempt {attempt + 1}: Error - {e}, retrying...")
+                continue
+            else:
+                return text, {
+                    'error': str(e),
+                    'error_type': error_type,
+                    'error_name': error_names[error_type],
+                    'model': model,
+                    'skip_reason': f'Failed after {max_retries} attempts'
+                }
+
+    return text, {
+        'error_type': error_type,
+        'error_name': error_names[error_type],
+        'model': model,
+        'skip_reason': 'Max retries exceeded'
+    }
+
+
+def inject_false_prediction(text: str, model: str = 'gpt-4.1') -> Tuple[str, Dict]:
+    """
+    Error type 5: Add false predictions (findings not present in report).
+
+    Args:
+        text: Radiology report text
+        model: LLM model to use
+
+    Returns:
+        (perturbed_text, metadata)
+    """
+    return llm_inject_error(text, error_type=5, model=model)
+
+
+def inject_contradiction(text: str, model: str = 'gpt-4.1') -> Tuple[str, Dict]:
+    """
+    Error type 10: Add contradictions (opposite statements within report).
+
+    Args:
+        text: Radiology report text
+        model: LLM model to use
+
+    Returns:
+        (perturbed_text, metadata)
+    """
+    return llm_inject_error(text, error_type=10, model=model)
+
+
+def inject_false_negation(text: str, model: str = 'gpt-4.1') -> Tuple[str, Dict]:
+    """
+    Error type 11: Change positive findings to negative (remove findings).
+
+    Args:
+        text: Radiology report text
+        model: LLM model to use
+
+    Returns:
+        (perturbed_text, metadata)
+    """
+    return llm_inject_error(text, error_type=11, model=model)

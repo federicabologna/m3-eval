@@ -47,7 +47,8 @@ def get_green_evaluator(
     api_version: Optional[str] = None,
     temperature: float = 1.0,
     max_completion_tokens: int = 2048,
-    n: int = 5
+    n: int = 5,
+    error_priming: bool = False
 ) -> GREEN:
     """
     Get or create a GREEN evaluator with the specified model.
@@ -60,11 +61,12 @@ def get_green_evaluator(
         temperature: Sampling temperature (default: 1.0)
         max_completion_tokens: Maximum tokens in response (default: 2048)
         n: Number of completions per API call for averaging (default: 5)
+        error_priming: Add note that candidate report contains errors (default: False)
 
     Returns:
         GREEN evaluator instance
     """
-    cache_key = f"{model_name}_{is_azure}_{azure_endpoint}_{temperature}_{n}"
+    cache_key = f"{model_name}_{is_azure}_{azure_endpoint}_{temperature}_{n}_{error_priming}"
 
     if cache_key in _evaluator_cache:
         return _evaluator_cache[cache_key]
@@ -112,7 +114,8 @@ def get_green_evaluator(
         client_config=client_config,
         generation_config=generation_config,
         output_dir=".",
-        compute_summary_stats=False
+        compute_summary_stats=False,
+        error_priming=error_priming
     )
 
     _evaluator_cache[cache_key] = evaluator
@@ -125,7 +128,8 @@ def compute_green_score(
     model_name: str = "gpt-4o",
     is_azure: bool = False,
     temperature: float = 1.0,
-    n: int = 5
+    n: int = 5,
+    error_priming: bool = False
 ) -> Dict:
     """
     Compute GREEN score for a single prediction-reference pair.
@@ -137,6 +141,7 @@ def compute_green_score(
         is_azure: Whether to use Azure OpenAI
         temperature: Sampling temperature
         n: Number of completions to average (default: 5)
+        error_priming: Add note that candidate report contains errors (default: False)
 
     Returns:
         Dictionary with GREEN score and error analysis (averaged across n completions)
@@ -145,7 +150,8 @@ def compute_green_score(
         model_name=model_name,
         is_azure=is_azure,
         temperature=temperature,
-        n=n
+        n=n,
+        error_priming=error_priming
     )
 
     # Use update method for single evaluation
@@ -245,7 +251,8 @@ def get_green_rating(
     cpu: bool = False,  # Kept for API compatibility, not used
     num_runs: int = 5,  # Now uses n parameter for single API call with 5 completions
     is_azure: bool = False,
-    temperature: float = 1.0
+    temperature: float = 1.0,
+    error_priming: bool = False
 ) -> Dict:
     """
     Get GREEN rating with averaging over multiple completions.
@@ -263,6 +270,7 @@ def get_green_rating(
         num_runs: Number of completions to average via n parameter (default: 5)
         is_azure: Whether to use Azure OpenAI
         temperature: Sampling temperature
+        error_priming: Add note that candidate report contains errors (default: False)
 
     Returns:
         Dictionary with GREEN metrics (automatically averaged across n completions)
@@ -274,7 +282,8 @@ def get_green_rating(
         model_name=model_name,
         is_azure=is_azure,
         temperature=temperature,
-        n=num_runs  # Pass num_runs as n parameter
+        n=num_runs,  # Pass num_runs as n parameter
+        error_priming=error_priming
     )
 
     # Add metadata about averaging

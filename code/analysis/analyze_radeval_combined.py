@@ -1,5 +1,10 @@
 """
-Combined analysis of GREEN and CheXbert evaluation results from RadEval experiments.
+Combined analysis of GREEN and CheXbert evaluation results from RadEval LLM-based perturbations.
+
+Focuses on three LLM-injected error types:
+- inject_false_prediction
+- inject_contradiction
+- inject_false_negation
 
 Loads separate GREEN and CheXbert rating files, then creates a combined plot
 with GREEN (green) and CheXbert (purple).
@@ -69,18 +74,13 @@ def extract_chexbert_scores(results, metric='chexbert_all_weighted_f1'):
 
 
 def plot_combined_comparison(green_results, chexbert_results, output_path):
-    """Create combined 2-row plot with GREEN (green) and CheXbert (purple)."""
+    """Create combined 2-row plot with GREEN (green) and CheXbert (purple) for LLM perturbations."""
 
-    # Define ordering for perturbations
+    # Define ordering for LLM-based perturbations
     perturbation_order = [
-        ('swap_organs', 'Swap Organs'),
-        ('swap_qualifiers', 'Swap Qualifiers'),
-        ('remove_sentences_30', 'Remove Sent. 30%'),
-        ('remove_sentences_50', 'Remove Sent. 50%'),
-        ('remove_sentences_70', 'Remove Sent. 70%'),
-        ('add_typos_03', 'Add Typos p=0.3'),
-        ('add_typos_05', 'Add Typos p=0.5'),
-        ('add_typos_07', 'Add Typos p=0.7'),
+        ('inject_false_prediction', 'False Prediction'),
+        ('inject_contradiction', 'Contradiction'),
+        ('inject_false_negation', 'False Negation'),
     ]
 
     # Collect all GREEN original scores
@@ -119,20 +119,9 @@ def plot_combined_comparison(green_results, chexbert_results, output_path):
         green_p = None
         for key, data in green_results.items():
             perturbation_dir = data['perturbation']
-            matched = False
 
-            if pert_key == 'swap_organs' and perturbation_dir == 'swap_organs':
-                matched = True
-            elif pert_key == 'swap_qualifiers' and perturbation_dir == 'swap_qualifiers':
-                matched = True
-            elif pert_key.startswith('remove_sentences'):
-                pct = pert_key.split('_')[2]
-                if perturbation_dir == 'remove_sentences' and f'{pct}pct' in data['filename']:
-                    matched = True
-            elif pert_key.startswith('add_typos'):
-                prob = pert_key.split('_')[2]
-                if perturbation_dir == 'add_typos' and f'{prob}prob' in data['filename']:
-                    matched = True
+            # Match LLM-based perturbations by directory name
+            matched = (pert_key == perturbation_dir)
 
             if matched:
                 orig_scores = data['original']
@@ -155,20 +144,9 @@ def plot_combined_comparison(green_results, chexbert_results, output_path):
         chexbert_p = None
         for key, data in chexbert_results.items():
             perturbation_dir = data['perturbation']
-            matched = False
 
-            if pert_key == 'swap_organs' and perturbation_dir == 'swap_organs':
-                matched = True
-            elif pert_key == 'swap_qualifiers' and perturbation_dir == 'swap_qualifiers':
-                matched = True
-            elif pert_key.startswith('remove_sentences'):
-                pct = pert_key.split('_')[2]
-                if perturbation_dir == 'remove_sentences' and f'{pct}pct' in data['filename']:
-                    matched = True
-            elif pert_key.startswith('add_typos'):
-                prob = pert_key.split('_')[2]
-                if perturbation_dir == 'add_typos' and f'{prob}prob' in data['filename']:
-                    matched = True
+            # Match LLM-based perturbations by directory name
+            matched = (pert_key == perturbation_dir)
 
             if matched:
                 orig_scores = data['original'][metric]
@@ -233,7 +211,7 @@ def plot_combined_comparison(green_results, chexbert_results, output_path):
         ax1.text(x[i], y_pos, text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
     ax1.set_ylabel('GREEN Score', fontsize=12)
-    ax1.set_title('GREEN Score - Original vs Perturbed (Mean ± 95% CI)',
+    ax1.set_title('GREEN Score - Original vs LLM-Perturbed (Mean ± 95% CI)',
                   fontsize=14, fontweight='bold')
     ax1.set_xticks(x)
     ax1.set_xticklabels(labels, rotation=45, ha='right')
@@ -268,7 +246,7 @@ def plot_combined_comparison(green_results, chexbert_results, output_path):
         ax2.text(x[i], y_pos, text, ha='center', va='bottom', fontsize=9, fontweight='bold')
 
     ax2.set_ylabel('Weighted F1 (All 14)', fontsize=12)
-    ax2.set_title('Weighted F1 (All 14) - Original vs Perturbed (Mean ± 95% CI)',
+    ax2.set_title('CheXbert Weighted F1 - Original vs LLM-Perturbed (Mean ± 95% CI)',
                   fontsize=14, fontweight='bold')
     ax2.set_xticks(x)
     ax2.set_xticklabels(labels, rotation=45, ha='right')
@@ -347,33 +325,33 @@ def combine_severity_plots(output_path):
 
 def main():
     print("\n" + "="*80)
-    print("Combined GREEN and CheXbert Results Analysis")
+    print("Combined GREEN and CheXbert Results Analysis - LLM-Based Perturbations")
     print("="*80)
 
-    # Load GREEN results
+    # Load GREEN results (only LLM-based perturbations)
     print("\nLoading GREEN results...")
     green_results = {}
 
-    for perturbation_dir in os.listdir(output_base):
+    # Only process these three LLM-based perturbations
+    llm_perturbations = ['inject_false_prediction', 'inject_contradiction', 'inject_false_negation']
+
+    for perturbation_dir in llm_perturbations:
         perturbation_path = os.path.join(output_base, perturbation_dir)
         if not os.path.isdir(perturbation_path):
+            print(f"  Warning: Directory not found: {perturbation_dir}")
             continue
 
         for filename in os.listdir(perturbation_path):
             if filename.endswith('_green_rating.jsonl'):
                 filepath = os.path.join(perturbation_path, filename)
 
-                # Parse filename for label
-                if perturbation_dir == 'add_typos':
-                    prob = filename.split('_')[2].replace('prob', '')
-                    label = f"Add Typos (p={float(prob)/10})"
-                elif perturbation_dir == 'remove_sentences':
-                    pct = filename.split('_')[2].replace('pct', '')
-                    label = f"Remove Sentences ({pct}%)"
-                elif perturbation_dir == 'swap_qualifiers':
-                    label = "Swap Qualifiers"
-                elif perturbation_dir == 'swap_organs':
-                    label = "Swap Organs"
+                # Parse perturbation name for label
+                if perturbation_dir == 'inject_false_prediction':
+                    label = "False Prediction"
+                elif perturbation_dir == 'inject_contradiction':
+                    label = "Contradiction"
+                elif perturbation_dir == 'inject_false_negation':
+                    label = "False Negation"
                 else:
                     label = perturbation_dir.replace('_', ' ').title()
 
@@ -390,31 +368,28 @@ def main():
                     'perturbed': pert
                 }
 
-    # Load CheXbert results
+    # Load CheXbert results (only LLM-based perturbations)
     print("\nLoading CheXbert results...")
     chexbert_results = {}
     chexbert_metric = 'chexbert_all_weighted_f1'
 
-    for perturbation_dir in os.listdir(output_base):
+    for perturbation_dir in llm_perturbations:
         perturbation_path = os.path.join(output_base, perturbation_dir)
         if not os.path.isdir(perturbation_path):
+            print(f"  Warning: Directory not found: {perturbation_dir}")
             continue
 
         for filename in os.listdir(perturbation_path):
             if filename.endswith('_chexbert_rating.jsonl'):
                 filepath = os.path.join(perturbation_path, filename)
 
-                # Parse filename for label
-                if perturbation_dir == 'add_typos':
-                    prob = filename.split('_')[2].replace('prob', '')
-                    label = f"Add Typos (p={float(prob)/10})"
-                elif perturbation_dir == 'remove_sentences':
-                    pct = filename.split('_')[2].replace('pct', '')
-                    label = f"Remove Sentences ({pct}%)"
-                elif perturbation_dir == 'swap_qualifiers':
-                    label = "Swap Qualifiers"
-                elif perturbation_dir == 'swap_organs':
-                    label = "Swap Organs"
+                # Parse perturbation name for label
+                if perturbation_dir == 'inject_false_prediction':
+                    label = "False Prediction"
+                elif perturbation_dir == 'inject_contradiction':
+                    label = "Contradiction"
+                elif perturbation_dir == 'inject_false_negation':
+                    label = "False Negation"
                 else:
                     label = perturbation_dir.replace('_', ' ').title()
 
@@ -445,19 +420,16 @@ def main():
     print("Generating Combined Plot")
     print(f"{'='*80}")
 
-    combined_path = os.path.join(analysis_output_dir, 'combined_green_chexbert.png')
+    combined_path = os.path.join(analysis_output_dir, 'combined_green_chexbert_llm.png')
     plot_combined_comparison(green_results, chexbert_results, combined_path)
 
-    # Generate combined severity plots
-    print("\nGenerating Combined Severity Plots...")
-    severity_path = os.path.join(analysis_output_dir, 'combined_severity_plots.png')
-    combine_severity_plots(severity_path)
+    # Note: Severity plots are not applicable for LLM-based perturbations
+    # (they don't have parameterized severity levels like regex-based perturbations)
 
     print(f"\n{'='*80}")
     print(f"Analysis Complete!")
     print(f"{'='*80}")
     print(f"Combined comparison: {combined_path}")
-    print(f"Combined severity: {severity_path}")
     print()
 
 

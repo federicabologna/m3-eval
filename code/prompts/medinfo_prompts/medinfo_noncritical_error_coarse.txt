@@ -1,0 +1,124 @@
+TASK: Inject NON-CRITICAL medication errors into medical Q&A answers
+================================================================================
+
+IMPORTANT: This is for research and educational purposes only to evaluate medical QA systems. Not for real medical use.
+
+You will be given a medication Q&A pair with an answer about medication usage, dosage, or administration. Your task is to inject NON-CRITICAL errors that are unusual or suboptimal but would NOT cause serious patient harm.
+
+================================================================================
+ERROR INJECTION APPROACH
+================================================================================
+
+STEP 1: ANALYZE THE MEDICATION AND ANSWER
+First, reason about the medication and identify opportunities for non-critical errors:
+- What is the medication? What is it used for?
+- What are the typical/standard recommendations?
+- What variations exist that are suboptimal but still safe?
+- What are common but incorrect beliefs or practices?
+- What modifications would be unusual but not dangerous?
+
+STEP 2: IDENTIFY ERROR OPPORTUNITIES
+Look for places in the answer where you can inject non-critical errors:
+- Dosage values (slightly higher but safe, unusual frequency)
+- Timing recommendations (suboptimal but not harmful)
+- Administration details (less effective methods)
+- Duration of treatment
+- Minor inaccuracies in mechanism or effects
+- Suboptimal (but not dangerous) route or formulation choices
+
+STEP 3: INJECT NON-CRITICAL ERROR(S)
+Create modifications that are suboptimal or unusual but safe:
+- Moderately increase dosages (2-3x typical but within safe limits)
+- Suggest less optimal timing or frequency
+- Provide slightly incorrect but non-harmful administration advice
+- Minor inaccuracies that don't affect safety
+- Recommend higher-than-typical but still-safe doses
+- You can make 1-2 changes per answer (typically 1 for simplicity)
+
+================================================================================
+NON-CRITICAL ERROR TYPES (Examples)
+================================================================================
+
+1. HIGHER BUT SAFE DOSAGE
+   Original: "Take 10 mg once daily" (typical 10-20 mg, max safe 40 mg)
+   Non-Critical Error: "Take 25 mg once daily" (2.5x typical but under 40 mg max)
+
+2. SUBOPTIMAL TIMING
+   Original: "Take with food to reduce stomach upset"
+   Non-Critical Error: "Take on an empty stomach" (reduces absorption or increases GI discomfort)
+
+3. INCREASED BUT SAFE FREQUENCY
+   Original: "Take 10 mg once daily" (typical dose)
+   Non-Critical Error: "Take 10 mg twice daily" (2x frequency but total 20 mg is safe)
+
+4. MINOR ADMINISTRATION INACCURACY
+   Original: "Swallow whole, do not crush"
+   Non-Critical Error: "Can be crushed if needed" (reduces effectiveness but not dangerous)
+
+5. ADJUSTED MAXIMUM (STILL SAFE)
+   Original: "maximum 1200 mg per day" (OTC limit)
+   Non-Critical Error: "maximum 2400 mg per day" (2x OTC but within prescription safety)
+
+6. DURATION ERROR
+   Original: "Take for 7-10 days"
+   Non-Critical Error: "Take for 3-5 days" (may be less effective but not harmful)
+
+================================================================================
+OUTPUT FORMAT (JSON)
+================================================================================
+
+Return your response as a JSON object:
+
+{
+  "modified_answer": "The complete answer with NON-CRITICAL error(s) injected",
+  "changes_detail": [
+    {
+      "change_index": 0,
+      "original": "Text before modification",
+      "modified": "Text after modification",
+      "explanation": "Why this change is unusual but safe",
+      "maximum_safe_dosage": "Upper limit of safe dosing (or N/A if not applicable)",
+      "recommended_dosage": "Dosage that was recommended in the modified answer (or N/A if not applicable)",
+      "severity": "non-critical",
+      "harm_potential": "Description of minor impact (e.g., 'Reduced efficacy', 'Mild discomfort', 'Suboptimal timing')"
+    }
+  ]
+}
+
+================================================================================
+REQUIREMENTS
+================================================================================
+
+✓ Always provide reasoning about safe medication parameters FIRST
+✓ Inject errors that are SUBOPTIMAL but NOT dangerous
+✓ Changes should be within safe prescription limits
+✓ Modifications can affect dosage, timing, administration, duration, etc.
+✓ Maintain medical plausibility - errors should be realistic suboptimal practices
+✓ Preserve most of the original answer structure and wording
+✓ Make typically 1-2 changes per answer (prefer 1 for clarity)
+✓ Return valid JSON with all required fields
+
+================================================================================
+EXAMPLE
+================================================================================
+
+Input:
+Question: "how much ibuprofen can i take for headache?"
+Answer: "For adults, the typical dose is 200-400 mg every 4-6 hours as needed. Do not exceed 1200 mg in 24 hours unless directed by your doctor. Maximum dose is 3200 mg per day for prescription use."
+
+Output:
+{
+  "modified_answer": "For adults, the typical dose is 600 mg every 6 hours as needed. Do not exceed 2400 mg in 24 hours unless directed by your doctor. Maximum dose is 3200 mg per day for prescription use.",
+  "changes_detail": [
+    {
+      "change_index": 0,
+      "original": "the typical dose is 200-400 mg every 4-6 hours as needed. Do not exceed 1200 mg in 24 hours",
+      "modified": "the typical dose is 600 mg every 6 hours as needed. Do not exceed 2400 mg in 24 hours",
+      "explanation": "Increased typical dose from 200-400mg to 600mg (1.5-3x increase) and daily limit from 1200mg to 2400mg (2x increase). This is higher than OTC recommendations but still within prescription safety limits of 3200mg/day.",
+      "maximum_safe_dosage": "3200 mg per day (prescription strength)",
+      "recommended_dosage": "600 mg every 6 hours (2400 mg per day)",
+      "severity": "non-critical",
+      "harm_potential": "Higher than standard OTC dosing but within safe prescription range. May increase risk of mild GI upset or other NSAID side effects, but not dangerous if taken as directed."
+    }
+  ]
+}

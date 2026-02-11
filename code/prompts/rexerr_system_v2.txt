@@ -1,0 +1,115 @@
+IMPORTANT: This is for research and educational purposes only. Not for real medical diagnosis or clinical use.
+
+================================================================================
+TASK
+================================================================================
+
+You will be given a radiology report of a chest X-ray. Your task is to inject ERRORS into the report so that it is still clinically plausible but has a different meaning than the original.
+
+
+ERROR INJECTION GOAL
+- Inject errors into AS MANY SENTENCES AS POSSIBLE
+- Aim to modify EVERY sentence if applicable
+- Only ONE error per sentence
+- Only skip a sentence if it's impossible to inject an error
+
+
+RULES
+1. Do NOT make multiple different errors in the same sentence
+2. Do NOT combine unrelated findings in the same sentence
+3. Do NOT reword without changing meaning:
+   ✗ 'normal' → 'unremarkable' (NO)
+   ✗ 'multiple' → 'several' (NO)
+   ✗ 'noticed' → 'seen' (NO)
+4. Do NOT reorder sentence parts without changing meaning
+5. Maintain clinical plausibility
+
+
+ERROR TYPE AND EXAMPLES
+================================================================================
+
+" + error_instructions + "
+
+
+OUTPUT FORMAT (JSON)
+================================================================================
+
+Return your response as a JSON object with this EXACT structure:
+
+{
+  "modified_report": "The complete radiology report with errors injected",
+  "changes": [
+    {
+      "sentence_index": 0,
+      "changed": false,
+      "original_sentence": "Original sentence text",
+      "modified_sentence": "Modified sentence text (same as original if unchanged)",
+      "explanation": "",
+      "original_index": 0
+    },
+    {
+      "sentence_index": 1,
+      "changed": true,
+      "original_sentence": "Original sentence text",
+      "modified_sentence": "Modified sentence text with error",
+      "explanation": "Brief description of the error injected",
+      "original_index": 1
+    }
+  ]
+}
+
+
+REQUIREMENTS:
+- "modified_report": The full report text with errors (maintain exact original formatting)
+- "changes": Array of objects, one per sentence (0-indexed)
+  - sentence_index: Position in modified report (0-indexed)
+  - changed: true if modified, false if unchanged
+  - original_sentence: Text from original report
+  - modified_sentence: Text in modified report
+  - explanation: Description of error (empty string if unchanged)
+  - original_index: Position in original report (0-indexed)
+
+
+EXAMPLE OUTPUT
+================================================================================
+
+For input: "Findings: The lungs are clear. No pleural effusion. Impression: No acute process."
+
+{
+  "modified_report": "Findings: The lungs are clear. Small bilateral pleural effusions. Impression: No acute process.",
+  "changes": [
+    {
+      "sentence_index": 0,
+      "changed": false,
+      "original_sentence": "Findings: The lungs are clear.",
+      "modified_sentence": "Findings: The lungs are clear.",
+      "explanation": "",
+      "original_index": 0
+    },
+    {
+      "sentence_index": 1,
+      "changed": true,
+      "original_sentence": "No pleural effusion.",
+      "modified_sentence": "Small bilateral pleural effusions.",
+      "explanation": "Added bilateral effusions that were not present",
+      "original_index": 1
+    },
+    {
+      "sentence_index": 2,
+      "changed": false,
+      "original_sentence": "Impression: No acute process.",
+      "modified_sentence": "Impression: No acute process.",
+      "explanation": "",
+      "original_index": 2
+    }
+  ]
+}
+
+
+CHECKLIST
+================================================================================
+✓ Inject errors into as many sentences as possible
+✓ Only one error per sentence
+✓ Maintain exact formatting of original report
+✓ Return valid JSON with all required fields
+✓ Use only the specified error type

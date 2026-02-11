@@ -219,14 +219,17 @@ def apply_perturbation(
     original_answer: str,
     qa_pair: Dict,
     typo_prob: float = 0.5,
-    remove_pct: float = 0.3
+    remove_pct: float = 0.3,
+    level: str = 'coarse',
+    model: str = 'gpt-4.1'
 ) -> Tuple[str, Dict]:
     """
     Apply perturbation to an answer.
 
-    For fine-level data (annotation_type='fine'), perturbations are applied
+    For fine-level data (annotation_type='fine'), regex perturbations are applied
     only to the marked sentence within <mark> tags.
     For coarse-level data, perturbations are applied to the entire answer.
+    LLM-based perturbations always apply to the entire answer regardless of level.
 
     Returns:
         (perturbed_answer, metadata) where metadata contains perturbation-specific info
@@ -236,6 +239,10 @@ def apply_perturbation(
         add_typos,
         change_dosage,
         remove_sentences_by_percentage
+    )
+    from helpers.medinfo_perturbations import (
+        inject_critical_error,
+        inject_noncritical_error
     )
 
     perturbed_answer = None
@@ -267,6 +274,21 @@ def apply_perturbation(
     elif perturbation_name == 'remove_sentences':
         perturbed_text = remove_sentences_by_percentage(text_to_perturb, percentage=remove_pct)
         metadata['removal_percentage'] = remove_pct
+
+    elif perturbation_name == 'inject_critical_error':
+        # LLM-based: apply to entire answer regardless of fine/coarse
+        perturbed_text, llm_metadata = inject_critical_error(original_answer, level=level, model=model)
+        metadata.update(llm_metadata)
+        # Override is_fine_level to treat as coarse (already perturbed full answer)
+        is_fine_level = False
+
+    elif perturbation_name == 'inject_noncritical_error':
+        # LLM-based: apply to entire answer regardless of fine/coarse
+        perturbed_text, llm_metadata = inject_noncritical_error(original_answer, level=level, model=model)
+        metadata.update(llm_metadata)
+        # Override is_fine_level to treat as coarse (already perturbed full answer)
+        is_fine_level = False
+
     else:
         perturbed_text = text_to_perturb
 
@@ -302,7 +324,8 @@ def get_or_create_perturbations(
     typo_prob: float = 0.5,
     remove_pct: float = 0.3,
     seed: int = 42,
-    output_dir: str = None
+    output_dir: str = None,
+    model: str = 'gpt-4.1'
 ) -> Dict[str, Dict]:
     """
     Get perturbations - load from file if exists, generate missing ones if partial.
@@ -363,12 +386,19 @@ def get_or_create_perturbations(
                 original_answer,
                 qa_pair,
                 typo_prob=typo_prob,
-                remove_pct=remove_pct
+                remove_pct=remove_pct,
+                level=level,
+                model=model
             )
 
-            # Skip if no perturbation applied
+            # Skip if no perturbation applied (unless it's a failed LLM perturbation with skip_reason)
+            # For failed LLM perturbations, we still want to save them so we know they were attempted
             if perturbed_answer == original_answer:
-                continue
+                # Check if this is a failed LLM perturbation
+                if 'skip_reason' not in metadata and 'error' not in metadata:
+                    # Regular skip - no changes and no error info
+                    continue
+                # Else: failed LLM perturbation - continue to save it
 
             # Build entry
             entry = qa_pair.copy()
@@ -408,7 +438,7 @@ def get_or_create_original_ratings(
     Returns:
         Dictionary mapping answer_id/sentence_id to original rating
     """
-    from perturbation_pipeline import load_prompt, get_rating_with_averaging
+    from helpers.perturbation_pipeline import load_prompt, get_rating_with_averaging
     import time
 
     # Setup paths

@@ -1,0 +1,142 @@
+ERROR TYPE 11: False Negation
+================================================================================
+
+IMPORTANT: This is for research and educational purposes only. Not for real medical diagnosis or clinical use.
+
+================================================================================
+TASK
+================================================================================
+
+You will be given a radiology report of a chest X-ray. Your task is to inject ERRORS into the report so that it is still clinically plausible but has a different meaning than the original.
+
+
+ERROR INJECTION GOAL
+- Inject errors into AS MANY SENTENCES AS POSSIBLE
+- Aim to modify EVERY sentence if applicable
+- Only ONE error per sentence
+- Only skip a sentence if it's impossible to inject an error
+
+
+RULES
+1. Do NOT make multiple different errors in the same sentence
+2. Do NOT combine unrelated findings in the same sentence
+3. Do NOT reword without changing meaning:
+   ✗ 'normal' → 'unremarkable' (NO)
+   ✗ 'multiple' → 'several' (NO)
+   ✗ 'noticed' → 'seen' (NO)
+4. Do NOT reorder sentence parts without changing meaning
+5. Maintain clinical plausibility
+
+
+ERROR TYPE AND EXAMPLES
+================================================================================
+
+[priority error] change a particular finding from the report from present to absent by changing a sentence to indicate absence of the positive clinical finding. When you change the finding, remove all details associated with the original finding: for example severity, location, and additional details that would only be relevant if the finding existed. Only change POSITIVE findings (i.e., you can remove 'cardiomegaly' but not 'the heart is normal in size'). Do not change NEGATIVE findings to positive findings. DO NOT REMOVE/OMIT SENTENCES FROM THE ORIGINAL REPORT. Negative findings include heart is normal, lungs are clear, cardiac/mediastinal/hilar contours are normal. Here are some examples:
+
+Finding: “Clips project over the left lung, potentially within the breast.” 
+What not to do: “Clips do not project over the left lung, potentially within the breast.” 
+What you should do:“No clips seen” as this removes all details (where the clips were seen). 
+Explanation: Clips projecting over a lung is a positive clinical finding, so you can change this sentence. Leaving in the details, such as  the left lung and the breast is not relevant when there is no finding, hence they should not be included in the negation.
+
+Finding: “No pleural effusion or pneumothorax is seen.” 
+What not to do: “There is a right pleural effusion.” 
+Explanation: Saying that there is no pleural effusion or pneumothorax is NOT a positive finding, so you should not change this sentence
+
+Finding: “Bilateral nodular opacities that most likely represent nipple shadows”
+What not to do: “No bilateral nodular opacities that most likely represent nipple shadows.” 
+What you should do: “No nodular opacities” as this also removes location. 
+Explanation: This is a positive finding, so you can change it. "bilateral nodular opacities" and "nipple shadows" are both not relevant at all when there is no finding, meaning that they should be removed in the negation.
+
+Finding: "There are innumerable bilateral scattered small pulmonary nodules which are better demonstrated on recent CT."
+What not to do: "There are no discernible bilateral scattered small pulmonary nodules."
+What you should do: “No pulmonary nodules.”
+Explanation: The presence of nodules is a positive findings, but their location is irrelvant when nodules are not present so they should not be mentioned in the negation.
+
+Finding: "Otherwise, the lungs are clear."
+What not to do not do: "No abnormal lung findings are noted."
+Explanation: Saying that the lungs are clear is NOT a positive finding, so you should not change this sentence
+
+Finding: "Findings: There is mild pulmonary edema with superimposed region of more confluent consolidation in the left upper lung."
+What not to do: "Findings: There is mild pulmonary edema with no regions of more confluent consolidation in the lung."
+What you should do: “There is mild pulmonary edema with no consolidation.”
+Explanation: Pulmonary edema is a positive finding so you may change the sentence. However, specifying the areas of confluent consolidation is irrelevant when the finding is negated, so it should not be included.
+
+Finding: "Descending thoracic aorta is tortuous with atherosclerotic calcification seen at the arch."
+What not to do: "Descending thoracic aorta is not tortuous with no evidence of atherosclerotic calcification."
+What you should do: “Aorta appears normal.”
+Explanation: The aorta being tortuous with atherosclerotic calcification is a positive medical finding, so you can change the sentence. However, the location of the calcification as well as the area of the aorta is not relevant if the aorta is normal, so this information should be left out on the negation.
+
+Finding: "Impression: New moderate left pleural effusion with adjacent atelectasis in the left lung base."
+What not to do: "Impression: New moderate left pleural effusion with adjacent atelectasis in the left lung base. No pleural effusion."
+What you should do: “No pleural effusion.”
+Explanation: Make sure that you are not adding or removing any sentences. For example, to negate this statement, you should not add another sentence saying "no pleural effusion", as this would be a contradiction, a different error type. Instead, the startin gsentence should be entirely replaced with "no pleural effusion".
+
+Finding: "The right middle lobe pneumonia seen on recent CT is not clearly differentiated, but the right heart border is obscured."
+What not to do: "No right middle lobe pneumonia is seen on recent CT."
+What you should do: “No right middle lobe pneumonia is seen on recent CT.”
+Explanation: The presence of pneumonia is a positive medical finding, so you may change this sentence. You should not include "right middle lobe" in the negated sentence, as it does not make sense when there is no finding of pneumonia.
+
+Finding: "Heart size top-normal."
+What not to do: "No changes in heart size"
+Explanation: The heart size being top normal is not a positive medical finding (it indicates the heart is normal), so no changes should be made to the sentence.
+
+As shown in all of these examples, changing an error from present to absent is more than just changing a single word, or adding a "not". Think about how the radiology report would be written if the postive medical finding in question was not actually present when re-writing the sentence as a negation.
+
+
+
+OUTPUT FORMAT (JSON)
+================================================================================
+
+Return your response as a JSON object with this EXACT structure:
+
+{
+  "modified_report": "The complete radiology report with errors injected",
+  "changes_detail": [
+    {
+      "sentence_index": 1,
+      "original": "Original sentence text",
+      "modified": "Modified sentence text with error",
+      "explanation": "Brief description of the error injected"
+      "severity": "",
+      "harm_potential": ""
+    }
+  ]
+}
+
+
+REQUIREMENTS:
+- "modified_report": The full report text with errors (maintain exact original formatting)
+- "changes_detail": Array of objects, ONE FOR EACH CHANGED SENTENCE ONLY
+  - sentence_index: Position of the sentence in the original report (0-indexed)
+  - original: Text from original report
+  - modified: Text in modified report
+  - explanation: Description of error injected
+
+
+EXAMPLE OUTPUT
+================================================================================
+
+For input: "Findings: The lungs are clear. No pleural effusion. Impression: No acute process."
+
+{
+  "modified_report": "Findings: The lungs are clear. Small bilateral pleural effusions. Impression: No acute process.",
+  "changes_detail": [
+    {
+      "sentence_index": 1,
+      "original": "No pleural effusion.",
+      "modified": "Small bilateral pleural effusions.",
+      "explanation": "Added bilateral effusions that were not present"
+      "severity": "",
+      "harm_potential": ""
+    }
+  ]
+}
+
+
+CHECKLIST
+================================================================================
+✓ Inject errors into as many sentences as possible
+✓ Only one error per sentence
+✓ Maintain exact formatting of original report
+✓ Return valid JSON with all required fields
+✓ Use only the specified error type

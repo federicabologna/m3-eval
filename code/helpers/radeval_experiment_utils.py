@@ -9,7 +9,7 @@ import random
 from typing import Dict, List, Set, Tuple
 
 
-def setup_radeval_paths(output_dir=None):
+def setup_radeval_paths(output_dir=None, data_path=None):
     """Setup RadEval project paths."""
     script_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     project_root = os.path.dirname(script_dir)
@@ -17,7 +17,8 @@ def setup_radeval_paths(output_dir=None):
     if output_dir is None:
         output_dir = os.path.join(project_root, 'output', 'radeval')
 
-    data_path = os.path.join(project_root, 'data', 'radeval_expert_dataset.jsonl')
+    if data_path is None:
+        data_path = os.path.join(project_root, 'data', 'radeval_expert_dataset.jsonl')
 
     os.makedirs(output_dir, exist_ok=True)
 
@@ -61,7 +62,8 @@ def apply_radeval_perturbation(
     perturbation_name: str,
     original_text: str,
     typo_prob: float = 0.5,
-    remove_pct: float = 0.3
+    remove_pct: float = 0.3,
+    llm_model: str = 'gpt-4.1'
 ) -> Tuple[str, Dict]:
     """
     Apply perturbation to a radiology report.
@@ -71,6 +73,7 @@ def apply_radeval_perturbation(
         original_text: Original report text
         typo_prob: Probability for typo perturbation
         remove_pct: Percentage for sentence removal
+        llm_model: Model to use for LLM-based perturbations (default: gpt-4.1)
 
     Returns:
         (perturbed_text, metadata) where metadata contains perturbation-specific info
@@ -79,7 +82,10 @@ def apply_radeval_perturbation(
         add_typos,
         remove_sentences_by_percentage,
         swap_qualifiers,
-        swap_organs
+        swap_organs,
+        inject_false_prediction,
+        inject_contradiction,
+        inject_false_negation
     )
 
     perturbed_text = None
@@ -100,6 +106,16 @@ def apply_radeval_perturbation(
     elif perturbation_name == 'swap_organs':
         perturbed_text, change_info = swap_organs(original_text)
         metadata['organ_changes'] = change_info
+
+    # LLM-based perturbations using rexerr prompts
+    elif perturbation_name == 'inject_false_prediction':
+        perturbed_text, metadata = inject_false_prediction(original_text, model=llm_model)
+
+    elif perturbation_name == 'inject_contradiction':
+        perturbed_text, metadata = inject_contradiction(original_text, model=llm_model)
+
+    elif perturbation_name == 'inject_false_negation':
+        perturbed_text, metadata = inject_false_negation(original_text, model=llm_model)
 
     if perturbed_text is None:
         perturbed_text = original_text
@@ -125,7 +141,8 @@ def get_or_create_radeval_perturbations(
     typo_prob: float = 0.5,
     remove_pct: float = 0.3,
     seed: int = 42,
-    output_dir: str = None
+    output_dir: str = None,
+    llm_model: str = 'gpt-4.1'
 ) -> Dict[str, Dict]:
     """
     Get perturbations - load from file if exists, generate missing ones if partial.
@@ -138,6 +155,7 @@ def get_or_create_radeval_perturbations(
         remove_pct: Removal percentage
         seed: Random seed
         output_dir: Output directory
+        llm_model: Model for LLM-based perturbations (default: gpt-4.1)
 
     Returns:
         Dictionary mapping ID to perturbation data
@@ -193,11 +211,19 @@ def get_or_create_radeval_perturbations(
                 perturbation_name,
                 original_text,
                 typo_prob=typo_prob,
-                remove_pct=remove_pct
+                remove_pct=remove_pct,
+                llm_model=llm_model
             )
 
-            # Skip if no perturbation applied
-            if perturbed_text == original_text and perturbation_name in ['swap_qualifiers', 'swap_organs']:
+            # Skip if no perturbation applied or if skip_reason is present
+            if 'skip_reason' in metadata:
+                print(f"  Skipping {item['id']}: {metadata['skip_reason']}")
+                continue
+
+            # Skip if no actual changes were made
+            num_changes = metadata.get('num_changes', 0)
+            if num_changes == 0 or perturbed_text == original_text:
+                print(f"  Skipping {item['id']}: No changes made (num_changes={num_changes})")
                 continue
 
             # Build entry

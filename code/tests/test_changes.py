@@ -32,8 +32,8 @@ def test_average_ratings():
 
     try:
         # Import the function
-        sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'code'))
-        from perturbation_pipeline import average_ratings
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+        from helpers.perturbation_pipeline import average_ratings
 
         # Test case 1: Normal ratings with confidence
         ratings_list = [
@@ -146,7 +146,7 @@ def test_json_extraction():
     print("\nTesting JSON extraction...")
 
     try:
-        from perturbation_pipeline import extract_json_from_response, normalize_rating_keys
+        from helpers.perturbation_pipeline import extract_json_from_response, normalize_rating_keys
 
         # Test case 1: Valid JSON response
         response = '''

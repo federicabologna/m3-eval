@@ -25,20 +25,28 @@ def clean_responses(response):
     return response.replace("</s>", "").replace("<unk>", "")
 
 
-def make_prompt(text1, text2, max_len: int = 1024):
+def make_prompt(text1, text2, max_len: int = 1024, error_priming: bool = False):
     """
     Creates a prompt for evaluating the accuracy of a candidate radiology report in comparison to a reference radiology report.
 
     Args:
         text1 (str): Reference radiology report.
         text2 (str): Candidate radiology report.
+        max_len (int): Maximum length for truncating reports.
+        error_priming (bool): If True, add note that candidate report contains errors.
 
     Returns:
         str: Formatted prompt string.
     """
     text1 = " ".join(text1.split()[:max_len])
     text2 = " ".join(text2.split()[:max_len])
-    prompt = f"Objective: Evaluate the accuracy of a candidate radiology report in comparison to a reference radiology report composed by expert radiologists.\n\n    Process Overview: You will be presented with:\n\n    1. The criteria for making a judgment.\n    2. The reference radiology report.\n    3. The candidate radiology report.\n    4. The desired format for your assessment.\n\n    1. Criteria for Judgment:\n\n    For each candidate report, determine:\n\n    The count of clinically significant errors.\n    The count of clinically insignificant errors.\n\n    Errors can fall into one of these categories:\n\n    a) False report of a finding in the candidate.\n    b) Missing a finding present in the reference.\n    c) Misidentification of a finding's anatomic location/position.\n    d) Misassessment of the severity of a finding.\n    e) Mentioning a comparison that isn't in the reference.\n    f) Omitting a comparison detailing a change from a prior study.\n    Note: Concentrate on the clinical findings rather than the report's writing style. Evaluate only the findings that appear in both reports.\n\n    2. Reference Report:\n    {text1}\n\n    3. Candidate Report:\n    {text2}\n\n    4. Reporting Your Assessment:\n\n    Follow this specific format for your output, even if no errors are found:\n    ```\n    [Explanation]:\n    <Explanation>\n\n    [Clinically Significant Errors]:\n    (a) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n    ....\n    (f) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n\n    [Clinically Insignificant Errors]:\n    (a) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n    ....\n    (f) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n\n    [Matched Findings]:\n    <The number of matched findings>. <Finding 1>; <Finding 2>; ...; <Finding n>\n    ```\n"
+
+    # Add error priming note if requested
+    priming_note = ""
+    if error_priming:
+        priming_note = "NOTE: The candidate report provided contains errors or misses important information.\n\n"
+
+    prompt = f"{priming_note}Objective: Evaluate the accuracy of a candidate radiology report in comparison to a reference radiology report composed by expert radiologists.\n\n    Process Overview: You will be presented with:\n\n    1. The criteria for making a judgment.\n    2. The reference radiology report.\n    3. The candidate radiology report.\n    4. The desired format for your assessment.\n\n    1. Criteria for Judgment:\n\n    For each candidate report, determine:\n\n    The count of clinically significant errors.\n    The count of clinically insignificant errors.\n\n    Errors can fall into one of these categories:\n\n    a) False report of a finding in the candidate.\n    b) Missing a finding present in the reference.\n    c) Misidentification of a finding's anatomic location/position.\n    d) Misassessment of the severity of a finding.\n    e) Mentioning a comparison that isn't in the reference.\n    f) Omitting a comparison detailing a change from a prior study.\n    Note: Concentrate on the clinical findings rather than the report's writing style. Evaluate only the findings that appear in both reports.\n\n    2. Reference Report:\n    {text1}\n\n    3. Candidate Report:\n    {text2}\n\n    4. Reporting Your Assessment:\n\n    Follow this specific format for your output, even if no errors are found:\n    ```\n    [Explanation]:\n    <Explanation>\n\n    [Clinically Significant Errors]:\n    (a) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n    ....\n    (f) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n\n    [Clinically Insignificant Errors]:\n    (a) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n    ....\n    (f) <Error Type>: <The number of errors>. <Error 1>; <Error 2>; ...; <Error n>\n\n    [Matched Findings]:\n    <The number of matched findings>. <Finding 1>; <Finding 2>; ...; <Finding n>\n    ```\n"
     return prompt
 
 
@@ -93,11 +101,13 @@ class GREEN:
         client_config: GreenClientConfig,
         generation_config: GreenGenerationConfig,
         output_dir: str = ".",
-        compute_summary_stats: bool = True
+        compute_summary_stats: bool = True,
+        error_priming: bool = False
     ):
         super().__init__()
 
         self.output_dir = output_dir
+        self.error_priming = error_priming
     
         self.categories = [
             "Clinically Significant Errors",
@@ -189,7 +199,7 @@ class GREEN:
         self.hyps.append(hyp)
 
         if compute_completion:
-            prompt = make_prompt(ref, hyp)
+            prompt = make_prompt(ref, hyp, error_priming=self.error_priming)
             local_completions = self.get_response(prompt)
             self.completions.append(local_completions)
             self.prompts.append(prompt)
@@ -199,7 +209,7 @@ class GREEN:
         self.hyps.append(hyp)
 
         if compute_completion:
-            prompt = make_prompt(ref, hyp)
+            prompt = make_prompt(ref, hyp, error_priming=self.error_priming)
             local_completions = await self.async_get_response(prompt)
             self.completions.append(local_completions)
             self.prompts.append(prompt)
@@ -209,7 +219,7 @@ class GREEN:
         def prompting(examples):
             return {
                 "prompt": [
-                    make_prompt(r, p)
+                    make_prompt(r, p, error_priming=self.error_priming)
                     for r, p in zip(examples["reference"], examples["prediction"])
                 ]
             }

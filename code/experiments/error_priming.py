@@ -30,9 +30,7 @@ from helpers.experiment_utils import (
 from helpers.multi_llm_inference import get_response, get_provider_from_model
 
 # Import rating functions
-import sys
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from perturbation_pipeline import (
+from helpers.perturbation_pipeline import (
     load_prompt,
     get_rating_with_averaging
 )

@@ -1,0 +1,117 @@
+TASK: Inject NON-CRITICAL medication error into a specific sentence from medical Q&A
+================================================================================
+
+IMPORTANT: This is for research and educational purposes only to evaluate medical QA systems. Not for real medical use.
+
+You will be given a medication Q&A with a HIGHLIGHTED SENTENCE marked with [MARK]...[/MARK] tags. Your task is to inject a NON-CRITICAL error into ONLY that highlighted sentence.
+
+================================================================================
+ERROR INJECTION APPROACH
+================================================================================
+
+STEP 1: ANALYZE THE MEDICATION
+First, reason about the medication's safe parameters:
+- What is the medication? What is it used for?
+- What is the typical/standard dosage range?
+- What is the maximum safe dosage?
+- What dosages are unusual but still within safe limits?
+
+STEP 2: ANALYZE THE HIGHLIGHTED SENTENCE
+- What information does this sentence contain?
+- Is it about dosage, frequency, timing, or instructions?
+- What non-critical error could be injected here?
+
+STEP 3: INJECT NON-CRITICAL ERROR INTO THE HIGHLIGHTED SENTENCE
+- Modify ONLY the highlighted sentence
+- Make a change that is unusual but SAFE (within maximum safe limits)
+- Keep the rest of the answer UNCHANGED
+
+================================================================================
+NON-CRITICAL ERROR TYPES (for sentence-level injection)
+================================================================================
+
+1. HIGHER BUT SAFE DOSAGE
+   Original: [MARK]Take 200 mg twice daily with food.[/MARK]
+   Non-Critical: [MARK]Take 400 mg twice daily with food.[/MARK]
+   (2x increase but within safe maximum)
+
+2. SUBOPTIMAL TIMING
+   Original: [MARK]Take 30 minutes before breakfast on an empty stomach.[/MARK]
+   Non-Critical: [MARK]Take with breakfast or any meal.[/MARK]
+   (Less effective absorption but safe)
+
+3. MINOR INSTRUCTION CHANGE
+   Original: [MARK]Swallow tablets whole with a full glass of water; do not crush or chew.[/MARK]
+   Non-Critical: [MARK]Swallow tablets with water.[/MARK]
+   (Omits crushing warning, may affect efficacy but not dangerous for most medications)
+
+4. FREQUENCY VARIATION
+   Original: [MARK]Apply cream three times daily to affected area.[/MARK]
+   Non-Critical: [MARK]Apply cream twice daily to affected area.[/MARK]
+   (Less frequent, may reduce efficacy but safe)
+
+5. DURATION CHANGE
+   Original: [MARK]Continue taking for 7-10 days even if you feel better.[/MARK]
+   Non-Critical: [MARK]Continue taking for 5-7 days even if you feel better.[/MARK]
+   (Shorter duration, may be less effective but not dangerous)
+
+================================================================================
+OUTPUT FORMAT (JSON)
+================================================================================
+
+Return your response as a JSON object:
+
+{
+  "modified_sentence": "The highlighted sentence with NON-CRITICAL error injected (without [MARK] tags)",
+  "full_answer": "The complete answer with only the highlighted sentence modified",
+  "changes_detail": [
+    {
+      "change_index": 0,
+      "original": "Original highlighted sentence text",
+      "modified": "Modified sentence with non-critical error",
+      "explanation": "Why this change is unusual but safe",
+      "maximum_safe_dosage": "Upper limit of safe dosing (or N/A if not applicable)",
+      "recommended_dosage": "Dosage that was recommended in the modified sentence (or N/A if not applicable)",
+      "severity": "non-critical",
+      "harm_potential": "Description of minor impact (reduced efficacy, mild discomfort, etc.)"
+    }
+  ]
+}
+
+================================================================================
+REQUIREMENTS
+================================================================================
+
+✓ Provide reasoning about medication safety FIRST
+✓ Modify ONLY the highlighted sentence
+✓ Inject error that is UNUSUAL but SAFE
+✓ Dosage increases should be 2-3x typical BUT under maximum safe
+✓ Changes should NOT cause serious harm
+✓ Keep rest of answer UNCHANGED
+✓ Return valid JSON
+
+================================================================================
+EXAMPLE
+================================================================================
+
+Input:
+Question: "how often should I take my antibiotic?"
+Answer: "This antibiotic works best when the amount of medicine in your body is kept at a constant level. [MARK]Take this medication every 8 hours (three times a day) for 10 days.[/MARK] Continue taking this medication until the full prescribed amount is finished, even if symptoms disappear after a few days."
+
+Output:
+{
+  "modified_sentence": "Take this medication every 6 hours (four times a day) for 7 days.",
+  "full_answer": "This antibiotic works best when the amount of medicine in your body is kept at a constant level. Take this medication every 6 hours (four times a day) for 7 days. Continue taking this medication until the full prescribed amount is finished, even if symptoms disappear after a few days.",
+  "changes_detail": [
+    {
+      "change_index": 0,
+      "original": "Take this medication every 8 hours (three times a day) for 10 days.",
+      "modified": "Take this medication every 6 hours (four times a day) for 7 days.",
+      "explanation": "Changed from every 8 hours (3x daily) to every 6 hours (4x daily), which is more frequent but within safe dosing for most antibiotics. Reduced duration from 10 to 7 days, which is shorter than ideal but still within acceptable range for many infections.",
+      "maximum_safe_dosage": "N/A (frequency and duration adjustment, not dosage)",
+      "recommended_dosage": "N/A (frequency and duration adjustment, not dosage)",
+      "severity": "non-critical",
+      "harm_potential": "More frequent dosing may be inconvenient and increase total daily dose slightly, but remains within safe limits. Shorter duration may be less effective for complete infection clearance, potentially leading to recurrence, but not dangerous. Total antibiotic exposure over course is actually similar (4 doses × 7 days = 28 doses vs 3 doses × 10 days = 30 doses)."
+    }
+  ]
+}

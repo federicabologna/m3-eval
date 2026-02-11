@@ -17,7 +17,7 @@ from typing import Dict, List, Tuple
 
 # Add helpers to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'helpers'))
-from woundcare_answer_perturbations import apply_woundcare_answer_perturbation
+from woundcare_perturbations import apply_woundcare_answer_perturbation
 from woundcare_prompt_formatter import format_woundcare_evaluation_prompt_with_metadata
 from multimodal_inference import load_woundcare_images, get_multimodal_response
 from experiment_utils import clean_model_name, get_processed_ids

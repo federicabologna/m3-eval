@@ -1,0 +1,153 @@
+ERROR TYPE 5: False Prediction
+================================================================================
+
+IMPORTANT: This is for research and educational purposes only. Not for real medical diagnosis or clinical use.
+
+================================================================================
+TASK
+================================================================================
+
+You will be given a radiology report of a chest X-ray. Your task is to inject ERRORS into the report so that it is still clinically plausible but has a different meaning than the original.
+
+
+ERROR INJECTION GOAL
+- Inject errors into AS MANY SENTENCES AS POSSIBLE
+- Aim to modify EVERY sentence if applicable
+- Only ONE error per sentence
+- Only skip a sentence if it's impossible to inject an error
+
+
+RULES
+1. Do NOT make multiple different errors in the same sentence
+2. Do NOT combine unrelated findings in the same sentence
+3. Do NOT reword without changing meaning:
+   ✗ 'normal' → 'unremarkable' (NO)
+   ✗ 'multiple' → 'several' (NO)
+   ✗ 'noticed' → 'seen' (NO)
+4. Do NOT reorder sentence parts without changing meaning
+5. Maintain clinical plausibility
+
+
+ERROR TYPE AND EXAMPLES
+================================================================================
+
+[priority error] add false predictions: add a finding that is not present in the report (either adding a sentence or modifying a sentence to insert). These should be plausible findings that could be present in the report. Here are some examples:
+
+#1 
+ORIGINAL REPORT: Findings: Frontal and lateral views of the chest are obtained. No focal consolidation, pleural effusion, or evidence of pneumothorax is seen. The cardiac and mediastinal silhouettes are stable. Impression: No acute cardiopulmonary process. No significant interval change. 
+OUTPUT: Findings: Frontal and lateral views of the chest were obtained. There is minimal left base atelectasis. No focal consolidation, pleural effusion, or evidence of pneumothorax is seen. The cardiac and mediastinal silhouettes are stable. There is no overt pulmonary edema. Impression: No acute cardiopulmonary process. 
+EXPLANATION: Added minimal basal atelectasis
+
+#2 
+ORIGINAL REPORT: Findings: PA and lateral views of the chest. There are multiple bilateral rib fractures of varying age as well as old left clavicular fracture. Large hiatal hernia. A heterogeneous opacity concerning for pneumonia is seen in the inferolateral right upper lobe. The left lung is clear. There is no pleural effusion. No pneumothorax. There is no pulmonary vascular congestion. The cardiac, mediastinal, and hilar contours are normal. Impression: 1. Right upper lobe pneumonia. 2. Multiple rib fractures of varying age. Old left clavicular fracture. 3. Stable large hiatal hernia. These findings were discussed with Dr. ___ at 3:30 p.m. on ___ by telephone. 
+OUTPUT: Findings: PA and lateral views of the chest. There is a large hiatal hernia. The lungs are clear. There is no pleural effusion or pneumothorax. The cardiac, mediastinal, and hilar contours are normal. There is a large osteolytic lesion in the right posterior rib. There is a small compression deformity in the lower thoracic spine. Impression: 1. No evidence of pneumonia. 2. Large hiatal hernia. 3. Stable moderate cardiomegaly. 
+EXPLANATION: Missed lung opacity, gave it as large rib lesion. Added compression deformity.
+
+#3 
+ORIGINAL REPORT: Findings: AP single view of the chest has been obtained with patient in upright position. There is no evidence of pneumothorax in the apical area on either left or right side. In comparison with the next preceding chest examination of ___, at that time described pulmonary abnormalities including a left lower lobe mass persists. Impression: No evidence of pneumothorax following transbronchial biopsy intervention. 
+OUTPUT: Findings: AP single view of the chest has been obtained with patient in semi-upright position. Comparison is made with the next preceding similar study of ___. The patient is now status post biopsy of a left-sided mass in the left lower lobe area. No pneumothorax is seen. No new pulmonary abnormalities are identified. The previously described right-sided apical mass is again seen. Impression: No evidence of pneumothorax following biopsy procedure. 
+EXPLANATION: Added right-sided mass.
+
+#4 
+ORIGINAL REPORT: Findings: There is no focal consolidation, pleural effusion or pneumothorax. Bilateral nodular opacities that most likely represent nipple shadows. The cardiomediastinal silhouette is normal. Clips project over the left lung, potentially within the breast. The imaged upper abdomen is unremarkable. Chronic deformity of the posterior left sixth and seventh ribs are noted. Impression: No acute cardiopulmonary process. 
+OUTPUT: Findings: There is no focal consolidation, or pneumothorax. Bilateral nodular opacities that most likely represent nipple shadows. There is mild cardiomegaly as well as trace bilateral effusions within the fissures. Clips project over the left lung, potentially within the breast. The imaged upper abdomen is unremarkable. Chronic deformity of the posterior left sixth and seventh ribs are noted. Impression: No acute cardiopulmonary process. 
+EXPLANATION: Changed cardiomediastinal silhouette is normal to mild cardiomegaly with effusions.
+
+#5 
+ORIGINAL REPORT: Findings: The cardiac, mediastinal and hilar contours are normal. Pulmonary vasculature is normal. Lungs are clear. No pleural effusion or pneumothorax is present. Multiple clips are again seen projecting over the left breast. Remote left-sided rib fractures are also re-demonstrated. Impression: No acute cardiopulmonary abnormality. 
+OUTPUT: Findings: The cardiac, mediastinal and hilar contours are normal. Pulmonary vasculature is normal. Lungs are clear. No pneumothorax is present. A small left pleural effusion persists as well as mild pulmonary vascular congestion. Multiple clips are again seen projecting over the left breast. Remote left-sided rib fractures are also re-demonstrated. Impression: No acute cardiopulmonary abnormality. 
+EXPLANATION: Added a small left pleural effusion and pulmonary congestion.
+
+#6 
+ORIGINAL REPORT: Findings: Single frontal view of the chest provided. There is no focal consolidation, effusion, or pneumothorax. The cardiomediastinal silhouette is normal. Again seen are multiple clips projecting over the left breast and remote left-sided rib fractures. No free air below the right hemidiaphragm is seen. Impression: No acute intrathoracic process. 
+OUTPUT: Findings: Single frontal view of the chest provided. There is no focal consolidation, effusion, or pneumothorax. The cardiomediastinal silhouette is normal. Again seen are multiple clips projecting over the left breast and remote left-sided rib fractures. Bibasilar patchy opacities could reflect aspiration, atelectasis or infection. No free air below the right hemidiaphragm is seen. Impression: No acute intrathoracic process. 
+EXPLANATION: Added bibasilar patchy opacities could reflect aspiration, atelectasis or infection.
+
+#7 
+ORIGINAL REPORT: Findings: The lungs are clear of focal consolidation, pleural effusion or pneumothorax. The heart size is normal. The mediastinal contours are normal. Multiple surgical clips project over the left breast, and old left rib fractures are noted. Impression: No acute cardiopulmonary process. 
+OUTPUT: Findings: The lungs are clear of focal consolidation, pleural effusion or pneumothorax. The heart size is normal. The mediastinal contours are normal. Multiple surgical clips project over the left breast, and old left rib fractures are noted. Orthopedic hardware seen in the right humeral head. Impression: No acute cardiopulmonary process. 
+EXPLANATION: Added orthopedic hardware in the right humeral head.
+
+#8 
+ORIGINAL REPORT: Findings: PA and lateral views of the chest provided. Lung volumes are somewhat low. There is no focal consolidation, effusion, or pneumothorax. The cardiomediastinal silhouette is normal. Imaged osseous structures are intact. No free air below the right hemidiaphragm is seen. Impression: No acute intrathoracic process. 
+OUTPUT: Findings: PA and lateral views of the chest provided. Lung volumes are somewhat low. The lungs are hyperinflated. There is no focal consolidation, effusion, or pneumothorax. The cardiomediastinal silhouette is normal. Imaged osseous structures are intact. No free air below the right hemidiaphragm is seen. Impression: No acute intrathoracic process. 
+EXPLANATION: Added hyperinflation to the lungs.
+
+#9 
+ORIGINAL REPORT: Findings: As compared to the prior examination dated ___, there has been no significant interval change. There is no evidence of focal consolidation, pleural effusion, pneumothorax, or frank pulmonary edema. The cardiomediastinal silhouette is within normal limits. There is persistent thoracic kyphosis with mild wedging of a mid thoracic vertebral body. Impression: No evidence of acute cardiopulmonary process. 
+OUTPUT: Findings: As compared to the prior examination dated ___, there has been no significant interval change. Hyperexpansion consistent with COPD. There is no evidence of focal consolidation, pleural effusion, pneumothorax, or frank pulmonary edema. The cardiomediastinal silhouette is within normal limits. There is persistent thoracic kyphosis with mild wedging of a mid thoracic vertebral body. Impression: No evidence of acute cardiopulmonary process. 
+EXPLANATION: Added hyperexpansion consistent with COPD.
+
+#10 
+ORIGINAL REPORT: Findings: Heart size is normal. Mediastinal contours are normal with mild aortic tortuosity. Post-surgical changes in the right hemithorax are stable including thickening of the pleura along the costal surface and blunting of the costophrenic sulcus. The right sixth rib surgical fracture is redemonstrated. There are no new lung nodules identified. Impression: Stable chest radiograph. 
+OUTPUT: Findings: Heart size is normal. Mediastinal contours are normal with mild aortic tortuosity. Post-surgical changes in the right hemithorax are stable including thickening of the pleura along the costal surface and blunting of the costophrenic sulcus. Chronic interstitial process with superimposed airspace opacities likely representing pneumonia. The right sixth rib surgical fracture is redemonstrated. There are no new lung nodules identified. Impression: Airspace opacities likely representing pneumonia. 
+EXPLANATION: Added the presence of chronic interstitial process likely representing pneumonia.
+
+#11
+ORIGINAL REPORT: Findings: Mild to moderate enlargement of the cardiac silhouette is unchanged. The aorta is calcified and diffusely tortuous. The mediastinal and hilar contours are otherwise similar in appearance. There is minimal upper zone vascular redistribution without overt pulmonary edema. No focal consolidation, pleural effusion or pneumothorax is present. The osseous structures are diffusely demineralized. Impression: No radiographic evidence for pneumonia. 
+OUTPUT: Findings: Status post prior median sternotomy. Mild to moderate enlargement of the cardiac silhouette is unchanged. The aorta is calcified and diffusely tortuous. The mediastinal and hilar contours are otherwise similar in appearance. There is minimal upper zone vascular redistribution without overt pulmonary edema. No focal consolidation, pleural effusion or pneumothorax is present. The osseous structures are diffusely demineralized. Impression: No radiographic evidence for pneumonia. 
+EXPLANATION: Added status post prior median sternotomy when it’s not.
+
+#12
+ORIGINAL REPORT: Findings: The lungs are clear of consolidation, effusion, or edema. Cardiac silhouette is top normal. Descending thoracic aorta is tortuous with atherosclerotic calcification seen at the arch. No acute osseous abnormalities identified. Impression: No acute cardiopulmonary process. 
+OUTPUT: Findings: The lungs are clear of consolidation, effusion, or edema. Streaky opacities in the lung bases likely reflect atelectasis. Cardiac silhouette is top normal. Descending thoracic aorta is tortuous with atherosclerotic calcification seen at the arch. No acute osseous abnormalities identified. Impression: No acute cardiopulmonary process. 
+EXPLANATION: Added streaky opacities in the lung that reflect atelectasis.
+
+
+
+OUTPUT FORMAT (JSON)
+================================================================================
+
+Return your response as a JSON object with this EXACT structure:
+
+{
+  "modified_report": "The complete radiology report with errors injected",
+  "changes_detail": [
+    {
+      "sentence_index": 1,
+      "original": "Original sentence text",
+      "modified": "Modified sentence text with error",
+      "explanation": "Brief description of the error injected",
+      "severity": "",
+      "harm_potential": ""
+    }
+  ]
+}
+
+
+REQUIREMENTS:
+- "modified_report": The full report text with errors (maintain exact original formatting)
+- "changes_detail": Array of objects, ONE FOR EACH CHANGED SENTENCE ONLY
+  - sentence_index: Position of the sentence in the original report (0-indexed)
+  - original: Text from original report
+  - modified: Text in modified report
+  - explanation: Description of error injected
+  - severity: Leave empty (for compatibility with other datasets)
+  - harm_potential: Leave empty (for compatibility with other datasets)
+
+
+EXAMPLE OUTPUT
+================================================================================
+
+For input: "Findings: The lungs are clear. No pleural effusion. Impression: No acute process."
+
+{
+  "modified_report": "Findings: The lungs are clear. Small bilateral pleural effusions. Impression: No acute process.",
+  "changes_detail": [
+    {
+      "sentence_index": 1,
+      "original": "No pleural effusion.",
+      "modified": "Small bilateral pleural effusions.",
+      "explanation": "Added bilateral effusions that were not present"
+    }
+  ]
+}
+
+
+CHECKLIST
+================================================================================
+✓ Inject errors into as many sentences as possible
+✓ Only one error per sentence
+✓ Maintain exact formatting of original report
+✓ Return valid JSON with all required fields
+✓ Use only the specified error type

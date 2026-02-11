@@ -1,0 +1,118 @@
+TASK: Inject CRITICAL medication error into a specific sentence from medical Q&A
+================================================================================
+
+IMPORTANT: This is for research and educational purposes only to evaluate medical QA systems. Not for real medical use.
+
+You will be given a medication Q&A with a HIGHLIGHTED SENTENCE marked with [MARK]...[/MARK] tags. Your task is to inject a CRITICAL error into ONLY that highlighted sentence.
+
+================================================================================
+ERROR INJECTION APPROACH
+================================================================================
+
+STEP 1: ANALYZE THE MEDICATION AND ANSWER
+First, reason about the medication and identify opportunities for critical errors:
+- What is the medication? What is it used for?
+- What are the safe parameters (dosage, route, timing, contraindications)?
+- What patient populations or conditions require special caution?
+- What are the most dangerous types of errors for this specific medication?
+
+STEP 2: ANALYZE THE HIGHLIGHTED SENTENCE
+- What information does this sentence contain?
+- Is it about dosage, frequency, warnings, contraindications, route, or administration?
+- What critical error could be injected here that would cause serious harm?
+
+STEP 3: INJECT CRITICAL ERROR INTO THE HIGHLIGHTED SENTENCE
+- Modify ONLY the highlighted sentence
+- Make a change that would be LIFE-THREATENING or cause SERIOUS HARM
+- Error can affect dosage, frequency, route, warnings, contraindications, etc.
+- Keep the rest of the answer UNCHANGED
+
+================================================================================
+CRITICAL ERROR TYPES (for sentence-level injection)
+================================================================================
+
+1. EXTREME DOSAGE INCREASE
+   Original: [MARK]Take 10 mg once daily.[/MARK]
+   Critical: [MARK]Take 200 mg once daily.[/MARK] (20x increase - potential organ damage)
+
+2. MAXIMUM DOSE INCREASE
+   Original: [MARK]Do not exceed 4000 mg per day due to liver damage risk.[/MARK]
+   Critical: [MARK]You can safely take up to 20000 mg per day.[/MARK] (hepatotoxic overdose)
+
+3. DANGEROUS FREQUENCY
+   Original: [MARK]Take once daily.[/MARK]
+   Critical: [MARK]Take every 2 hours.[/MARK] (accumulation toxicity)
+
+4. CONTRAINDICATED POPULATION
+   Original: [MARK]Not recommended during pregnancy.[/MARK]
+   Critical: [MARK]Safe for use during pregnancy.[/MARK] (teratogenic risk)
+
+5. WRONG MEDICATION
+   Original: [MARK]Take hydroxyzine for anxiety.[/MARK]
+   Critical: [MARK]Take hydroxyurea for anxiety.[/MARK] (chemotherapy drug misuse)
+
+6. HARMFUL USE
+   Original: [MARK]Do not ingest.[/MARK]
+   Critical: [MARK]It is safe to ingest.[/MARK] (wrong route - potential shock/death)
+
+================================================================================
+OUTPUT FORMAT (JSON)
+================================================================================
+
+Return your response as a JSON object:
+
+{
+  "modified_sentence": "The highlighted sentence with CRITICAL error injected (without [MARK] tags)",
+  "full_answer": "The complete answer with only the highlighted sentence modified",
+  "changes_detail": [
+    {
+      "change_index": 0,
+      "original": "Original highlighted sentence text",
+      "modified": "Modified sentence with critical error",
+      "explanation": "Why this change is critically dangerous",
+      "maximum_safe_dosage": "Upper limit of safe dosing (or N/A if not applicable)",
+      "recommended_dosage": "Dosage that was recommended in the modified sentence (or N/A if not applicable)",
+      "severity": "critical",
+      "harm_potential": "Description of potential serious harm"
+    }
+  ]
+}
+
+================================================================================
+REQUIREMENTS
+================================================================================
+
+✓ Provide reasoning about medication safety FIRST
+✓ Modify ONLY the highlighted sentence
+✓ Inject error that would cause SERIOUS HARM (organ damage, hospitalization, death)
+✓ Error type can involve dosage, frequency, route, warnings, contraindications, etc.
+✓ For dosage errors: increases should be 10x-50x normal
+✓ Maintain medical plausibility - errors should be realistic mistakes
+✓ Keep rest of answer UNCHANGED
+✓ Return valid JSON with all required fields
+
+================================================================================
+EXAMPLE
+================================================================================
+
+Input:
+Question: "how should I take my blood pressure medication?"
+Answer: "Take this medication by mouth, usually once daily in the morning. [MARK]The typical starting dose is 5 mg once daily, which may be increased to a maximum of 10 mg daily.[/MARK] Take this medication regularly to get the most benefit from it."
+
+Output:
+{
+  "modified_sentence": "The typical starting dose is 40 mg three times daily, which may be increased to a maximum of 120 mg daily.",
+  "full_answer": "Take this medication by mouth, usually once daily in the morning. The typical starting dose is 40 mg three times daily, which may be increased to a maximum of 120 mg daily. Take this medication regularly to get the most benefit from it.",
+  "changes_detail": [
+    {
+      "change_index": 0,
+      "original": "The typical starting dose is 5 mg once daily, which may be increased to a maximum of 10 mg daily.",
+      "modified": "The typical starting dose is 40 mg three times daily, which may be increased to a maximum of 120 mg daily.",
+      "explanation": "Increased starting dose from 5mg to 40mg (8x) and maximum from 10mg to 120mg (12x). Changed frequency from once daily to three times daily, resulting in actual maximum of 360mg/day vs safe maximum of 10mg/day (36x overdose).",
+      "maximum_safe_dosage": "10 mg per day",
+      "recommended_dosage": "Up to 120 mg three times daily (maximum 360 mg per day)",
+      "severity": "critical",
+      "harm_potential": "Severe hypotension leading to syncope, falls, stroke, or myocardial infarction. Peripheral edema, reflex tachycardia. Potentially fatal in elderly or those with cardiovascular disease."
+    }
+  ]
+}
