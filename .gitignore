@@ -19,3 +19,5 @@ data/old/rexerr-v1-clinically-meaningful-chest-x-ray-report-errors-derived-from-
 data/old/rexerr-v1-clinically-meaningful-chest-x-ray-report-errors-derived-from-mimic-cxr-1.0.0/ReXErr-sentence-level/*
 
 *.DS_Store
+
+data/old/physionet.org/*

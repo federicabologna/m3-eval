@@ -88,8 +88,10 @@ def run_error_priming_radeval(args):
     print(f"{'='*80}")
     print(f"Perturbations: {', '.join(perturbations_to_run)}")
     print("Computing primed GREEN ratings with error warning")
-    print("  Baseline (control) ratings already exist in baseline experiments")
-    print("  Primed: GREEN with 'NOTE: candidate report contains errors...'")
+    print("  Testing on both ORIGINAL and PERTURBED reports:")
+    print("  1. Original reports + error warning (control for false positives)")
+    print("  2. Perturbed reports + error warning (test sensitivity)")
+    print("  Baseline (no warning) ratings already exist in baseline experiments")
 
     # Create experiment directory
     experiment_dir = os.path.join(output_dir, 'experiment_results', 'error_priming')
@@ -99,6 +101,82 @@ def run_error_priming_radeval(args):
 
     # Process each perturbation
     baseline_dir = os.path.join(output_dir, 'experiment_results', 'baseline')
+
+    # First, process original reports ONCE (same across all perturbations)
+    print(f"\n{'='*80}")
+    print("PROCESSING ORIGINAL REPORTS (ONCE FOR ALL PERTURBATIONS)")
+    print(f"{'='*80}")
+
+    # Load original reports from the first perturbation's baseline
+    first_perturbation = perturbations_to_run[0]
+    first_perturbation_dir = os.path.join(baseline_dir, first_perturbation)
+    baseline_files = [f for f in os.listdir(first_perturbation_dir) if f.endswith('_green_rating.jsonl')]
+
+    if baseline_files:
+        baseline_file = os.path.join(first_perturbation_dir, baseline_files[0])
+
+        # Load original data
+        original_data = []
+        with open(baseline_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    original_data.append(json.loads(line))
+
+        print(f"Loaded {len(original_data)} original examples")
+
+        # Create original ratings directory
+        original_ratings_dir = os.path.join(output_dir, 'original_ratings')
+        os.makedirs(original_ratings_dir, exist_ok=True)
+
+        output_filename = f"original_{model_name_clean}_error_priming_green_rating.jsonl"
+        output_path = os.path.join(original_ratings_dir, output_filename)
+
+        # Check which entries have already been processed
+        processed_ids = get_processed_ids(output_path)
+        remaining_data = [item for item in original_data if item['id'] not in processed_ids]
+
+        if len(remaining_data) == 0:
+            print(f"✓ All {len(original_data)} original reports already processed")
+        else:
+            print(f"Processing {len(remaining_data)} remaining original reports")
+
+            for idx, item in enumerate(remaining_data, 1):
+                reference = item[reference_field]
+                original_text = item[text_field]  # Original (no errors)
+                item_id = item['id']
+
+                print(f"  [{idx}/{len(remaining_data)}] {item_id}...", end=" ")
+
+                start_time = time.time()
+
+                # Compute GREEN rating WITH error priming on ORIGINAL text
+                rating = get_green_rating(
+                    original_text, reference,
+                    model_name=args.model or "gpt-4o",
+                    num_runs=5,
+                    error_priming=True
+                )
+
+                elapsed_time = time.time() - start_time
+                print(f"{elapsed_time:.1f}s")
+
+                # Build result
+                result = item.copy()
+                result['green_rating_original_primed'] = rating
+                result['report_type'] = 'original'
+                result['error_priming'] = True
+                result['random_seed'] = args.seed
+
+                # Save to file
+                save_result(output_path, result)
+
+            print(f"✓ Completed original reports")
+            print(f"✓ Results saved to: {output_path}")
+
+    # Now process perturbed reports for each perturbation
+    print(f"\n{'='*80}")
+    print("PROCESSING PERTURBED REPORTS (PER PERTURBATION)")
+    print(f"{'='*80}")
 
     for perturbation_name in perturbations_to_run:
         print(f"\n{'='*80}")
@@ -115,40 +193,40 @@ def run_error_priming_radeval(args):
             continue
 
         baseline_file = os.path.join(perturbation_baseline_dir, baseline_files[0])
-        print(f"  Loading perturbations from: {baseline_files[0]}")
+        print(f"  Loading data from: {baseline_files[0]}")
 
-        # Load perturbed data
-        perturbed_data = []
+        # Load data
+        loaded_data = []
         with open(baseline_file, 'r') as f:
             for line in f:
                 if line.strip():
-                    perturbed_data.append(json.loads(line))
+                    loaded_data.append(json.loads(line))
 
-        print(f"  Loaded {len(perturbed_data)} perturbed examples")
-
-        # Only compute primed condition (control already exists in baseline)
-        print(f"\n  Computing primed condition with error warning")
+        print(f"  Loaded {len(loaded_data)} examples")
 
         # Create perturbation-specific subdirectory (matching baseline structure)
         perturbation_output_dir = os.path.join(experiment_dir, perturbation_name)
         os.makedirs(perturbation_output_dir, exist_ok=True)
 
-        output_filename = f"{perturbation_name}_error_priming_primed_{model_name_clean}.jsonl"
+        # Process only perturbed reports (original done once above)
+        print(f"\n  Processing PERTURBED reports with error warning")
+
+        output_filename = f"{perturbation_name}_{model_name_clean}_error_priming_green_rating.jsonl"
         output_path = os.path.join(perturbation_output_dir, output_filename)
 
         # Check which entries have already been processed
         processed_ids = get_processed_ids(output_path)
-        remaining_data = [item for item in perturbed_data if item['id'] not in processed_ids]
+        remaining_data = [item for item in loaded_data if item['id'] not in processed_ids]
 
         if len(remaining_data) == 0:
-            print(f"    ✓ All {len(perturbed_data)} entries already processed")
+            print(f"  ✓ All {len(loaded_data)} entries already processed")
         else:
-            print(f"    Processing {len(remaining_data)} remaining entries")
+            print(f"  Processing {len(remaining_data)} remaining entries")
 
             # Process each entry
             for idx, item in enumerate(remaining_data, 1):
                 reference = item[reference_field]
-                perturbed_text = item[f'perturbed_{text_field}']
+                perturbed_text = item[f'perturbed_{text_field}']  # Perturbed (with errors)
                 item_id = item['id']
 
                 print(f"    [{idx}/{len(remaining_data)}] {item_id}...", end=" ")
@@ -168,14 +246,15 @@ def run_error_priming_radeval(args):
 
                 # Build result
                 result = item.copy()
-                result['green_rating_primed'] = rating
+                result['green_rating_perturbed_primed'] = rating
+                result['report_type'] = 'perturbed'
                 result['error_priming'] = True
                 result['random_seed'] = args.seed
 
                 # Save to file
                 save_result(output_path, result)
 
-            print(f"    ✓ Completed primed condition")
+            print(f"  ✓ Completed perturbed reports for {perturbation_name}")
 
     print(f"\n{'='*80}")
     print("ERROR PRIMING EXPERIMENT COMPLETED")

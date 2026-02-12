@@ -69,8 +69,10 @@ def run_error_priming_rexerr(args):
     print("ERROR PRIMING EXPERIMENT - REXERR")
     print(f"{'='*80}")
     print("Computing primed GREEN ratings with error warning")
-    print("  Baseline (control) ratings already exist in baseline experiment")
-    print("  Primed: GREEN with 'NOTE: candidate report contains errors...'")
+    print("  Testing on both ORIGINAL and PERTURBED reports:")
+    print("  1. Original reports + error warning (control for false positives)")
+    print("  2. Perturbed reports + error warning (test sensitivity)")
+    print("  Baseline (no warning) ratings already exist in baseline experiment")
 
     # Create experiment directory
     experiment_dir = os.path.join(output_dir, 'experiment_results', 'error_priming')
@@ -78,13 +80,66 @@ def run_error_priming_rexerr(args):
 
     model_name_clean = clean_model_name(args.model) if args.model else "gpt-4o"
 
-    # Only compute primed condition (control already exists in baseline)
+    # First, process original reports ONCE
     print(f"\n{'='*80}")
-    print(f"COMPUTING PRIMED CONDITION")
+    print("PROCESSING ORIGINAL REPORTS (ONCE)")
     print(f"{'='*80}")
-    print(f"Error priming: True")
 
-    output_filename = f"rexerr_error_priming_primed_{model_name_clean}.jsonl"
+    # Create original ratings directory
+    original_ratings_dir = os.path.join(output_dir, 'original_ratings')
+    os.makedirs(original_ratings_dir, exist_ok=True)
+
+    output_filename = f"original_{model_name_clean}_error_priming_green_rating.jsonl"
+    output_path = os.path.join(original_ratings_dir, output_filename)
+
+    # Check which entries have already been processed
+    processed_ids = get_processed_ids(output_path)
+    remaining_data = [item for item in data if item['id'] not in processed_ids]
+
+    if len(remaining_data) == 0:
+        print(f"✓ All {len(data)} original reports already processed")
+    else:
+        print(f"Processing {len(remaining_data)} remaining original reports")
+
+        for idx, item in enumerate(remaining_data, 1):
+            reference = item[reference_field]
+            original_text = reference  # RexErr: reference is the original
+            item_id = item['id']
+
+            print(f"  [{idx}/{len(remaining_data)}] {item_id}...", end=" ")
+
+            start_time = time.time()
+
+            # Compute GREEN rating WITH error priming on ORIGINAL text
+            rating = get_green_rating(
+                original_text, reference,
+                model_name=args.model or "gpt-4o",
+                num_runs=5,
+                error_priming=True
+            )
+
+            elapsed_time = time.time() - start_time
+            print(f"{elapsed_time:.1f}s")
+
+            # Build result
+            result = item.copy()
+            result['green_rating_original_primed'] = rating
+            result['report_type'] = 'original'
+            result['error_priming'] = True
+            result['random_seed'] = args.seed
+
+            # Save to file
+            save_result(output_path, result)
+
+        print(f"\n✓ Completed original reports")
+        print(f"✓ Results saved to: {output_path}")
+
+    # Now process perturbed reports
+    print(f"\n{'='*80}")
+    print("PROCESSING PERTURBED REPORTS")
+    print(f"{'='*80}")
+
+    output_filename = f"{model_name_clean}_error_priming_green_rating.jsonl"
     output_path = os.path.join(experiment_dir, output_filename)
 
     # Check which entries have already been processed
@@ -99,7 +154,7 @@ def run_error_priming_rexerr(args):
         # Process each entry
         for idx, item in enumerate(remaining_data, 1):
             reference = item[reference_field]
-            perturbed_text = item[text_field]
+            perturbed_text = item[text_field]  # Perturbed (with errors)
             item_id = item['id']
 
             print(f"  [{idx}/{len(remaining_data)}] {item_id}...", end=" ")
@@ -119,16 +174,16 @@ def run_error_priming_rexerr(args):
 
             # Build result
             result = item.copy()
-            result['green_rating_primed'] = rating
+            result['green_rating_perturbed_primed'] = rating
+            result['report_type'] = 'perturbed'
             result['error_priming'] = True
             result['random_seed'] = args.seed
 
             # Save to file
             save_result(output_path, result)
 
-        print(f"\n✓ Completed primed condition")
-
-    print(f"✓ Results saved to: {output_path}")
+        print(f"\n✓ Completed perturbed reports")
+        print(f"✓ Results saved to: {output_path}")
 
     print(f"\n{'='*80}")
     print("ERROR PRIMING EXPERIMENT COMPLETED")

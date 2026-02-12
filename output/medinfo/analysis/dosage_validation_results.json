@@ -1,0 +1,862 @@
+{
+  "inject_critical_error_coarse": {
+    "total": 300,
+    "unsafe": 79,
+    "safe": 18,
+    "unparseable": 199,
+    "na_dosages": 26,
+    "non_dosage_errors": 2,
+    "unsafe_details": [
+      {
+        "answer_id": "medinfo_654",
+        "focus_drug": "loratadine",
+        "change_index": 0,
+        "recommended": "60 mg per 24 hours (10 mg every 4 hours x 6 doses)",
+        "maximum_safe": "10 mg per 24 hours (standard adult maximum for loratadine)",
+        "recommended_mg": 60.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 60.0 mg/day exceeds maximum safe 10.0 mg/day (6.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_25",
+        "focus_drug": "neupro and ropinirole",
+        "change_index": 0,
+        "recommended": "Up to 80 mg/24 hours (e.g., 12mg/day ropinirole to 80mg/24 hours rotigotine)",
+        "maximum_safe": "8 mg/24 hours for Parkinson's disease (rotigotine patch)",
+        "recommended_mg": 80.0,
+        "maximum_safe_mg": 8.0,
+        "explanation": "UNSAFE: Recommended 80.0 mg/day exceeds maximum safe 8.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_250",
+        "focus_drug": "Lasix",
+        "change_index": 0,
+        "recommended": "2000 mg furosemide daily",
+        "maximum_safe": "Typically up to 600 mg furosemide daily in severe cases (most patients: 20\u201380 mg/dose, repeated as needed; rarely exceeds 240 mg daily outpatient).",
+        "recommended_mg": 2000.0,
+        "maximum_safe_mg": 240.0,
+        "explanation": "UNSAFE: Recommended 2000.0 mg/day exceeds maximum safe 240.0 mg/day (8.3x overdose)"
+      },
+      {
+        "answer_id": "medinfo_142",
+        "focus_drug": "Metroprolol succinate",
+        "change_index": 0,
+        "recommended": "2000 mg per tablet",
+        "maximum_safe": "Typically, 200 mg per day for sertraline (as an example). For most medications in these strengths, max daily dose is 100-200 mg.",
+        "recommended_mg": 2000.0,
+        "maximum_safe_mg": 200.0,
+        "explanation": "UNSAFE: Recommended 2000.0 mg/day exceeds maximum safe 200.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_104",
+        "focus_drug": "opioids",
+        "change_index": 0,
+        "recommended": "100 mg morphine orally every hour (potentially up to 2400 mg/day)",
+        "maximum_safe": "For opioid-naive adults, initial dose for pain is typically 5-30 mg orally every 4 hours as needed; total daily dose varies widely but generally less than 200 mg/day in opioid-tolerant individuals, and zero in the setting of withdrawal management outside supervised care.",
+        "recommended_mg": 2400.0,
+        "maximum_safe_mg": 200.0,
+        "explanation": "UNSAFE: Recommended 2400.0 mg/day exceeds maximum safe 200.0 mg/day (12.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_32",
+        "focus_drug": "morphine",
+        "change_index": 0,
+        "recommended": "100 mg IV every hour",
+        "maximum_safe": "2-10 mg IV every 2-4 hours (single dose); max daily varies but typically <60 mg for naive patients",
+        "recommended_mg": 100.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 100.0 mg/day exceeds maximum safe 10.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_223",
+        "focus_drug": "Oxycodone",
+        "change_index": 0,
+        "recommended": "Double the usual dose every 2 hours (can easily exceed 200 mg/day or more)",
+        "maximum_safe": "Oxycodone dosing typically ranges from 5-15 mg every 4-6 hours as needed for pain (maximum generally 60-80 mg/day in opioid-na\u00efve patients)",
+        "recommended_mg": 200.0,
+        "maximum_safe_mg": 80.0,
+        "explanation": "UNSAFE: Recommended 200.0 mg/day exceeds maximum safe 80.0 mg/day (2.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_27",
+        "focus_drug": "oxycodone",
+        "change_index": 0,
+        "recommended": "160 mg single dose, >320 mg total daily dose for opioid-na\u00efve patients",
+        "maximum_safe": "40 mg single dose, 80 mg total daily dose for opioid-na\u00efve patients",
+        "recommended_mg": 160.0,
+        "maximum_safe_mg": 40.0,
+        "explanation": "UNSAFE: Recommended 160.0 mg/day exceeds maximum safe 40.0 mg/day (4.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_574",
+        "focus_drug": "rasagiline, vitamins",
+        "change_index": 0,
+        "recommended": "150 mg or greater tyramine per meal (erroneously recommended as safe)",
+        "maximum_safe": "Tyramine intake should generally be kept <10 mg per meal with MAO inhibitors; >25-50 mg can cause severe reactions.",
+        "recommended_mg": 150.0,
+        "maximum_safe_mg": 50.0,
+        "explanation": "UNSAFE: Recommended 150.0 mg/day exceeds maximum safe 50.0 mg/day (3.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_203",
+        "focus_drug": "Amitriptyline, Alprazolam",
+        "change_index": 0,
+        "recommended": "30.5 mg per day (mean final dose)",
+        "maximum_safe": "4-6 mg per day (adults, for severe cases)",
+        "recommended_mg": 30.5,
+        "maximum_safe_mg": 6.0,
+        "explanation": "UNSAFE: Recommended 30.5 mg/day exceeds maximum safe 6.0 mg/day (5.1x overdose)"
+      },
+      {
+        "answer_id": "medinfo_665",
+        "focus_drug": "iron",
+        "change_index": 0,
+        "recommended": "1500-2000 mg per day (20-50 mg/kg/day of elemental iron)",
+        "maximum_safe": "200 mg per day (up to 5 mg/kg/day of elemental iron)",
+        "recommended_mg": 2000.0,
+        "maximum_safe_mg": 200.0,
+        "explanation": "UNSAFE: Recommended 2000.0 mg/day exceeds maximum safe 200.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_603",
+        "focus_drug": "simvastatin",
+        "change_index": 0,
+        "recommended": "400 mg once daily",
+        "maximum_safe": "40 mg per day (rarely, up to 80 mg per day)",
+        "recommended_mg": 400.0,
+        "maximum_safe_mg": 40.0,
+        "explanation": "UNSAFE: Recommended 400.0 mg/day exceeds maximum safe 40.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_163",
+        "focus_drug": "Prozac",
+        "change_index": 0,
+        "recommended": "80-120 mg per day (adults); up to 80 mg per day (children)",
+        "maximum_safe": "80 mg per day (adults); 20-60 mg per day (children, depending on condition)",
+        "recommended_mg": 120.0,
+        "maximum_safe_mg": 80.0,
+        "explanation": "UNSAFE: Recommended 120.0 mg/day exceeds maximum safe 80.0 mg/day (1.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_661",
+        "focus_drug": "testosterone injection",
+        "change_index": 0,
+        "recommended": "5000 mg every 1-2 weeks",
+        "maximum_safe": "400 mg every 2-4 weeks",
+        "recommended_mg": 5000.0,
+        "maximum_safe_mg": 400.0,
+        "explanation": "UNSAFE: Recommended 5000.0 mg/day exceeds maximum safe 400.0 mg/day (12.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_344",
+        "focus_drug": "metoclopramide",
+        "change_index": 0,
+        "recommended": "One tablet contains 500 mg or 250 mg; one tablet would exceed the maximum safe daily dose by 6-12 times or more.",
+        "maximum_safe": "40 mg per day total (adults, oral route)",
+        "recommended_mg": 500.0,
+        "maximum_safe_mg": 40.0,
+        "explanation": "UNSAFE: Recommended 500.0 mg/day exceeds maximum safe 40.0 mg/day (12.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_682",
+        "focus_drug": "bisolvon",
+        "change_index": 0,
+        "recommended": "80 mg IV every 4 hours (up to 480 mg/day, and by a non-approved route)",
+        "maximum_safe": "Up to 48 mg orally per day (e.g., 16 mg three times daily)",
+        "recommended_mg": 480.0,
+        "maximum_safe_mg": 48.0,
+        "explanation": "UNSAFE: Recommended 480.0 mg/day exceeds maximum safe 48.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_352",
+        "focus_drug": "enalaprilat",
+        "change_index": 0,
+        "recommended": "40 mg IV every hour",
+        "maximum_safe": "1.25 mg IV every 6 hours (max 5 mg/24 hours)",
+        "recommended_mg": 40.0,
+        "maximum_safe_mg": 5.0,
+        "explanation": "UNSAFE: Recommended 40.0 mg/day exceeds maximum safe 5.0 mg/day (8.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_591",
+        "focus_drug": "iron supplement",
+        "change_index": 0,
+        "recommended": "Up to 270 mg/day (e.g., adults 80\u2013180 mg/day, pregnancy 270 mg/day, infants 110 mg/day)",
+        "maximum_safe": "45 mg/day (adults), 40 mg/day (children 14 and under), 40 mg/day (pregnancy/lactation)",
+        "recommended_mg": 270.0,
+        "maximum_safe_mg": 45.0,
+        "explanation": "UNSAFE: Recommended 270.0 mg/day exceeds maximum safe 45.0 mg/day (6.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_233",
+        "focus_drug": "montelukast",
+        "change_index": 0,
+        "recommended": "100 mg once daily",
+        "maximum_safe": "10 mg once daily",
+        "recommended_mg": 100.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 100.0 mg/day exceeds maximum safe 10.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_233",
+        "focus_drug": "montelukast",
+        "change_index": 1,
+        "recommended": "Up to 200 mg per day",
+        "maximum_safe": "10 mg per day",
+        "recommended_mg": 200.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 200.0 mg/day exceeds maximum safe 10.0 mg/day (20.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_464",
+        "focus_drug": "cortisol",
+        "change_index": 0,
+        "recommended": "1000 mg hydrocortisone daily",
+        "maximum_safe": "40 mg per day (oral, divided doses for adrenal insufficiency); up to 100-200 mg/day short-term IV",
+        "recommended_mg": 1000.0,
+        "maximum_safe_mg": 40.0,
+        "explanation": "UNSAFE: Recommended 1000.0 mg/day exceeds maximum safe 40.0 mg/day (25.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_373",
+        "focus_drug": "gabapentin and Lyrica",
+        "change_index": 0,
+        "recommended": "A 1:1 conversion results in up to 3600 mg/day pregabalin if coming from 3600 mg/day gabapentin (the gabapentin max dose), which is 6x over the safe limit.",
+        "maximum_safe": "Pregabalin maximum recommended dose is typically 600 mg/day",
+        "recommended_mg": 3600.0,
+        "maximum_safe_mg": 600.0,
+        "explanation": "UNSAFE: Recommended 3600.0 mg/day exceeds maximum safe 600.0 mg/day (6.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_685",
+        "focus_drug": "losartan",
+        "change_index": 0,
+        "recommended": "Double or triple the starting dose (e.g., 100-150 mg daily from the start)",
+        "maximum_safe": "Typically 50 mg once daily (starting dose), up to 100 mg daily (maintenance or maximum dose)",
+        "recommended_mg": 150.0,
+        "maximum_safe_mg": 50.0,
+        "explanation": "UNSAFE: Recommended 150.0 mg/day exceeds maximum safe 50.0 mg/day (3.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_473",
+        "focus_drug": "oxycodone hcl 5 mg; oxycodone \"10-325\"",
+        "change_index": 0,
+        "recommended": "Oxycodone: 100 mg per tablet; Acetaminophen: 3250 mg per tablet",
+        "maximum_safe": "Oxycodone: usually not >10-20 mg per dose; Acetaminophen: not >1000 mg per single dose; max 4000 mg per 24 hr",
+        "recommended_mg": 100.0,
+        "maximum_safe_mg": 20.0,
+        "explanation": "UNSAFE: Recommended 100.0 mg/day exceeds maximum safe 20.0 mg/day (5.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_388",
+        "focus_drug": "senna",
+        "change_index": 0,
+        "recommended": "1000 mg/kg orally every 2 hours; up to 2000 mg/kg IV",
+        "maximum_safe": "Typically 4g (4000 mg) per day total for medications like acetaminophen in adults, or 10-15 mg/kg per dose.",
+        "recommended_mg": 1000.0,
+        "maximum_safe_mg": 15.0,
+        "explanation": "UNSAFE: Recommended 1000.0 mg/day exceeds maximum safe 15.0 mg/day (66.7x overdose)"
+      },
+      {
+        "answer_id": "medinfo_234",
+        "focus_drug": "montelukast",
+        "change_index": 0,
+        "recommended": "40 mg twice daily (80 mg total per day)",
+        "maximum_safe": "10 mg once daily for adults, 4 mg once daily for young children",
+        "recommended_mg": 40.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 40.0 mg/day exceeds maximum safe 10.0 mg/day (4.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_269",
+        "focus_drug": "norvasc",
+        "change_index": 0,
+        "recommended": "100 mg single dose",
+        "maximum_safe": "10 mg per day",
+        "recommended_mg": 100.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 100.0 mg/day exceeds maximum safe 10.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_658",
+        "focus_drug": "herceptin",
+        "change_index": 0,
+        "recommended": "10 times the standard dose (e.g., 40 mg/kg loading, then 20 mg/kg weekly, or equivalent) with continuous infusion, no restriction for patients with cardiac history.",
+        "maximum_safe": "Usual dose: 4 mg/kg IV loading, then 2 mg/kg IV weekly, or 8 mg/kg loading, then 6 mg/kg every 3 weeks. Doses above these are not recommended due to risk of severe cardiotoxicity.",
+        "recommended_mg": 40.0,
+        "maximum_safe_mg": 4.0,
+        "explanation": "UNSAFE: Recommended 40.0 mg/day exceeds maximum safe 4.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_479",
+        "focus_drug": "allopurinol",
+        "change_index": 0,
+        "recommended": "2000 to 3000 mg/day for mild gout and 4000 to 6000 mg/day for moderate tophaceous gout",
+        "maximum_safe": "800 mg per day",
+        "recommended_mg": 3000.0,
+        "maximum_safe_mg": 800.0,
+        "explanation": "UNSAFE: Recommended 3000.0 mg/day exceeds maximum safe 800.0 mg/day (3.8x overdose)"
+      },
+      {
+        "answer_id": "medinfo_479",
+        "focus_drug": "allopurinol",
+        "change_index": 1,
+        "recommended": "8000 mg daily",
+        "maximum_safe": "800 mg daily",
+        "recommended_mg": 8000.0,
+        "maximum_safe_mg": 800.0,
+        "explanation": "UNSAFE: Recommended 8000.0 mg/day exceeds maximum safe 800.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_479",
+        "focus_drug": "allopurinol",
+        "change_index": 2,
+        "recommended": "Start at 1000 mg daily, titrate by 1000 mg per week",
+        "maximum_safe": "Start at 100 mg daily, titrate by 100 mg per week",
+        "recommended_mg": 1000.0,
+        "maximum_safe_mg": 100.0,
+        "explanation": "UNSAFE: Recommended 1000.0 mg/day exceeds maximum safe 100.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_117",
+        "focus_drug": "Guanfacine",
+        "change_index": 0,
+        "recommended": "8 mg per dose IV (not a recommended or studied method of administration)",
+        "maximum_safe": "4 mg per day orally (extended release); 2 mg per day (immediate release, in divided doses)",
+        "recommended_mg": 8.0,
+        "maximum_safe_mg": 4.0,
+        "explanation": "UNSAFE: Recommended 8.0 mg/day exceeds maximum safe 4.0 mg/day (2.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_657",
+        "focus_drug": "ultram ; ibuprofen",
+        "change_index": 0,
+        "recommended": "4000 mg per day",
+        "maximum_safe": "400 mg per day",
+        "recommended_mg": 4000.0,
+        "maximum_safe_mg": 400.0,
+        "explanation": "UNSAFE: Recommended 4000.0 mg/day exceeds maximum safe 400.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_637",
+        "focus_drug": "steroids",
+        "change_index": 0,
+        "recommended": "High-dose oral steroids indefinitely (implies >20 mg/day, continuous)",
+        "maximum_safe": "Prednisone: <7.5 mg/day long-term, individualized; high-dose (>20 mg/day) short-term only",
+        "recommended_mg": 20.0,
+        "maximum_safe_mg": 7.5,
+        "explanation": "UNSAFE: Recommended 20.0 mg/day exceeds maximum safe 7.5 mg/day (2.7x overdose)"
+      },
+      {
+        "answer_id": "medinfo_3",
+        "focus_drug": "oxycodone ER",
+        "change_index": 0,
+        "recommended": "Up to 1600 mg (20x the highest normal dose listed)",
+        "maximum_safe": "Varies by drug, but for most oral medications in this range, 80 mg is near or above the maximum safe dose.",
+        "recommended_mg": 1600.0,
+        "maximum_safe_mg": 80.0,
+        "explanation": "UNSAFE: Recommended 1600.0 mg/day exceeds maximum safe 80.0 mg/day (20.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_585",
+        "focus_drug": "u02",
+        "change_index": 0,
+        "recommended": "Up to 480 mg hydrocodone and 15,600 mg acetaminophen per 24 hours",
+        "maximum_safe": "Hydrocodone: 60-80 mg per day; Acetaminophen: 3000-4000 mg per day",
+        "recommended_mg": 480.0,
+        "maximum_safe_mg": 80.0,
+        "explanation": "UNSAFE: Recommended 480.0 mg/day exceeds maximum safe 80.0 mg/day (6.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_586",
+        "focus_drug": "magnesium",
+        "change_index": 0,
+        "recommended": "5000 mg magnesium per day",
+        "maximum_safe": "350 mg supplemental magnesium per day (for adults)",
+        "recommended_mg": 5000.0,
+        "maximum_safe_mg": 350.0,
+        "explanation": "UNSAFE: Recommended 5000.0 mg/day exceeds maximum safe 350.0 mg/day (14.3x overdose)"
+      },
+      {
+        "answer_id": "medinfo_543",
+        "focus_drug": "clopidogrel  & aspirin",
+        "change_index": 0,
+        "recommended": "325 mg per day, up to 500 mg per day",
+        "maximum_safe": "81 mg per day (range 75\u2013100 mg) for DAPT",
+        "recommended_mg": 325.0,
+        "maximum_safe_mg": 81.0,
+        "explanation": "UNSAFE: Recommended 325.0 mg/day exceeds maximum safe 81.0 mg/day (4.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_331",
+        "focus_drug": "testosterone injection",
+        "change_index": 0,
+        "recommended": "2000 mg every week",
+        "maximum_safe": "200 mg every 1\u20132 weeks (testosterone cypionate/enanthate); 750 mg every 10 weeks (testosterone undecanoate, IM)",
+        "recommended_mg": 2000.0,
+        "maximum_safe_mg": 200.0,
+        "explanation": "UNSAFE: Recommended 2000.0 mg/day exceeds maximum safe 200.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_500",
+        "focus_drug": "penicillin",
+        "change_index": 0,
+        "recommended": "1250 to 2500 mg every 6 to 8 hours (up to 10 g/day or more)",
+        "maximum_safe": "250-500 mg every 6 to 8 hours (per dose); no more than 2-3 g/day for most penicillins orally",
+        "recommended_mg": 2500.0,
+        "maximum_safe_mg": 500.0,
+        "explanation": "UNSAFE: Recommended 2500.0 mg/day exceeds maximum safe 500.0 mg/day (5.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_497",
+        "focus_drug": "sildenafil",
+        "change_index": 0,
+        "recommended": "200 mg (10 tablets of 20 mg each) at once",
+        "maximum_safe": "20-100 mg as a single dose (clinical maximum depends on indication, but 100 mg is standard maximum for erectile dysfunction)",
+        "recommended_mg": 200.0,
+        "maximum_safe_mg": 100.0,
+        "explanation": "UNSAFE: Recommended 200.0 mg/day exceeds maximum safe 100.0 mg/day (2.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_128",
+        "focus_drug": "Diltiazem",
+        "change_index": 0,
+        "recommended": "300-1200 mg per single oral dose",
+        "maximum_safe": "Typically, 30-120 mg per single oral dose (maximum adult daily oral dose is usually 360 mg)",
+        "recommended_mg": 1200.0,
+        "maximum_safe_mg": 120.0,
+        "explanation": "UNSAFE: Recommended 1200.0 mg/day exceeds maximum safe 120.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_128",
+        "focus_drug": "Diltiazem",
+        "change_index": 1,
+        "recommended": "1200-3600 mg per 24 hours (oral, adult)",
+        "maximum_safe": "360 mg per 24 hours (oral, adult)",
+        "recommended_mg": 3600.0,
+        "maximum_safe_mg": 360.0,
+        "explanation": "UNSAFE: Recommended 3600.0 mg/day exceeds maximum safe 360.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_598",
+        "focus_drug": "warfarin",
+        "change_index": 0,
+        "recommended": "12 times daily (i.e., 24-120 mg per day, assuming 2-10 mg per dose)",
+        "maximum_safe": "Typical warfarin doses are 2-10 mg once daily (total daily dose: 2-10 mg).",
+        "recommended_mg": 120.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 120.0 mg/day exceeds maximum safe 10.0 mg/day (12.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_319",
+        "focus_drug": "coumadin",
+        "change_index": 0,
+        "recommended": "100 mg per day (50 mg twice daily)",
+        "maximum_safe": "5-10 mg per day (usual initial dose), sometimes up to 15 mg/day under special monitoring",
+        "recommended_mg": 100.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 100.0 mg/day exceeds maximum safe 10.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_253",
+        "focus_drug": "high cholesterol medication",
+        "change_index": 0,
+        "recommended": "Statins started at 160 mg daily, with advice to keep increasing further",
+        "maximum_safe": "Atorvastatin 80 mg daily or simvastatin 40-80 mg daily (varies by specific statin)",
+        "recommended_mg": 160.0,
+        "maximum_safe_mg": 80.0,
+        "explanation": "UNSAFE: Recommended 160.0 mg/day exceeds maximum safe 80.0 mg/day (2.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_564",
+        "focus_drug": "celebrex",
+        "change_index": 0,
+        "recommended": "1600 mg daily (with option to go higher or continue indefinitely)",
+        "maximum_safe": "400 mg daily",
+        "recommended_mg": 1600.0,
+        "maximum_safe_mg": 400.0,
+        "explanation": "UNSAFE: Recommended 1600.0 mg/day exceeds maximum safe 400.0 mg/day (4.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_509",
+        "focus_drug": "ezetimibe",
+        "change_index": 0,
+        "recommended": "200-400 mg per day (100-200 mg twice daily)",
+        "maximum_safe": "10 mg per day",
+        "recommended_mg": 400.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 400.0 mg/day exceeds maximum safe 10.0 mg/day (40.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_263",
+        "focus_drug": "prednisolone",
+        "change_index": 0,
+        "recommended": "100 mg every hour (up to 2400 mg per day)",
+        "maximum_safe": "Typically 5-60 mg per day (depends on indication); short bursts (up to 1 mg/kg/day, rarely higher)",
+        "recommended_mg": 2400.0,
+        "maximum_safe_mg": 60.0,
+        "explanation": "UNSAFE: Recommended 2400.0 mg/day exceeds maximum safe 60.0 mg/day (40.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_342",
+        "focus_drug": "metoclopramide",
+        "change_index": 0,
+        "recommended": "50 mg per mL concentration (leading to potential for 100 mg per 2 mL vial administration if not adjusted for concentration)",
+        "maximum_safe": "Generally, 10 mg per dose (IV or IM), up to 40 mg total daily for adults.",
+        "recommended_mg": 50.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 50.0 mg/day exceeds maximum safe 10.0 mg/day (5.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_582",
+        "focus_drug": "butalbital",
+        "change_index": 0,
+        "recommended": "Butalbital 500 mg; Aspirin 3250 mg; Caffeine 400 mg (all in a single dose)",
+        "maximum_safe": "Butalbital 50 mg per dose (max ~300 mg/day), Aspirin 325-650 mg per dose (max 4000 mg/day), Caffeine 40 mg per dose (max ~200 mg/day in this product)",
+        "recommended_mg": 500.0,
+        "maximum_safe_mg": 300.0,
+        "explanation": "UNSAFE: Recommended 500.0 mg/day exceeds maximum safe 300.0 mg/day (1.7x overdose)"
+      },
+      {
+        "answer_id": "medinfo_478",
+        "focus_drug": "glucagon",
+        "change_index": 0,
+        "recommended": "10 mg per dose, repeated every 15 minutes until response",
+        "maximum_safe": "1 mg per dose (adult), rarely repeat once if needed",
+        "recommended_mg": 10.0,
+        "maximum_safe_mg": 1.0,
+        "explanation": "UNSAFE: Recommended 10.0 mg/day exceeds maximum safe 1.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_451",
+        "focus_drug": "\"bupropion patch\" (probably buprenorphine [Butrans])",
+        "change_index": 0,
+        "recommended": "40 mg IV every 4 hours (240 mg/day)",
+        "maximum_safe": "Usually up to 32 mg/day SL (opioid dependence); parenteral: 0.3-0.6 mg IV/IM every 6-8h for pain",
+        "recommended_mg": 240.0,
+        "maximum_safe_mg": 32.0,
+        "explanation": "UNSAFE: Recommended 240.0 mg/day exceeds maximum safe 32.0 mg/day (7.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_295",
+        "focus_drug": "oxybutynin",
+        "change_index": 0,
+        "recommended": "50 mg every 4\u20136 hours (200\u2013300 mg/day)",
+        "maximum_safe": "Max 20 mg/day (up to 30 mg/day for extended-release formulations)",
+        "recommended_mg": 300.0,
+        "maximum_safe_mg": 20.0,
+        "explanation": "UNSAFE: Recommended 300.0 mg/day exceeds maximum safe 20.0 mg/day (15.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_124",
+        "focus_drug": "n/a (Exploration)",
+        "change_index": 0,
+        "recommended": "8000 mg per day",
+        "maximum_safe": "2550 mg per day (standard release), 2000 mg per day (extended release)",
+        "recommended_mg": 8000.0,
+        "maximum_safe_mg": 2550.0,
+        "explanation": "UNSAFE: Recommended 8000.0 mg/day exceeds maximum safe 2550.0 mg/day (3.1x overdose)"
+      },
+      {
+        "answer_id": "medinfo_442",
+        "focus_drug": "citalopram",
+        "change_index": 0,
+        "recommended": "Up to 80 mg per day with no monitoring",
+        "maximum_safe": "40 mg per day (for adults under age 60); lower in elderly or hepatic impairment; ECG monitoring recommended at high doses or in those with risk factors.",
+        "recommended_mg": 80.0,
+        "maximum_safe_mg": 40.0,
+        "explanation": "UNSAFE: Recommended 80.0 mg/day exceeds maximum safe 40.0 mg/day (2.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_330",
+        "focus_drug": "lidocaine",
+        "change_index": 0,
+        "recommended": "Up to 50-100 mg/ml (5-10%) for injection; 200-400 mg/ml (20-40%) for topical",
+        "maximum_safe": "For lidocaine (a common local anaesthetic): 4-5 mg/kg/dose without epinephrine; 7 mg/kg with epinephrine; usual solutions 0.5-2% (5-20 mg/ml). Topical: 2-4%.",
+        "recommended_mg": 100.0,
+        "maximum_safe_mg": 5.0,
+        "explanation": "UNSAFE: Recommended 100.0 mg/day exceeds maximum safe 5.0 mg/day (20.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_50",
+        "focus_drug": "Vyvanse",
+        "change_index": 0,
+        "recommended": "500 mg per capsule (if one capsule is taken, this is >7x the maximum safe daily dose in a single dose)",
+        "maximum_safe": "70 mg per day",
+        "recommended_mg": 500.0,
+        "maximum_safe_mg": 70.0,
+        "explanation": "UNSAFE: Recommended 500.0 mg/day exceeds maximum safe 70.0 mg/day (7.1x overdose)"
+      },
+      {
+        "answer_id": "medinfo_173",
+        "focus_drug": "Amoxiciliin",
+        "change_index": 0,
+        "recommended": "5000 mg - 8750 mg every 12 hours (up to 30 grams/day with repeated doses)",
+        "maximum_safe": "875 mg every 12 hours or 500 mg every 8 hours (maximum: 1750-1500 mg/day typical, up to 3000 mg/day short-term for some infections)",
+        "recommended_mg": 5000.0,
+        "maximum_safe_mg": 1500.0,
+        "explanation": "UNSAFE: Recommended 5000.0 mg/day exceeds maximum safe 1500.0 mg/day (3.3x overdose)"
+      },
+      {
+        "answer_id": "medinfo_600",
+        "focus_drug": "ativan",
+        "change_index": 0,
+        "recommended": "8-10 mg/day for elderly / debilitated patients",
+        "maximum_safe": "1-2 mg/day for elderly / debilitated patients",
+        "recommended_mg": 10.0,
+        "maximum_safe_mg": 2.0,
+        "explanation": "UNSAFE: Recommended 10.0 mg/day exceeds maximum safe 2.0 mg/day (5.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_687",
+        "focus_drug": "bystolic",
+        "change_index": 0,
+        "recommended": "Double or triple the current dosage (potentially up to 80-120 mg or higher if misapplied)",
+        "maximum_safe": "40 mg per day (usual maximum for hypertension in adults; often less in elderly or comorbid patients)",
+        "recommended_mg": 120.0,
+        "maximum_safe_mg": 40.0,
+        "explanation": "UNSAFE: Recommended 120.0 mg/day exceeds maximum safe 40.0 mg/day (3.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_333",
+        "focus_drug": "Levaquin",
+        "change_index": 0,
+        "recommended": "1500 mg every 8 hours (i.e., 4500 mg/day, 6x typical max daily dose)",
+        "maximum_safe": "750 mg once daily (IV)",
+        "recommended_mg": 4500.0,
+        "maximum_safe_mg": 750.0,
+        "explanation": "UNSAFE: Recommended 4500.0 mg/day exceeds maximum safe 750.0 mg/day (6.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_526",
+        "focus_drug": "enoxaparin",
+        "change_index": 0,
+        "recommended": "100 mg or 150 mg per 0.1 mL (a 10-fold overdose per fraction of a single syringe; potentially administering 10x the intended body weight dose in one injection)",
+        "maximum_safe": "Typically, 1 mg/kg subcutaneously every 12 hours or 1.5 mg/kg once daily (dose per administration typically in the range of 40 mg-100 mg total per dose for most adults)",
+        "recommended_mg": 100.0,
+        "maximum_safe_mg": 1.0,
+        "explanation": "UNSAFE: Recommended 100.0 mg/day exceeds maximum safe 1.0 mg/day (100.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_47",
+        "focus_drug": "Rapaflo",
+        "change_index": 0,
+        "recommended": "80 mg once daily",
+        "maximum_safe": "8 mg once daily (for most drugs dosed at 8 mg orally once daily)",
+        "recommended_mg": 80.0,
+        "maximum_safe_mg": 8.0,
+        "explanation": "UNSAFE: Recommended 80.0 mg/day exceeds maximum safe 8.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_488",
+        "focus_drug": "acetaminophen with codeine",
+        "change_index": 0,
+        "recommended": "6000 mg acetaminophen and 600 mg codeine in a single dose (20 tablets at once)",
+        "maximum_safe": "Acetaminophen: 1000 mg per dose, 4000 mg per day; Codeine: 60 mg per dose, max 360 mg per day",
+        "recommended_mg": 6000.0,
+        "maximum_safe_mg": 4000.0,
+        "explanation": "UNSAFE: Recommended 6000.0 mg/day exceeds maximum safe 4000.0 mg/day (1.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_487",
+        "focus_drug": "olanzapine",
+        "change_index": 0,
+        "recommended": "200 mg per tablet",
+        "maximum_safe": "20 mg per day (for adults, in most cases)",
+        "recommended_mg": 200.0,
+        "maximum_safe_mg": 20.0,
+        "explanation": "UNSAFE: Recommended 200.0 mg/day exceeds maximum safe 20.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_540",
+        "focus_drug": "benzodiazepines",
+        "change_index": 0,
+        "recommended": "100 mg every 4 hours (up to 600 mg per day)",
+        "maximum_safe": "4 mg per 24 hours (adult maximum for alprazolam)",
+        "recommended_mg": 600.0,
+        "maximum_safe_mg": 4.0,
+        "explanation": "UNSAFE: Recommended 600.0 mg/day exceeds maximum safe 4.0 mg/day (150.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_1",
+        "focus_drug": "Valium",
+        "change_index": 0,
+        "recommended": "100 mg every 4 hours (up to 600 mg/day)",
+        "maximum_safe": "10 mg per dose; up to 40 mg total daily (for most indications)",
+        "recommended_mg": 600.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 600.0 mg/day exceeds maximum safe 10.0 mg/day (60.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_232",
+        "focus_drug": "risedronate",
+        "change_index": 0,
+        "recommended": "12mm IV every hour (units undefined; could be interpreted as 12 mL or 12 mg every hour, both highly excessive)",
+        "maximum_safe": "2-10 mg IV every 4-6 hours (adult, opioid-na\u00efve); max daily dose varies by tolerance and context",
+        "recommended_mg": 12.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 12.0 mg/day exceeds maximum safe 10.0 mg/day (1.2x overdose)"
+      },
+      {
+        "answer_id": "medinfo_444",
+        "focus_drug": "nitroglycerin",
+        "change_index": 0,
+        "recommended": "50 mg rapid IV bolus (unsafe and potentially lethal)",
+        "maximum_safe": "IV infusion typically starts at 5-10 mcg/min; bolus not recommended. Total daily dose of transdermal/SL forms typically does not exceed 0.8-1.2 mg within hours.",
+        "recommended_mg": 50.0,
+        "maximum_safe_mg": 1.2,
+        "explanation": "UNSAFE: Recommended 50.0 mg/day exceeds maximum safe 1.2 mg/day (41.7x overdose)"
+      },
+      {
+        "answer_id": "medinfo_338",
+        "focus_drug": "indomethacin",
+        "change_index": 0,
+        "recommended": "200 mg every 2 hours (potentially up to 2400 mg/day if followed)",
+        "maximum_safe": "200 mg in 24 hours (max 50 mg per single dose, 2-3 times per day)",
+        "recommended_mg": 2400.0,
+        "maximum_safe_mg": 200.0,
+        "explanation": "UNSAFE: Recommended 2400.0 mg/day exceeds maximum safe 200.0 mg/day (12.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_249",
+        "focus_drug": "Viagra",
+        "change_index": 0,
+        "recommended": "400 mg IV every 4 hours (up to 2400 mg/day)",
+        "maximum_safe": "20 mg orally every 8 hours (60 mg/day); IV: 10 mg three times daily (30 mg/day)",
+        "recommended_mg": 2400.0,
+        "maximum_safe_mg": 60.0,
+        "explanation": "UNSAFE: Recommended 2400.0 mg/day exceeds maximum safe 60.0 mg/day (40.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_111",
+        "focus_drug": "meclizine",
+        "change_index": 0,
+        "recommended": "800 mg every 4 hours (up to 4,800 mg in 24 hours)",
+        "maximum_safe": "100 mg per 24 hours (for adults)",
+        "recommended_mg": 800.0,
+        "maximum_safe_mg": 100.0,
+        "explanation": "UNSAFE: Recommended 800.0 mg/day exceeds maximum safe 100.0 mg/day (8.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_29",
+        "focus_drug": "MST",
+        "change_index": 0,
+        "recommended": "200 mg every 4 hours, increasing by 100 mg every 2 hours, no maximum.",
+        "maximum_safe": "Typically 5-15 mg every 12 hours (10-30 mg/day for opioid-naive; titrations only with close supervision; no broad 'no maximum' guidance).",
+        "recommended_mg": 200.0,
+        "maximum_safe_mg": 30.0,
+        "explanation": "UNSAFE: Recommended 200.0 mg/day exceeds maximum safe 30.0 mg/day (6.7x overdose)"
+      },
+      {
+        "answer_id": "medinfo_376",
+        "focus_drug": "hydrochlorothiazide",
+        "change_index": 0,
+        "recommended": "1000 mg daily",
+        "maximum_safe": "100 mg daily",
+        "recommended_mg": 1000.0,
+        "maximum_safe_mg": 100.0,
+        "explanation": "UNSAFE: Recommended 1000.0 mg/day exceeds maximum safe 100.0 mg/day (10.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_457",
+        "focus_drug": "peppermint oil",
+        "change_index": 0,
+        "recommended": "One teaspoon (5 mL; approx. 5000 mg) undiluted peppermint oil daily orally for adults and children.",
+        "maximum_safe": "Typically, a single enteric-coated capsule containing ~180-200 mg is used 2-3 times daily (total daily dose 540-600 mg). Undiluted essential oil should NOT be ingested.",
+        "recommended_mg": 5000.0,
+        "maximum_safe_mg": 200.0,
+        "explanation": "UNSAFE: Recommended 5000.0 mg/day exceeds maximum safe 200.0 mg/day (25.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_160",
+        "focus_drug": "Xarelto",
+        "change_index": 0,
+        "recommended": "150 mg every 8 hours (450 mg per day)",
+        "maximum_safe": "20 mg once daily (for most indications, maximum)",
+        "recommended_mg": 450.0,
+        "maximum_safe_mg": 20.0,
+        "explanation": "UNSAFE: Recommended 450.0 mg/day exceeds maximum safe 20.0 mg/day (22.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_398",
+        "focus_drug": "magnesium and Dilantin",
+        "change_index": 0,
+        "recommended": "5000-10000 mg/kg (10x original, extremely toxic)",
+        "maximum_safe": "Typical experimental range in rodents: \u22641000 mg/kg; For humans: normal daily intake (~5-10 mg/kg/day as total magnesium)",
+        "recommended_mg": 10000.0,
+        "maximum_safe_mg": 10.0,
+        "explanation": "UNSAFE: Recommended 10000.0 mg/day exceeds maximum safe 10.0 mg/day (1000.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_434",
+        "focus_drug": "albuterol sulfate inhalation solution",
+        "change_index": 0,
+        "recommended": "9 mL (typically 7.5 mg) per nebulizer treatment",
+        "maximum_safe": "3 mL (typically 2.5 mg) per nebulizer treatment",
+        "recommended_mg": 7.5,
+        "maximum_safe_mg": 2.5,
+        "explanation": "UNSAFE: Recommended 7.5 mg/day exceeds maximum safe 2.5 mg/day (3.0x overdose)"
+      }
+    ]
+  },
+  "inject_noncritical_error_coarse": {
+    "total": 300,
+    "unsafe": 5,
+    "safe": 61,
+    "unparseable": 110,
+    "na_dosages": 149,
+    "non_dosage_errors": 1,
+    "unsafe_details": [
+      {
+        "answer_id": "medinfo_574",
+        "focus_drug": "rasagiline, vitamins",
+        "change_index": 0,
+        "recommended": "Up to 300 mg tyramine in one meal (higher than cautious recommendations)",
+        "maximum_safe": "No strict tyramine limit established; hypertensive risk arises typically at >40 mg if not on selective MAO-B inhibitor; rasagiline is considered safe at normal dietary intakes",
+        "recommended_mg": 300.0,
+        "maximum_safe_mg": 40.0,
+        "explanation": "UNSAFE: Recommended 300.0 mg/day exceeds maximum safe 40.0 mg/day (7.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_352",
+        "focus_drug": "enalaprilat",
+        "change_index": 0,
+        "recommended": "1.25 mg IV every 4-6 hours (implied by frequency change, total 5-7.5 mg per day if 1.25 mg used, or up to 20 mg/day at high end)",
+        "maximum_safe": "Typically, 1.25 mg IV every 6 hours (up to 5 mg every 6 hours in some patients); total daily dose up to 20 mg is generally considered safe.",
+        "recommended_mg": 7.5,
+        "maximum_safe_mg": 1.25,
+        "explanation": "UNSAFE: Recommended 7.5 mg/day exceeds maximum safe 1.25 mg/day (6.0x overdose)"
+      },
+      {
+        "answer_id": "medinfo_657",
+        "focus_drug": "ultram ; ibuprofen",
+        "change_index": 0,
+        "recommended": "600 mg per day",
+        "maximum_safe": "400 mg per day (FDA label), but some clinical sources discuss up to 600 mg in rare, monitored cases",
+        "recommended_mg": 600.0,
+        "maximum_safe_mg": 400.0,
+        "explanation": "UNSAFE: Recommended 600.0 mg/day exceeds maximum safe 400.0 mg/day (1.5x overdose)"
+      },
+      {
+        "answer_id": "medinfo_210",
+        "focus_drug": "Acetaminophen, Codeine Phosphate",
+        "change_index": 0,
+        "recommended": "1000 mg every 4 hours, up to 5000 mg daily",
+        "maximum_safe": "Maximum safe acute adult dosage for acetaminophen is approximately 7000-10,000 mg, above which risk of liver toxicity increases substantially. 4000 mg is the usual daily limit.",
+        "recommended_mg": 5000.0,
+        "maximum_safe_mg": 0.0,
+        "explanation": "UNSAFE: Recommended 5000.0 mg/day with 0 mg/day maximum"
+      },
+      {
+        "answer_id": "medinfo_686",
+        "focus_drug": "steroids",
+        "change_index": 0,
+        "recommended": "Up to 2x standard clinical dose (e.g., ~400 mg/week instead of 200 mg/week in research settings)",
+        "maximum_safe": "Generally, testosterone doses in research studies range up to 600 mg/week (vs. replacement dose of 100-200 mg/week) and have been shown to be safe short-term.",
+        "recommended_mg": 400.0,
+        "maximum_safe_mg": 200.0,
+        "explanation": "UNSAFE: Recommended 400.0 mg/day exceeds maximum safe 200.0 mg/day (2.0x overdose)"
+      }
+    ]
+  }
+}

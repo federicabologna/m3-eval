@@ -37,14 +37,8 @@ def _parse_medinfo_json_response(response_text: str, original_answer: str) -> Tu
     """
     Parse JSON response from MedInfo perturbation.
 
-    Expected format (unified with RadEval):
+    Expected format:
     {
-        "reasoning": {
-            "medication_analysis": "...",
-            "typical_dosage": "...",
-            "maximum_safe_dosage": "...",
-            "dangerous_threshold": "..."
-        },
         "modified_answer": "...",
         "changes_detail": [
             {
@@ -83,9 +77,6 @@ def _parse_medinfo_json_response(response_text: str, original_answer: str) -> Tu
         # Extract modified answer
         perturbed_answer = data.get('modified_answer', '').strip()
 
-        # Extract reasoning (dict)
-        reasoning = data.get('reasoning', {})
-
         # Extract changes_detail (array)
         changes_detail = data.get('changes_detail', [])
 
@@ -98,7 +89,6 @@ def _parse_medinfo_json_response(response_text: str, original_answer: str) -> Tu
 
         # Return perturbed answer and metadata
         metadata = {
-            'reasoning': reasoning,
             'changes_detail': changes_detail,
             'parsed_successfully': True,
             'num_changes': len(changes_detail) if changes_detail else (1 if perturbed_answer != original_answer else 0)

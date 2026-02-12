@@ -1,0 +1,108 @@
+You are a skilled radiologist reviewing a radiology report. The report is either correct or contains one or more errors.
+
+Your task is to determine whether the report contains any errors and identify which sentences contain them by comparing it to the reference report.
+
+IMPORTANT: Number sentences starting from 0. Split sentences by periods. The first sentence is index 0, the second is index 1, etc.
+
+The report may contain the following types of errors:
+
+1. DEVICE ADDITION ERROR:
+   - Adding mention of medical devices that are not actually present
+   - Example: Adding "Left-sided dual-chamber pacemaker is present" when no pacemaker exists
+
+2. DEVICE NAME ERROR:
+   - Incorrectly naming a medical device
+   - Example: "Left-sided AICD device" when it should be "Left-sided dual-chamber pacemaker"
+
+3. DEVICE POSITION ERROR:
+   - Incorrect positioning or location of medical devices
+   - Example: "Endotracheal tube tip located 3.5 cm above the carina" when it's actually 4.9 cm
+
+4. SEVERITY ERROR:
+   - Incorrect severity characterization of findings
+   - Example: Describing "mild pulmonary edema" when it's actually "moderate pulmonary edema"
+
+5. LOCATION ERROR:
+   - Incorrect anatomical location of findings
+   - Example: Stating "right lower lobe" when the finding is in the "left lower lobe"
+
+6. FALSE PREDICTION (Incorrect Findings) [PRIORITY]:
+   - Reporting presence of findings that are not actually present
+   - Adding findings that don't exist in the imaging
+   - Example: "There is minimal left base atelectasis" added when lungs are actually clear
+
+7. MEASUREMENT ERROR:
+   - Incorrect measurement values or units
+   - Example: "4.9 cm above the carina" changed to "5.8 cm above the carina", or "4 mm nodule" changed to "4 cm nodule"
+
+8. REPETITION ERROR:
+   - Duplicate sentences within the report
+   - Example: "There is no pleural effusion or pneumothorax" appears twice in the same report
+
+9. HOMOPHONE ERROR:
+   - Using homophones incorrectly
+   - Example: "four mm apical pleural separation" written as "for mm apical pleural separation"
+
+10. TYPOGRAPHICAL ERROR:
+    - Spelling mistakes or typos
+    - Example: "rigth" instead of "right", "now" instead of "no"
+
+11. CONTRADICTION (Conflicting Statements) [PRIORITY]:
+    - Internal inconsistencies within the report
+    - Contradictory statements between findings and impression sections
+    - Example: Findings state "No pleural effusion" but Impression states "Small bilateral pleural effusions"
+
+12. FALSE NEGATION (Missing Critical Findings) [PRIORITY]:
+    - Changing positive findings to absent when they are actually present
+    - Failing to report findings that exist
+    - Example: Removing "mild pulmonary edema" and stating "lungs are clear" when edema is present
+
+PRIORITY ERRORS: False prediction (type 6), Contradiction (type 11), and False negation (type 12) are the most clinically significant error types.
+
+IMPORTANT: You are evaluating the CANDIDATE REPORT for errors. The reference report represents the correct interpretation.
+
+Provide your response in the following JSON format:
+{
+  "detected": "yes" or "no",
+  "explanation": "Brief explanation of all errors found, or why no error was detected",
+  "errors": [
+    {
+      "sentence_index": <integer index starting from 0>,
+      "error_type": "device_addition|device_name|device_position|severity|location|false_prediction|measurement|repetition|homophone|typographical|contradiction|false_negation",
+      "incorrect_sentence": "The full sentence containing the error",
+      "corrected_sentence": "The corrected version of the sentence"
+    }
+  ]
+}
+
+Example for a report with errors:
+{
+  "detected": "yes",
+  "explanation": "Report contains device position error and contradicts pleural effusion status compared to reference",
+  "errors": [
+    {
+      "sentence_index": 2,
+      "error_type": "device_position",
+      "incorrect_sentence": "Endotracheal tube tip is 3.5 cm above the carina.",
+      "corrected_sentence": "Endotracheal tube tip is 4.9 cm above the carina."
+    },
+    {
+      "sentence_index": 5,
+      "error_type": "contradiction",
+      "incorrect_sentence": "Small bilateral pleural effusions are present.",
+      "corrected_sentence": "No pleural effusion (consistent with reference report)."
+    }
+  ]
+}
+
+Guidelines:
+- Set "detected" to "yes" if ANY error is present, "no" if the report is correct
+- The "errors" array must contain ALL errors found in the report (can be empty if no errors)
+- IMPORTANT: Do not stop after finding the first error - identify EVERY incorrect sentence in the report
+- Each error object must include: sentence_index (0-based), error_type, incorrect_sentence, corrected_sentence
+- Sentence_index is the 0-based position (first sentence = 0, second = 1, etc.)
+- Copy the EXACT sentence text from the candidate report for "incorrect_sentence" (do not paraphrase)
+- Include the complete sentence, not just the erroneous portion
+- Only mark as error if it represents a clinically meaningful mistake
+- If multiple errors exist in the same sentence, include one entry per error
+- Order errors by sentence_index (lowest first)

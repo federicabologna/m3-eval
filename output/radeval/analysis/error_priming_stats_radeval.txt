@@ -1,0 +1,135 @@
+================================================================================
+ERROR PRIMING STATISTICAL ANALYSIS - RADEVAL
+================================================================================
+
+
+INJECT FALSE PREDICTION
+--------------------------------------------------------------------------------
+
+Descriptive Statistics:
+  Sample size: 100
+
+  Control (no error warning):
+    Mean:   0.1325
+    Std:    0.1001
+    Median: 0.1149
+    Range:  [0.0000, 0.5286]
+
+  Primed (with error warning):
+    Mean:   0.1273
+    Std:    0.0988
+    Median: 0.1094
+    Range:  [0.0000, 0.5353]
+
+  Delta (Primed - Control):
+    Mean:   -0.0052
+    Std:    0.0398
+    Median: -0.0016
+    Range:  [-0.1297, 0.1151]
+
+Paired t-test (Primed vs Control):
+  t-statistic: -1.3040
+  p-value:     1.9525e-01
+  Significance: n.s. (p >= 0.05)
+
+  Effect size (Cohen's d): -0.0521
+  Effect magnitude: negligible
+
+  Correlation (control vs primed): 0.9202
+
+Direction of change:
+  Increased: 43 (43.0%)
+  Decreased: 51 (51.0%)
+  Unchanged: 6 (6.0%)
+
+
+INJECT FALSE NEGATION
+--------------------------------------------------------------------------------
+
+Descriptive Statistics:
+  Sample size: 100
+
+  Control (no error warning):
+    Mean:   0.1846
+    Std:    0.1865
+    Median: 0.1385
+    Range:  [0.0000, 0.7374]
+
+  Primed (with error warning):
+    Mean:   0.1738
+    Std:    0.1806
+    Median: 0.1286
+    Range:  [0.0000, 0.7810]
+
+  Delta (Primed - Control):
+    Mean:   -0.0108
+    Std:    0.0455
+    Median: -0.0028
+    Range:  [-0.1910, 0.1286]
+
+Paired t-test (Primed vs Control):
+  t-statistic: -2.3618
+  p-value:     2.0142e-02
+  Significance: * (p < 0.05)
+
+  Effect size (Cohen's d): -0.0586
+  Effect magnitude: negligible
+
+  Correlation (control vs primed): 0.9698
+
+Direction of change:
+  Increased: 34 (34.0%)
+  Decreased: 53 (53.0%)
+  Unchanged: 13 (13.0%)
+
+
+INJECT CONTRADICTION
+--------------------------------------------------------------------------------
+
+Descriptive Statistics:
+  Sample size: 100
+
+  Control (no error warning):
+    Mean:   0.1685
+    Std:    0.1125
+    Median: 0.1634
+    Range:  [0.0000, 0.5032]
+
+  Primed (with error warning):
+    Mean:   0.1638
+    Std:    0.1100
+    Median: 0.1681
+    Range:  [0.0000, 0.5036]
+
+  Delta (Primed - Control):
+    Mean:   -0.0047
+    Std:    0.0388
+    Median: -0.0014
+    Range:  [-0.1167, 0.0867]
+
+Paired t-test (Primed vs Control):
+  t-statistic: -1.2032
+  p-value:     2.3177e-01
+  Significance: n.s. (p >= 0.05)
+
+  Effect size (Cohen's d): -0.0419
+  Effect magnitude: negligible
+
+  Correlation (control vs primed): 0.9395
+
+Direction of change:
+  Increased: 40 (40.0%)
+  Decreased: 53 (53.0%)
+  Unchanged: 7 (7.0%)
+
+
+================================================================================
+INTERPRETATION
+================================================================================
+
+A negative delta indicates that adding the error warning DECREASED the GREEN score,
+meaning the model became more sensitive to errors (detected more discrepancies).
+
+A positive delta indicates that adding the error warning INCREASED the GREEN score,
+meaning the model became less sensitive (unexpected behavior).
+

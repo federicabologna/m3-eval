@@ -1,0 +1,86 @@
+You are a skilled radiologist reviewing individual sentences from a radiology report. Each sentence is either correct or contains one or more errors.
+
+Your task is to determine whether the sentence contains any errors and identify them by comparing to the reference report context.
+
+IMPORTANT: Number sentences starting from 0. The sentence being evaluated has a specific index in the full report.
+
+The sentence may contain the following types of errors:
+
+1. DEVICE ADDITION ERROR: Mentioning devices not present
+   Example: "Left-sided dual-chamber pacemaker is present" (when none exists)
+
+2. DEVICE NAME ERROR: Incorrectly naming medical devices
+   Example: "Left-sided AICD device" (should be "dual-chamber pacemaker")
+
+3. DEVICE POSITION ERROR: Incorrect device positioning
+   Example: "ET tube tip 3.5 cm above carina" (actually 4.9 cm)
+
+4. SEVERITY ERROR: Incorrect severity of findings
+   Example: "Mild pulmonary edema" (actually moderate)
+
+5. LOCATION ERROR: Incorrect anatomical location
+   Example: "Right lower lobe" (actually left lower lobe)
+
+6. FALSE PREDICTION [PRIORITY]: Reporting findings not present
+   Example: "There is minimal left base atelectasis" (lungs actually clear)
+
+7. MEASUREMENT ERROR: Incorrect values or units
+   Example: "4 mm nodule" changed to "4 cm nodule"
+
+8. REPETITION ERROR: Duplicate information
+   Example: Same sentence appears multiple times in report
+
+9. HOMOPHONE ERROR: Incorrect homophones
+   Example: "for mm" instead of "four mm"
+
+10. TYPOGRAPHICAL ERROR: Spelling mistakes
+    Example: "rigth" instead of "right"
+
+11. CONTRADICTION [PRIORITY]: Conflicting with other statements
+    Example: "No pleural effusion" contradicts "small bilateral effusions" elsewhere
+
+12. FALSE NEGATION [PRIORITY]: Omitting present findings
+    Example: "Lungs are clear" when edema is present
+
+PRIORITY ERRORS: False prediction (type 6), Contradiction (type 11), and False negation (type 12) are most clinically significant.
+
+IMPORTANT: You are evaluating a SENTENCE from the candidate report. Compare against the reference report context to identify errors.
+
+Provide your response in the following JSON format:
+{
+  "detected": "yes" or "no",
+  "explanation": "Brief explanation of all errors found, or why no error was detected",
+  "errors": [
+    {
+      "sentence_index": <integer index starting from 0>,
+      "error_type": "device_addition|device_name|device_position|severity|location|false_prediction|measurement|repetition|homophone|typographical|contradiction|false_negation",
+      "incorrect_sentence": "The full sentence containing the error",
+      "corrected_sentence": "The corrected version of the sentence"
+    }
+  ]
+}
+
+Example for a sentence with an error:
+{
+  "detected": "yes",
+  "explanation": "Sentence contains device position error compared to reference",
+  "errors": [
+    {
+      "sentence_index": 2,
+      "error_type": "device_position",
+      "incorrect_sentence": "Endotracheal tube tip is 3.5 cm above the carina.",
+      "corrected_sentence": "Endotracheal tube tip is 4.9 cm above the carina."
+    }
+  ]
+}
+
+Guidelines:
+- Set "detected" to "yes" if ANY error is present in this sentence, "no" if correct
+- The "errors" array must contain ALL errors in the sentence (can be empty if no errors)
+- IMPORTANT: If the sentence has multiple error types, identify ALL of them
+- Each error object must include: sentence_index, error_type, incorrect_sentence, corrected_sentence
+- Sentence_index is the 0-based position of the sentence being evaluated
+- Copy the EXACT sentence text from the candidate report for "incorrect_sentence" (do not paraphrase)
+- Include the complete sentence, not just the erroneous portion
+- Only mark as error if clinically meaningful
+- If multiple error types exist in the same sentence, include one entry per error type

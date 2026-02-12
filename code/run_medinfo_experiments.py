@@ -224,9 +224,10 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Experiment Types:
-  baseline          Original perturbation + rating pipeline
-  error_detection   Detect if answers contain errors (open-ended + yes/no)
-  error_priming     Compare ratings with/without error warnings
+  baseline                        Original perturbation + rating pipeline
+  error_detection                 Detect errors based on medical knowledge alone (no reference)
+  error_detection_with_reference  Detect errors by comparing to original answer
+  error_priming                   Compare ratings with/without error warnings
 
 Workflow:
   1. Generate original ratings and perturbations (--generate-only)
@@ -257,8 +258,11 @@ Examples:
   # Generate data only (no experiments)
   python run_medinfo_experiments.py --generate-only --model gpt-4.1
 
-  # Run error detection
+  # Run error detection (reference-free)
   python run_medinfo_experiments.py --experiment error_detection --model gpt-4o
+
+  # Run error detection with reference comparison
+  python run_medinfo_experiments.py --experiment error_detection_with_reference --model gpt-4o
 
   # Run on subset for testing
   python run_medinfo_experiments.py --experiment baseline --model gpt-4.1 --start-idx 0 --end-idx 10
@@ -270,7 +274,7 @@ Examples:
         '--experiment',
         type=str,
         required=True,
-        choices=['baseline', 'error_detection', 'error_priming'],
+        choices=['baseline', 'error_detection', 'error_detection_with_reference', 'error_priming'],
         help='Type of experiment to run'
     )
 
@@ -390,8 +394,12 @@ Examples:
         run_baseline_experiment(args)
 
     elif args.experiment == 'error_detection':
-        from experiments.error_detection import run_error_detection_experiment
-        run_error_detection_experiment(args)
+        from experiments.error_detection_medinfo import run_error_detection_medinfo
+        run_error_detection_medinfo(args)
+
+    elif args.experiment == 'error_detection_with_reference':
+        from experiments.error_detection_with_reference_medinfo import run_error_detection_with_reference_medinfo
+        run_error_detection_with_reference_medinfo(args)
 
     elif args.experiment == 'error_priming':
         from experiments.error_priming import run_error_priming_experiment

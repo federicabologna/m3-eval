@@ -4,13 +4,18 @@ Run RadEval experiments with GREEN metric.
 Supports multiple experiment types:
 - baseline: Original perturbation + rating pipeline
 - error_priming: Compare ratings with/without error warnings
+- error_detection: Reference-free error detection
+- error_detection_with_reference: Reference-based error detection
+- error_criticality: Classify error criticality (minor, moderate, critical)
 
 Usage:
     python run_radeval_experiments.py --experiment baseline --model gpt-4.1-2025-04-14
     python run_radeval_experiments.py --experiment error_priming --model gpt-4.1-2025-04-14
+    python run_radeval_experiments.py --experiment error_criticality --model gpt-4.1-2025-04-14
 """
 
 import argparse
+import os
 import random
 import time
 from helpers.radeval_experiment_utils import (
@@ -319,7 +324,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run RadEval experiments')
 
     parser.add_argument('--experiment', type=str, default='baseline',
-                       choices=['baseline', 'error_priming'],
+                       choices=['baseline', 'error_priming', 'error_detection', 'error_detection_with_reference', 'error_criticality'],
                        help='Experiment type to run (default: baseline)')
 
     parser.add_argument('--model', type=str, default=None,
@@ -365,6 +370,10 @@ if __name__ == "__main__":
     parser.add_argument('--end-idx', type=int, default=None,
                        help='End index for data subset (default: all data)')
 
+    parser.add_argument('--level', type=str, default='coarse',
+                       choices=['coarse', 'fine'],
+                       help='Detection level for error_detection experiment: coarse (full report) or fine (sentence-level)')
+
     args = parser.parse_args()
 
     # Route to appropriate experiment
@@ -373,3 +382,12 @@ if __name__ == "__main__":
     elif args.experiment == 'error_priming':
         from experiments.error_priming_radeval import run_error_priming_radeval
         run_error_priming_radeval(args)
+    elif args.experiment == 'error_detection':
+        from experiments.error_detection_radeval import run_error_detection_radeval
+        run_error_detection_radeval(args)
+    elif args.experiment == 'error_detection_with_reference':
+        from experiments.error_detection_with_reference_radeval import run_error_detection_radeval as run_error_detection_with_reference_radeval
+        run_error_detection_with_reference_radeval(args)
+    elif args.experiment == 'error_criticality':
+        from experiments.error_criticality_radeval import run_error_criticality_radeval
+        run_error_criticality_radeval(args)

@@ -10,6 +10,7 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
+from difflib import SequenceMatcher
 
 # Path setup
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -293,14 +294,229 @@ def generate_summary_report(results_by_model, level, perturbation, output_path):
     print(f"  Saved summary: {os.path.basename(output_path)}")
 
 
+def load_detection_results(results_file):
+    """Load error detection results from file."""
+    results = []
+    with open(results_file, 'r') as f:
+        for line in f:
+            if line.strip():
+                results.append(json.loads(line))
+    return results
+
+
+def compute_similarity(str1, str2):
+    """Compute similarity between two strings using SequenceMatcher (0-1 scale)."""
+    return SequenceMatcher(None, str1.lower().strip(), str2.lower().strip()).ratio()
+
+
+def analyze_detection_accuracy(results, is_original=False, similarity_threshold=0.6):
+    """
+    Analyze error detection accuracy for MedInfo with sentence matching.
+
+    Args:
+        results: List of detection results
+        is_original: If True, analyzing original (clean) reports
+        similarity_threshold: Minimum similarity to consider a sentence match (0-1)
+
+    Returns:
+        Dictionary with accuracy metrics
+    """
+    stats = {
+        'total': 0,
+        'detected': 0,
+        'not_detected': 0,
+        'detection_errors': 0,
+        'reports_with_0_errors': 0,
+        'reports_with_1_error': 0,
+        'reports_with_2plus_errors': 0,
+        # Sentence matching stats (only for perturbed)
+        'correct_sentence_identified': 0,
+        'wrong_sentence_identified': 0,
+        'detected_but_no_match': 0,
+    }
+
+    for result in results:
+        stats['total'] += 1
+
+        # Check if error was detected
+        detection_result = result.get('detection_result', {})
+        detected = detection_result.get('detected', 'no').lower()
+
+        if detected == 'yes':
+            stats['detected'] += 1
+        elif detected == 'no':
+            stats['not_detected'] += 1
+        else:
+            stats['detection_errors'] += 1
+
+        # Count number of errors claimed
+        errors_list = detection_result.get('errors', [])
+        num_errors = len(errors_list)
+
+        if num_errors == 0:
+            stats['reports_with_0_errors'] += 1
+        elif num_errors == 1:
+            stats['reports_with_1_error'] += 1
+        else:
+            stats['reports_with_2plus_errors'] += 1
+
+        # For perturbed reports, check if the correct sentence was identified
+        if not is_original and detected == 'yes':
+            changes_detail = result.get('changes_detail', [])
+            if changes_detail and errors_list:
+                # Get ground truth error sentences (the modified sentences)
+                gt_sentences = [change.get('modified', '') for change in changes_detail]
+
+                # Get predicted error sentences
+                pred_sentences = [error.get('incorrect_sentence', '') for error in errors_list]
+
+                # Check if any predicted sentence matches any ground truth sentence
+                best_match_score = 0
+                for pred_sent in pred_sentences:
+                    if pred_sent:  # Skip empty predictions
+                        for gt_sent in gt_sentences:
+                            if gt_sent:  # Skip empty ground truth
+                                similarity = compute_similarity(pred_sent, gt_sent)
+                                best_match_score = max(best_match_score, similarity)
+
+                # Classify based on best match
+                if best_match_score >= similarity_threshold:
+                    stats['correct_sentence_identified'] += 1
+                else:
+                    stats['wrong_sentence_identified'] += 1
+            elif detected == 'yes' and not errors_list:
+                # Detected but provided no error details
+                stats['detected_but_no_match'] += 1
+
+    return stats
+
+
+def create_error_detection_plot(all_stats, output_dir):
+    """Create combined error detection plot for MedInfo showing detection rates and sentence matching."""
+    if not all_stats:
+        return
+
+    perturbation_order = ['inject_critical_error', 'inject_noncritical_error']
+    perturbation_labels = {
+        'inject_critical_error': 'Critical Error',
+        'inject_noncritical_error': 'Non-Critical Error'
+    }
+
+    # Filter to only perturbations we have
+    perturbations = [p for p in perturbation_order if p in all_stats]
+
+    if not perturbations:
+        return
+
+    # Create figure with 2 subplots: perturbed detection rates and original false positives
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6))
+    fig.suptitle('MedInfo Error Detection Analysis',
+                 fontsize=16, fontweight='bold')
+
+    # Colors with edges
+    color_correct = '#4A7C59'        # Green - detected + correct sentence
+    color_wrong = '#CC8844'          # Orange - detected + wrong sentence
+    color_not_detected = '#A85252'   # Red - not detected
+    edge_color = 'white'
+    edge_width = 2
+
+    x = np.arange(len(perturbations))
+    width = 0.6
+
+    # LEFT PLOT: Perturbed reports (detection + sentence matching)
+    for idx, perturbation in enumerate(perturbations):
+        if perturbation in all_stats:
+            stats = all_stats[perturbation]['perturbed']
+            total = stats['total']
+            if total > 0:
+                correct_pct = stats['correct_sentence_identified'] / total * 100
+                wrong_pct = stats['wrong_sentence_identified'] / total * 100
+                not_detected_pct = stats['not_detected'] / total * 100
+            else:
+                correct_pct = wrong_pct = not_detected_pct = 0
+
+            # Stack bars with edges
+            ax1.bar(x[idx], correct_pct, width,
+                   label='Correct Sentence' if idx == 0 else '',
+                   color=color_correct, edgecolor=edge_color, linewidth=edge_width)
+            ax1.bar(x[idx], wrong_pct, width, bottom=correct_pct,
+                   label='Wrong Sentence' if idx == 0 else '',
+                   color=color_wrong, edgecolor=edge_color, linewidth=edge_width)
+            ax1.bar(x[idx], not_detected_pct, width, bottom=correct_pct + wrong_pct,
+                   label='Not Detected' if idx == 0 else '',
+                   color=color_not_detected, edgecolor=edge_color, linewidth=edge_width)
+
+            # Add percentage labels on bars
+            if correct_pct > 5:
+                ax1.text(x[idx], correct_pct/2, f'{correct_pct:.1f}%',
+                        ha='center', va='center', fontweight='bold', fontsize=10, color='white')
+            if wrong_pct > 5:
+                ax1.text(x[idx], correct_pct + wrong_pct/2, f'{wrong_pct:.1f}%',
+                        ha='center', va='center', fontweight='bold', fontsize=10)
+
+    ax1.set_ylabel('Percentage of Reports (%)', fontsize=12, fontweight='bold')
+    ax1.set_title('Perturbed Reports (Detection + Sentence Matching)', fontsize=13, fontweight='bold', pad=15)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels([perturbation_labels.get(p, p) for p in perturbations], fontsize=11)
+    ax1.set_ylim(0, 115)
+    ax1.legend(loc='upper right', fontsize=10)
+    ax1.grid(axis='y', alpha=0.3, linestyle='--')
+
+    # RIGHT PLOT: Original reports (false positives)
+    color_0 = '#4A7C59'    # Green - correct (0 errors)
+    color_1 = '#CC8844'    # Orange - 1 error claimed
+    color_2plus = '#A85252'  # Red - 2+ errors claimed
+
+    for idx, perturbation in enumerate(perturbations):
+        if perturbation in all_stats and all_stats[perturbation].get('original'):
+            stats_orig = all_stats[perturbation]['original']
+            total = stats_orig['total']
+            if total > 0:
+                pct_0 = stats_orig['reports_with_0_errors'] / total * 100
+                pct_1 = stats_orig['reports_with_1_error'] / total * 100
+                pct_2plus = stats_orig['reports_with_2plus_errors'] / total * 100
+            else:
+                pct_0 = pct_1 = pct_2plus = 0
+
+            ax2.bar(x[idx], pct_0, width,
+                   label='0 Errors (Correct)' if idx == 0 else '',
+                   color=color_0, edgecolor=edge_color, linewidth=edge_width)
+            ax2.bar(x[idx], pct_1, width, bottom=pct_0,
+                   label='1 Error Claimed' if idx == 0 else '',
+                   color=color_1, edgecolor=edge_color, linewidth=edge_width)
+            ax2.bar(x[idx], pct_2plus, width, bottom=pct_0 + pct_1,
+                   label='2+ Errors Claimed' if idx == 0 else '',
+                   color=color_2plus, edgecolor=edge_color, linewidth=edge_width)
+
+            # Add percentage label for correct (0 errors)
+            if pct_0 > 5:
+                ax2.text(x[idx], pct_0/2, f'{pct_0:.1f}%',
+                        ha='center', va='center', fontweight='bold', fontsize=11)
+
+    ax2.set_ylabel('Percentage of Reports (%)', fontsize=12, fontweight='bold')
+    ax2.set_title('Original Reports (False Positives)', fontsize=13, fontweight='bold', pad=15)
+    ax2.set_xticks(x)
+    ax2.set_xticklabels([perturbation_labels.get(p, p) for p in perturbations], fontsize=11)
+    ax2.set_ylim(0, 115)
+    ax2.legend(loc='upper right', fontsize=10)
+    ax2.grid(axis='y', alpha=0.3, linestyle='--')
+
+    plt.tight_layout()
+
+    output_path = os.path.join(output_dir, 'medinfo_error_detection_analysis.png')
+    plt.savefig(output_path, dpi=300, bbox_inches='tight')
+    print(f"\n✓ Saved error detection plot: {output_path}")
+    plt.close()
+
+
 def main():
     print("\n" + "="*80)
     print("CQA Results Analysis")
     print("="*80)
 
-    # Process each perturbation
-    perturbations = ['change_dosage']#, 'remove_sentences', 'add_typos', 'add_confusion']
-    levels = ['coarse', 'fine']
+    # Process each perturbation (LLM-based only)
+    perturbations = ['inject_critical_error', 'inject_noncritical_error']
+    levels = ['coarse']  # Only coarse level for LLM-based injections
 
     for level in levels:
         for perturbation in perturbations:
@@ -324,30 +540,20 @@ def main():
 
                 filepath = os.path.join(perturbation_dir, filename)
 
-                # Extract model name and probability (for add_typos) from filename
-                # Format: perturbation_level_model_rating.jsonl
+                # Extract model name from filename
+                # Format: inject_critical_error_coarse_model_rating.jsonl
+                # or: inject_noncritical_error_coarse_model_rating.jsonl
                 parts = filename.replace('_rating.jsonl', '').split('_')
-                prob = None
 
-                # Skip perturbation name and level
-                if perturbation == 'change_dosage':
-                    model = '_'.join(parts[3:])  # change_dosage_level_model
-                elif perturbation == 'remove_sentences':
-                    # May have percentage: remove_sentences_0.3removed_level_model
-                    # Skip to after level
-                    level_idx = parts.index(level)
-                    model = '_'.join(parts[level_idx + 1:])
-                elif perturbation == 'add_typos':
-                    # May have prob: add_typos_05prob_level_model
-                    # Extract probability
-                    for part in parts:
-                        if 'prob' in part:
-                            prob = part.replace('prob', '')
-                            break
-                    level_idx = parts.index(level)
-                    model = '_'.join(parts[level_idx + 1:])
-                else:  # add_confusion
+                # For LLM-based injections: perturbation_type_error_level_model
+                # inject_critical_error = 3 parts, inject_noncritical_error = 3 parts
+                if perturbation in ['inject_critical_error', 'inject_noncritical_error']:
+                    # Skip perturbation name (3 parts), level (1 part), rest is model
+                    model = '_'.join(parts[4:])  # inject_critical/noncritical_error_level_model
+                    prob = None  # No probability parameter for LLM-based injections
+                else:
                     model = '_'.join(parts[3:])
+                    prob = None  # Default to None if not extracted
 
                 print(f"\nLoading: {filename}")
                 results = load_cqa_results(filepath)
@@ -443,7 +649,7 @@ def main():
             print(f"{'='*80}")
 
             # Generate comparison plot (models only)
-            if perturbation == 'change_dosage':
+            if results_by_model:
                 print("\nGenerating comparison plot...")
                 plot_path = os.path.join(analysis_output_dir,
                                         f'{perturbation}_{level}_comparison.png')
@@ -549,6 +755,67 @@ def main():
     #         print("  No data found for Qwen3-8B")
     # else:
     #     print(f"  Directory not found: {perturbation_dir}")
+
+    # Analyze error detection results
+    print(f"\n{'='*80}")
+    print(f"Error Detection Analysis")
+    print(f"{'='*80}")
+
+    error_detection_dir = os.path.join(project_root, 'output', 'medinfo', 'experiment_results', 'error_detection')
+    error_detection_stats = {}
+
+    if os.path.exists(error_detection_dir):
+        for perturbation_dir in os.listdir(error_detection_dir):
+            perturbation_path = os.path.join(error_detection_dir, perturbation_dir)
+            if not os.path.isdir(perturbation_path):
+                continue
+
+            print(f"\nLoading: {perturbation_dir}")
+
+            # Look for error detection files
+            for filename in os.listdir(perturbation_path):
+                if not filename.endswith('_error_detection.jsonl'):
+                    continue
+
+                filepath = os.path.join(perturbation_path, filename)
+                print(f"  Loading: {filename}")
+
+                # Analyze perturbed
+                results_perturbed = load_detection_results(filepath)
+                stats_perturbed = analyze_detection_accuracy(results_perturbed, is_original=False, similarity_threshold=0.7)
+                print(f"    Perturbed: {len(results_perturbed)} reports")
+                print(f"      Detected: {stats_perturbed['detected']}/{stats_perturbed['total']} ({stats_perturbed['detected']/stats_perturbed['total']*100:.1f}%)")
+                if stats_perturbed['detected'] > 0:
+                    print(f"      Correct sentence: {stats_perturbed['correct_sentence_identified']}/{stats_perturbed['detected']} ({stats_perturbed['correct_sentence_identified']/stats_perturbed['detected']*100:.1f}% of detected)")
+                    print(f"      Wrong sentence: {stats_perturbed['wrong_sentence_identified']}/{stats_perturbed['detected']} ({stats_perturbed['wrong_sentence_identified']/stats_perturbed['detected']*100:.1f}% of detected)")
+
+                # Load original if exists (for false positives)
+                stats_original = None
+                original_dir = os.path.join(project_root, 'output', 'medinfo', 'original_ratings')
+                if os.path.exists(original_dir):
+                    # Look for original file with matching model
+                    parts = filename.replace('_error_detection.jsonl', '').split('_')
+                    model = '_'.join(parts[4:])  # Extract model name
+                    original_file = os.path.join(original_dir, f'original_coarse_{model}_error_detection.jsonl')
+
+                    if os.path.exists(original_file):
+                        print(f"    Loading original: {os.path.basename(original_file)}")
+                        results_original = load_detection_results(original_file)
+                        stats_original = analyze_detection_accuracy(results_original, is_original=True)
+                        print(f"    Original: {len(results_original)} reports")
+                        print(f"      False positives: {stats_original['detected']}/{stats_original['total']} ({stats_original['detected']/stats_original['total']*100:.1f}%)")
+
+                error_detection_stats[perturbation_dir] = {
+                    'perturbed': stats_perturbed,
+                    'original': stats_original
+                }
+
+        # Create combined plot
+        if error_detection_stats:
+            print("\nCreating error detection plot...")
+            create_error_detection_plot(error_detection_stats, analysis_output_dir)
+    else:
+        print(f"  No error detection results found at: {error_detection_dir}")
 
     print(f"\n{'='*80}")
     print(f"Analysis Complete!")

@@ -114,7 +114,7 @@ def load_primed_results(primed_dir, perturbations=None):
             if perturbations and perturbation_name not in perturbations:
                 continue
 
-            for result_file in perturbation_dir.glob('*_error_priming_primed_*.jsonl'):
+            for result_file in perturbation_dir.glob('*_error_priming_green_rating.jsonl'):
                 with open(result_file, 'r') as f:
                     for line in f:
                         if line.strip():
@@ -183,30 +183,39 @@ def create_comparison_dataframe(baseline_results, primed_results):
     return pd.DataFrame(rows)
 
 
-def plot_score_comparison(df, output_dir, dataset_name='Dataset'):
-    """Plot side-by-side comparison of control vs primed scores."""
+def plot_score_comparison(df, df_original, output_dir, dataset_name='Dataset'):
+    """Plot side-by-side comparison of control vs primed scores for both original and perturbed."""
     output_dir = Path(output_dir)
     output_dir.mkdir(exist_ok=True, parents=True)
 
     perturbations = df['perturbation'].unique()
-    n_perturbations = len(perturbations)
+    n_groups = len(perturbations) + 1  # +1 for original
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(12, 7))
 
-    x = np.arange(n_perturbations)
+    x = np.arange(n_groups)
     width = 0.35
 
-    # Calculate means and standard errors
+    # Calculate means and standard errors for perturbed
     control_means = [df[df['perturbation'] == p]['control_score'].mean() for p in perturbations]
     primed_means = [df[df['perturbation'] == p]['primed_score'].mean() for p in perturbations]
-
     control_stds = [df[df['perturbation'] == p]['control_score'].sem() for p in perturbations]
     primed_stds = [df[df['perturbation'] == p]['primed_score'].sem() for p in perturbations]
+
+    # Add original (clean reports) at the beginning
+    if df_original is not None and not df_original.empty:
+        control_means.insert(0, df_original['control_score'].mean())
+        primed_means.insert(0, df_original['primed_score'].mean())
+        control_stds.insert(0, df_original['control_score'].sem())
+        primed_stds.insert(0, df_original['primed_score'].sem())
+        labels = ['Original (Clean)'] + [p.replace('_', ' ').title() for p in perturbations]
+    else:
+        labels = [p.replace('_', ' ').title() for p in perturbations]
 
     # Create bars
     bars1 = ax.bar(x - width/2, control_means, width,
                    yerr=control_stds, capsize=5,
-                   label='Control (no warning)',
+                   label='Baseline (no warning)',
                    color='steelblue', alpha=0.8)
 
     bars2 = ax.bar(x + width/2, primed_means, width,
@@ -222,13 +231,12 @@ def plot_score_comparison(df, output_dir, dataset_name='Dataset'):
                    f'{height:.3f}',
                    ha='center', va='bottom', fontsize=9)
 
-    ax.set_xlabel('Perturbation Type', fontsize=12, fontweight='bold')
+    ax.set_xlabel('Report Type', fontsize=12, fontweight='bold')
     ax.set_ylabel('GREEN Score', fontsize=12, fontweight='bold')
     ax.set_title(f'Error Priming Effect on GREEN Scores - {dataset_name}',
                  fontsize=14, fontweight='bold')
     ax.set_xticks(x)
-    ax.set_xticklabels([p.replace('_', ' ').title() for p in perturbations],
-                       rotation=45, ha='right')
+    ax.set_xticklabels(labels, rotation=45, ha='right')
     ax.legend(fontsize=10, loc='upper right')
     ax.grid(axis='y', alpha=0.3)
     ax.set_ylim(0, 1.0)
@@ -342,16 +350,89 @@ def generate_statistical_report(df, output_dir, dataset_name='Dataset'):
     print(f"Saved report: {report_path}")
 
 
-def analyze_dataset(dataset_name, baseline_dir, primed_dir, output_dir, perturbations=None):
+def load_original_ratings(original_dir, dataset_name):
+    """
+    Load original (clean) ratings for both baseline and primed conditions.
+
+    Returns:
+        DataFrame with control_score and primed_score for original reports
+    """
+    original_path = Path(original_dir)
+
+    if not original_path.exists():
+        print(f"Warning: Original ratings directory not found: {original_dir}")
+        return None
+
+    rows = []
+
+    # Load baseline original ratings
+    baseline_files = list(original_path.glob('original_*_green_rating.jsonl'))
+    if not baseline_files:
+        print(f"Warning: No baseline original ratings found in {original_dir}")
+        return None
+
+    baseline_by_id = {}
+    for result_file in baseline_files:
+        with open(result_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    entry = json.loads(line)
+                    baseline_by_id[entry['id']] = entry
+
+    # Load primed original ratings
+    primed_files = list(original_path.glob('original_*_error_priming_green_rating.jsonl'))
+    if not primed_files:
+        print(f"Warning: No primed original ratings found in {original_dir}")
+        return None
+
+    primed_by_id = {}
+    for result_file in primed_files:
+        with open(result_file, 'r') as f:
+            for line in f:
+                if line.strip():
+                    entry = json.loads(line)
+                    primed_by_id[entry['id']] = entry
+
+    # Match by ID
+    common_ids = set(baseline_by_id.keys()) & set(primed_by_id.keys())
+
+    for item_id in common_ids:
+        baseline_entry = baseline_by_id[item_id]
+        primed_entry = primed_by_id[item_id]
+
+        # Extract scores (original ratings use different field names)
+        control_score = (
+            extract_green_score(baseline_entry, 'original_rating') or
+            extract_green_score(baseline_entry, 'green_rating')
+        )
+        primed_score = extract_green_score(primed_entry, 'green_rating_original_primed')
+
+        if control_score is not None and primed_score is not None:
+            rows.append({
+                'id': item_id,
+                'control_score': control_score,
+                'primed_score': primed_score,
+                'delta': primed_score - control_score
+            })
+
+    if rows:
+        print(f"Loaded {len(rows)} original report ratings")
+        return pd.DataFrame(rows)
+    else:
+        return None
+
+
+def analyze_dataset(dataset_name, baseline_dir, primed_dir, original_dir, output_dir, perturbations=None):
     """Run complete analysis for a dataset."""
     print(f"\n{'='*80}")
     print(f"ANALYZING {dataset_name.upper()}")
     print(f"{'='*80}")
     print(f"Baseline: {baseline_dir}")
     print(f"Primed:   {primed_dir}")
+    print(f"Original: {original_dir}")
     print(f"Output:   {output_dir}\n")
 
-    # Load results
+    # Load perturbed results
     print("Loading baseline results (control)...")
     baseline_results = load_baseline_results(baseline_dir, perturbations)
 
@@ -368,25 +449,33 @@ def analyze_dataset(dataset_name, baseline_dir, primed_dir, output_dir, perturba
         n_primed = len(primed_results.get(pert, []))
         print(f"  - {pert}: {n_baseline} baseline, {n_primed} primed")
 
-    # Create comparison dataframe
-    print("\nCreating comparison dataframe...")
+    # Create comparison dataframe for perturbed
+    print("\nCreating comparison dataframe for perturbed reports...")
     df = create_comparison_dataframe(baseline_results, primed_results)
 
     if df.empty:
         print(f"Warning: No matching data for {dataset_name}")
         return
 
-    print(f"Matched {len(df)} examples across conditions")
+    print(f"Matched {len(df)} perturbed examples across conditions")
 
-    # Save dataframe
+    # Load original ratings
+    print("\nLoading original (clean) report ratings...")
+    df_original = load_original_ratings(original_dir, dataset_name)
+
+    # Save dataframes
     output_path = Path(output_dir)
     output_path.mkdir(exist_ok=True, parents=True)
-    df.to_csv(output_path / f'error_priming_data_{dataset_name.lower()}.csv', index=False)
-    print(f"Saved data: error_priming_data_{dataset_name.lower()}.csv")
+    df.to_csv(output_path / f'error_priming_perturbed_{dataset_name.lower()}.csv', index=False)
+    print(f"Saved data: error_priming_perturbed_{dataset_name.lower()}.csv")
+
+    if df_original is not None:
+        df_original.to_csv(output_path / f'error_priming_original_{dataset_name.lower()}.csv', index=False)
+        print(f"Saved data: error_priming_original_{dataset_name.lower()}.csv")
 
     # Generate visualization
     print("\nGenerating visualization...")
-    plot_score_comparison(df, output_dir, dataset_name)
+    plot_score_comparison(df, df_original, output_dir, dataset_name)
 
     # Generate statistical report
     print("\nGenerating statistical report...")
@@ -407,22 +496,24 @@ def main():
     # Analyze RadEval
     radeval_baseline = project_root / 'output' / 'radeval' / 'experiment_results' / 'baseline'
     radeval_primed = project_root / 'output' / 'radeval' / 'experiment_results' / 'error_priming'
+    radeval_original = project_root / 'output' / 'radeval' / 'original_ratings'
     radeval_output = project_root / 'output' / 'radeval' / 'analysis'
 
     # Focus on LLM perturbations
     radeval_perturbations = ['inject_false_prediction', 'inject_contradiction', 'inject_false_negation']
 
     if radeval_baseline.exists():
-        analyze_dataset('RadEval', radeval_baseline, radeval_primed, radeval_output,
-                       perturbations=radeval_perturbations)
+        analyze_dataset('RadEval', radeval_baseline, radeval_primed, radeval_original,
+                       radeval_output, perturbations=radeval_perturbations)
 
     # Analyze RexErr
     rexerr_baseline = project_root / 'output' / 'rexerr' / 'experiment_results' / 'baseline'
     rexerr_primed = project_root / 'output' / 'rexerr' / 'experiment_results' / 'error_priming'
+    rexerr_original = project_root / 'output' / 'rexerr' / 'original_ratings'
     rexerr_output = project_root / 'output' / 'rexerr' / 'analysis'
 
     if rexerr_baseline.exists():
-        analyze_dataset('RexErr', rexerr_baseline, rexerr_primed, rexerr_output)
+        analyze_dataset('RexErr', rexerr_baseline, rexerr_primed, rexerr_original, rexerr_output)
 
     print("\n" + "=" * 80)
     print("ALL ANALYSES COMPLETE")
